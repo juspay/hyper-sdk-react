@@ -1,5 +1,8 @@
 package com.example.hypersdkreact;
 
+import android.os.Bundle;
+import android.webkit.WebView;
+
 import com.facebook.react.ReactActivity;
 
 public class MainActivity extends ReactActivity {
@@ -11,5 +14,11 @@ public class MainActivity extends ReactActivity {
   @Override
   protected String getMainComponentName() {
     return "HyperSdkReactExample";
+  }
+
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    WebView.setWebContentsDebuggingEnabled(true);
   }
 }
