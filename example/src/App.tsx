@@ -8,6 +8,7 @@ import {
   NativeModules,
 } from 'react-native';
 import HyperSdkReact from 'hyper-sdk-react';
+import HyperUtils from './Utils';
 
 class App extends React.Component {
   preFetchPayload: {};
@@ -16,13 +17,7 @@ class App extends React.Component {
 
   constructor(props: {}, context: any) {
     super(props, context);
-    this.preFetchPayload = {
-      service: 'in.juspay.ec',
-      betaAssets: false,
-      payload: {
-        clientId: 'picasso_android',
-      },
-    };
+    this.preFetchPayload = HyperUtils.generatePreFetchPayload();
     this.initiatePayload = {};
   }
 
@@ -56,7 +51,7 @@ class App extends React.Component {
         <CustomButton
           title="Generate Initiate Payload"
           onPress={() => {
-            this.initiatePayload = generateInitiatePayload();
+            this.initiatePayload = HyperUtils.generateInitiatePayload();
           }}
         />
         <CustomButton
@@ -96,29 +91,6 @@ const CustomButton = (props: any) => {
       <Text style={styles.buttonText}>{props.title}</Text>
     </TouchableOpacity>
   );
-};
-
-const uuidv4 = () => {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    var r = (Math.random() * 16) | 0,
-      v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-};
-
-const generateInitiatePayload = () => {
-  return {
-    requestId: uuidv4(),
-    service: 'in.juspay.ec',
-    betaAssets: false,
-    payload: {
-      action: 'initiate',
-      merchantId: 'picasso',
-      clientId: 'picasso_android',
-      customerId: '9634393464',
-      environment: 'sandbox',
-    },
-  };
 };
 
 export default App;
