@@ -67,6 +67,16 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
+  public void preFetch(String data) {
+    try {
+      JSONObject payload = new JSONObject(data);
+      HyperServices.preFetch(reactContext, payload);
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+  }
+
+  @ReactMethod
   public void createHyperServices() {
     if (getCurrentActivity() != null) {
       FragmentActivity activity = (FragmentActivity) getCurrentActivity();
