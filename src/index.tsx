@@ -7,8 +7,9 @@ type HyperSdkReactType = {
   initiate(data: string): void;
   process(data: string): void;
   terminate(): void;
-  terminate(data: string): void;
-  onBackPressed(): Promise<boolean>;
+  onBackPressed(): boolean;
+  isNull(): boolean;
+  isInitialised(): Promise<boolean>;
 };
 
 const { HyperSdkReact } = NativeModules;

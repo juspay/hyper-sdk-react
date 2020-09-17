@@ -8,7 +8,7 @@ buildscript {
   }
 
   dependencies {
-    classpath 'com.android.tools.build:gradle:3.2.1'
+    classpath 'com.android.tools.build:gradle:4.0.1'
     // noinspection DifferentKotlinGradleVersion
     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
   }
@@ -119,13 +119,10 @@ repositories {
                     "Ensure you have you installed React Native as a dependency in your project and try again."
     )
   }
-
-  maven { url "https://maven.juspay.in/jp-build-packages/hyper-sdk/" }
-
 }
 
 def kotlin_version = getExtOrDefault('kotlinVersion')
-def hyper_sdk_version = '2.0.1-rc.03'
+def hyper_sdk_version = '2.0.1-rc.08'
 
 dependencies {
   // noinspection GradleDynamicVersion

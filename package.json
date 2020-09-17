@@ -1,7 +1,7 @@
 {
   "name": "hyper-sdk-react",
-  "version": "0.1.0",
-  "description": "React native module for HyperSDK which enables payment orchestration via different dynamic modules. More details available at http://www.juspay.in/docs . Some part of module depends heavily on native functionalities are not updatable dynamically.",
+  "version": "1.0.0",
+  "description": "React native module for HyperSDK which enables payment orchestration via different dynamic modules. More details available at https://developer.juspay.in/v2.0/docs . Some part of module depends heavily on native functionalities are not updatable dynamically.",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
   "types": "lib/typescript/src/index.d.ts",
@@ -35,7 +35,7 @@
     "android"
   ],
   "repository": "https://bitbucket.org/juspay/hyper-sdk-react",
-  "author": "Juspay Technologies pvt ltd <support@juspay.in> (https://juspay.in)",
+  "author": "harshgarg-juspay <harsh.garg@juspay.in>",
   "license": "MIT",
   "bugs": {
     "url": "https://bitbucket.org/juspay/hyper-sdk-react/issues"
@@ -93,7 +93,7 @@
       "publish": true
     },
     "github": {
-      "release": true
+      "release": false
     },
     "plugins": {
       "@release-it/conventional-changelog": {

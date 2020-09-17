@@ -1,6 +1,6 @@
-# hyper-sdk-react
+# Hyper-SDK-React
 
-React native module for HyperSDK which enables payment orchestration via different dynamic modules. More details available at http://www.juspay.in/docs . Some part of module depends heavily on native functionalities are not updatable dynamically.
+React native module for HyperSDK which enables payment orchestration via different dynamic modules. More details available at <https://developer.juspay.in/v2.0/docs/introduction> . Some part of module depends heavily on native functionalities are not updatable dynamically.
 
 ## Installation
 
@@ -10,13 +10,187 @@ npm install hyper-sdk-react
 
 ## Usage
 
-```js
-import HyperSdkReact from "hyper-sdk-react";
+### Exposed APIs
 
-// ...
+```ts
+type HyperSdkReactType = {
+  preFetch(data: string): void;
+  createHyperServices(): void;
+  initiate(data: string): void;
+  process(data: string): void;
+  terminate(): void;
+  onBackPressed(): boolean;
+  isNull(): boolean;
+  isInitialised(): Promise<boolean>;
+};
 
-const result = await HyperSdkReact.multiply(3, 7);
+const { HyperSdkReact } = NativeModules;
+
+export default HyperSdkReact as HyperSdkReactType;
 ```
+
+### Import HyperSDK
+
+```ts
+import HyperSdkReact from 'hyper-sdk-react';
+```
+
+### Step-0: PreFetch
+
+To keep the SDK up to date with the latest changes, it is highly recommended to call `preFetch` as early as possible. It takes a `stringified JSON` as its argument.
+
+```ts
+HyperSdkReact.preFetch(JSON.stringify(preFetchPayload));
+```
+
+### Step-1: Create HyperServices Object
+
+This method creates an instance of `HyperServices` class in the React Bridge Module on which all the `HyperSDK` APIs / methods are triggered. It internally uses the current activity as an argument.
+
+**Note**: This method is mandatory and is required to call any other subsequent methods from `HyperSDK`.
+
+```ts
+HyperSdkReact.createHyperServices();
+```
+
+### Step-2: Initiate
+
+This method should be called on the render of the host screen. This will boot up the SDK and start the Hyper engine. It takes a `stringified JSON` as its argument which will contain the base parameters for the entire session and remains static throughout one SDK instance lifetime.
+
+Initiate is an asynchronous call and its result (whether success or failure) is provided in the `Hyper Event listener`, later discussed in [step-4](#step-4-listen-to-events-from-hypersdk).
+
+**Note**: It is highly recommended to initiate SDK from the order summary page (at least 5 seconds before opening your payment page) for seamless user experience.
+
+```ts
+HyperSdkReact.initiate(JSON.stringify(initiatePayload));
+```
+
+### Step-3: Process
+
+This API should be triggered for all operations required from `HyperSDK`. The operation may be related to:
+
+- Displaying payment options on your payment page
+- Performing a transaction
+- User’s payment profile management
+
+The result of the process call is provided in the `Hyper Event listener`, later discussed in [step-4](#step-4-listen-to-events-from-hypersdk).
+
+```ts
+HyperSdkReact.process(JSON.stringify(processPayload));
+```
+
+### Step-4: Listen to events from HyperSDK
+
+`Hyper SDK` Native Module will be emitting all the relevant events to JS via `RCTDeviceEventEmitter` and JavaScript modules can then register to receive events by invoking `addListener` on the `NativeEventEmitter` class in the `componentDidMount()` method with the event name `'HyperEvent'`. The listener will return a `stringified JSON` response (`resp`).
+
+The following events should be handled here:
+
+- `show_loader`: To show a loader for the processing state.
+- `hide_loader`: To hide the previously shown loader.
+- `initiate_result`: Result of initiate done in [step-2](#step-2-initiate).
+- `process_result`: Result of the process operation done in [step-3](#step-3-process).
+
+**Note**: The listener can be removed when the React component unmounts in `componentWillUnmount()` method.
+
+```ts
+ componentDidMount() {
+   ...
+   const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
+   this.eventListener = eventEmitter.addListener('HyperEvent', (resp) => {
+     var data = JSON.parse(resp);
+     var event: string = data.event || '';
+     switch (event) {
+       case 'show_loader':
+         // show some loader here
+         break;
+
+       case 'hide_loader':
+         // hide the loader
+         break;
+
+       case 'initiate_result':
+         var payload = data.payload || {};
+         console.log('initiate_result: ', payload);
+         // merchant code
+         ...
+         break;
+
+       case 'process_result':
+         var payload = data.payload || {};
+         console.log('process_result: ', payload);
+         // merchant code
+         ...
+         break;
+
+       default:
+         console.log('Unknown Event', data);
+     }
+     ...
+   });
+   ...
+ }
+
+ componentWillUnmount() {
+   ...
+   this.eventListener.remove();
+   ...
+ }
+```
+
+### Step-5: Android Hardware Back-Press Handling
+
+`Hyper SDK` internally uses an android fragment for opening the bank page and will need the control to hardware back press when the bank page is active. This can be done by invoking `addEventListener` on the `BackHandler` provided by React-Native.
+
+If the blocking asynchronous call `HyperSdkReact.onBackPressed()` returns true, `Hyper SDK` will handle the back press, else merchant can handle it.
+
+**Note**: `HyperSdkReact.isNull()` (refer [here](#helper-is-null)) can also be called before calling `onBackPressed()` to ensure that the HyperServices object is not null.
+
+```ts
+ componentDidMount() {
+   ...
+   BackHandler.addEventListener('hardwareBackPress', () => {
+     return !HyperSdkReact.isNull() && HyperSdkReact.onBackPressed();
+   });
+   ...
+ }
+
+ componentWillUnmount() {
+   ...
+   BackHandler.removeEventListener('hardwareBackPress', () => null);
+   ...
+ }
+```
+
+### Step-6: Terminate
+
+This method shall be triggered when `HyperSDK` is no longer required.
+
+```ts
+HyperSdkReact.terminate();
+```
+
+### Helper: Is Null
+
+This is a helper method and can be used to check whether the `HyperServices` object is `null` at any particular moment. It is a blocking synchronous method and returns a `boolean` value.
+
+```ts
+var isNull: boolean = HyperSdkReact.isNull();
+console.log('is HyperSDK null: ', isNull);
+```
+
+### Optional: Is Initialised
+
+This is a helper / optional method to check whether SDK has been initialised after [step-2](#step-2-initiate). It returns a `JS Promise` with a `boolean` value.
+
+```ts
+HyperSdkReact.isInitialised().then((init: boolean) => {
+  console.log('isInitialised:', init);
+});
+```
+
+## Payload Structure
+
+Please refer to <https://developer.juspay.in/v2.0/docs/payload> for all request and response payload structure.
 
 ## Contributing
 
