@@ -1,4 +1,4 @@
-package com.hypersdkreact;
+package in.juspay.hypersdkreact;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -84,9 +84,9 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule {
     }
   }
 
-  @ReactMethod
-  public void onBackPressed(Promise promise) {
-    promise.resolve(hyperServices.onBackPressed());
+  @ReactMethod(isBlockingSynchronousMethod = true)
+  public boolean onBackPressed() {
+    return hyperServices.onBackPressed();
   }
 
   @ReactMethod
@@ -120,13 +120,13 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule {
     hyperServices.terminate();
   }
 
+  @ReactMethod(isBlockingSynchronousMethod = true)
+  public boolean isNull() {
+    return hyperServices == null;
+  }
+
   @ReactMethod
-  public void terminate(String data) {
-    try {
-      JSONObject payload = new JSONObject(data);
-      hyperServices.terminate(payload);
-    } catch (JSONException e) {
-      e.printStackTrace();
-    }
+  public void isInitialised(Promise promise) {
+    promise.resolve(hyperServices.isInitialised());
   }
 }

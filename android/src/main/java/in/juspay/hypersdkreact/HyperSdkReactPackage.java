@@ -1,4 +1,4 @@
-package com.hypersdkreact;
+package in.juspay.hypersdkreact;
 
 import androidx.annotation.NonNull;
 
