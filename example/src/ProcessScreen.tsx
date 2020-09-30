@@ -34,6 +34,9 @@ class ProcessScreen extends React.Component {
 
   merchantId: string;
   clientId: string;
+  merchantKeyId: string;
+  signUrl: string;
+  service: string;
   customerId: string;
   mobile: string;
   email: string;
@@ -42,6 +45,8 @@ class ProcessScreen extends React.Component {
 
   orderId: string;
   clientAuthToken: string;
+  orderDetails: {};
+  signature: string;
   // nbTxn
   nbTxnBank: string;
   // cardTxn
@@ -73,6 +78,9 @@ class ProcessScreen extends React.Component {
     const params = props.route.params;
     this.merchantId = params.merchantId;
     this.clientId = params.clientId;
+    this.merchantKeyId = params.merchantKeyId;
+    this.signUrl = params.signUrl;
+    this.service = params.service;
     this.customerId = params.customerId;
     this.mobile = params.mobile;
     this.email = params.email;
@@ -81,6 +89,8 @@ class ProcessScreen extends React.Component {
 
     this.orderId = '';
     this.clientAuthToken = '';
+    this.orderDetails = {};
+    this.signature = '';
 
     this.nbTxnBank = 'NB_SBI';
     this.cardNumber = '';
@@ -98,6 +108,10 @@ class ProcessScreen extends React.Component {
     this.otp = '';
     this.sdkPresent = '';
     this.walletMobile = '';
+
+    if (this.service === 'pp') {
+      this.state.pickerSelected = 'quickPay';
+    }
   }
 
   componentDidMount() {
@@ -176,53 +190,71 @@ class ProcessScreen extends React.Component {
     return (
       <View style={styles.container}>
         <CustomButton
-          title="Create Order"
+          title={this.service === 'ec' ? 'Create Order' : 'Generate Order ID'}
           onPress={() => {
             this.orderId = HyperUtils.generateOrderId();
             console.warn('merchantId:', this.merchantId);
             console.warn('orderId:', this.orderId);
-            HyperAPIUtils.generateOrder(
-              this.orderId,
-              this.amount,
-              this.customerId,
-              this.mobile,
-              this.email,
-              this.apiKey
-            )
-              .then((resp) => {
-                console.log(resp);
-                HyperUtils.showCopyAlert('OrderID', this.orderId);
-                this.clientAuthToken = HyperUtils.getClientAuthToken(resp);
-                console.warn('clientAuthToken:', this.clientAuthToken);
-              })
-              .catch((err) => {
-                console.error(err);
-              });
+            if (this.service === 'ec') {
+              HyperAPIUtils.generateOrder(
+                this.orderId,
+                this.amount,
+                this.customerId,
+                this.mobile,
+                this.email,
+                this.apiKey
+              )
+                .then((resp) => {
+                  console.log(resp);
+                  HyperUtils.showCopyAlert('OrderID', this.orderId);
+                  this.clientAuthToken = HyperUtils.getClientAuthToken(resp);
+                  console.warn('clientAuthToken:', this.clientAuthToken);
+                })
+                .catch((err) => {
+                  console.error(err);
+                });
+            } else {
+              HyperUtils.showCopyAlert('OrderID', this.orderId);
+            }
           }}
         />
         <View style={styles.pickerContainer}>
-          <Picker
-            style={styles.picker}
-            selectedValue={this.state.pickerSelected}
-            onValueChange={(val, index) => {
-              this.setState({ pickerSelected: val });
-              console.log(val, index);
-            }}
-          >
-            <Picker.Item label="Get Payment Methods" value="getPM" />
-            <Picker.Item label="List Saved Cards" value="cardList" />
-            <Picker.Item label="Get UPI Apps" value="getUPI" />
-            <Picker.Item label="Refresh Wallet Balances" value="listWallet" />
-            <Picker.Item label="Check IsDeviceReady" value="isDeviceReady" />
-            <Picker.Item label="NB Txn" value="nbTxn" />
-            <Picker.Item label="Card Txn" value="cardTxn" />
-            <Picker.Item label="UPI Txn" value="upiTxn" />
-            <Picker.Item label="Create Wallet" value="createWallet" />
-            <Picker.Item label="Link Wallet" value="linkWallet" />
-            <Picker.Item label="Wallet Txn" value="walletTxn" />
-            <Picker.Item label="Delete Saved Card" value="deleteCard" />
-            <Picker.Item label="DeLink Wallet" value="delinkWallet" />
-          </Picker>
+          {this.service === 'ec' ? (
+            <Picker
+              style={styles.picker}
+              selectedValue={this.state.pickerSelected}
+              onValueChange={(val, index) => {
+                this.setState({ pickerSelected: val });
+                console.log(val, index);
+              }}
+            >
+              <Picker.Item label="Get Payment Methods" value="getPM" />
+              <Picker.Item label="List Saved Cards" value="cardList" />
+              <Picker.Item label="Get UPI Apps" value="getUPI" />
+              <Picker.Item label="Refresh Wallet Balances" value="listWallet" />
+              <Picker.Item label="Check IsDeviceReady" value="isDeviceReady" />
+              <Picker.Item label="NB Txn" value="nbTxn" />
+              <Picker.Item label="Card Txn" value="cardTxn" />
+              <Picker.Item label="UPI Txn" value="upiTxn" />
+              <Picker.Item label="Create Wallet" value="createWallet" />
+              <Picker.Item label="Link Wallet" value="linkWallet" />
+              <Picker.Item label="Wallet Txn" value="walletTxn" />
+              <Picker.Item label="Delete Saved Card" value="deleteCard" />
+              <Picker.Item label="DeLink Wallet" value="delinkWallet" />
+            </Picker>
+          ) : (
+            <Picker
+              style={styles.picker}
+              selectedValue={this.state.pickerSelected}
+              onValueChange={(val, index) => {
+                this.setState({ pickerSelected: val });
+                console.log(val, index);
+              }}
+            >
+              <Picker.Item label="quickPay" value="quickPay" />
+              <Picker.Item label="paymentPage" value="paymentPage" />
+            </Picker>
+          )}
         </View>
 
         {this.state.pickerSelected === 'getPM' ? (
@@ -642,6 +674,45 @@ class ProcessScreen extends React.Component {
                   this.clientAuthToken
                 );
                 console.log(payload);
+                HyperSdkReact.process(JSON.stringify(payload));
+              }}
+            />
+          </View>
+        ) : null}
+
+        {this.service === 'pp' ? (
+          <View style={styles.horizontal}>
+            <CustomButton
+              title="Sign Order Details"
+              onPress={() => {
+                this.orderDetails = {
+                  merchant_id: this.merchantId,
+                  customer_id: this.customerId,
+                  order_id: this.orderId,
+                  amount: this.amount,
+                  timestamp: HyperUtils.getTimestamp(),
+                };
+                HyperUtils.signData(
+                  this.signUrl,
+                  JSON.stringify(this.orderDetails)
+                ).then((resp) => {
+                  console.warn(resp);
+                  this.signature = resp;
+                  HyperUtils.showCopyAlert('Payload signed', this.signature);
+                });
+              }}
+            />
+            <CustomButton
+              title="Process"
+              onPress={() => {
+                var payload = HyperUtils.generateProcessPayloadPP(
+                  this.state.pickerSelected,
+                  this.clientId,
+                  JSON.stringify(this.orderDetails),
+                  this.signature,
+                  this.merchantKeyId
+                );
+
                 HyperSdkReact.process(JSON.stringify(payload));
               }}
             />
