@@ -14,20 +14,26 @@ import {
 import HyperAPIUtils from './API';
 import HyperSdkReact from 'hyper-sdk-react';
 import HyperUtils from './Utils';
+import { Picker } from '@react-native-community/picker';
 
 class HomeScreen extends React.Component {
   state = {
     animation: new Animated.Value(0),
+    pickerSelected: 'ec',
   };
 
   navigation: any;
   preFetchPayload: {};
+  signaturePayload: {};
   initiatePayload: {};
   eventListener: any;
   isPopupVisible: boolean;
 
   merchantId: string;
   clientId: string;
+  merchantKeyId: string;
+  signUrl: string;
+  signature: string;
   customerId: string;
   mobile: string;
   email: string;
@@ -41,13 +47,20 @@ class HomeScreen extends React.Component {
 
     this.merchantId = '';
     this.clientId = '';
+    this.merchantKeyId = '';
+    this.signUrl = '';
+    this.signature = '';
     this.customerId = '';
     this.mobile = '';
     this.email = '';
     this.apiKey = '';
     this.amount = '1.0';
 
-    this.preFetchPayload = HyperUtils.generatePreFetchPayload(this.clientId);
+    this.preFetchPayload = HyperUtils.generatePreFetchPayload(
+      this.clientId,
+      this.state.pickerSelected
+    );
+    this.signaturePayload = {};
     this.initiatePayload = {};
   }
 
@@ -131,11 +144,26 @@ class HomeScreen extends React.Component {
             this.handleOpen();
           }}
         />
+        <View style={styles.pickerContainer}>
+          <Picker
+            style={styles.picker}
+            selectedValue={this.state.pickerSelected}
+            onValueChange={(val, index) => {
+              this.setState({ pickerSelected: val });
+              console.log(val, index);
+            }}
+          >
+            <Picker.Item label="Express Checkout" value="ec" />
+            <Picker.Item label="Payment Page" value="pp" />
+          </Picker>
+        </View>
+
         <CustomButton
           title="preFetch"
           onPress={() => {
             this.preFetchPayload = HyperUtils.generatePreFetchPayload(
-              this.clientId
+              this.clientId,
+              this.state.pickerSelected
             );
             console.warn('preFetchPayload:', this.preFetchPayload);
             HyperSdkReact.preFetch(JSON.stringify(this.preFetchPayload));
@@ -147,18 +175,49 @@ class HomeScreen extends React.Component {
             HyperSdkReact.createHyperServices();
           }}
         />
-        <CustomButton
-          title="Initiate"
-          onPress={() => {
-            this.initiatePayload = HyperUtils.generateInitiatePayload(
-              this.merchantId,
-              this.clientId,
-              this.customerId
-            );
-            console.warn('initiatePayload:', this.initiatePayload);
-            HyperSdkReact.initiate(JSON.stringify(this.initiatePayload));
-          }}
-        />
+
+        <View style={styles.horizontal}>
+          {this.state.pickerSelected === 'pp' ? (
+            <CustomButton
+              title="Sign Initiate"
+              onPress={() => {
+                this.signaturePayload = {
+                  merchant_id: this.merchantId,
+                  customer_id: this.customerId,
+                  timestamp: HyperUtils.getTimestamp(),
+                };
+                HyperUtils.signData(
+                  this.signUrl,
+                  JSON.stringify(this.signaturePayload)
+                ).then((resp) => {
+                  console.warn(resp);
+                  this.signature = resp;
+                  HyperUtils.showCopyAlert('Payload signed', this.signature);
+                });
+              }}
+            />
+          ) : null}
+          <CustomButton
+            title="Initiate"
+            onPress={() => {
+              this.initiatePayload =
+                this.state.pickerSelected === 'ec'
+                  ? HyperUtils.generateECInitiatePayload(
+                      this.merchantId,
+                      this.clientId,
+                      this.customerId
+                    )
+                  : HyperUtils.generatePPInitiatePayload(
+                      this.clientId,
+                      JSON.stringify(this.signaturePayload),
+                      this.signature,
+                      this.merchantKeyId
+                    );
+              console.warn('initiatePayload:', this.initiatePayload);
+              HyperSdkReact.initiate(JSON.stringify(this.initiatePayload));
+            }}
+          />
+        </View>
         <CustomButton
           title="Process"
           onPress={() => {
@@ -170,6 +229,9 @@ class HomeScreen extends React.Component {
               email: this.email,
               amount: this.amount,
               apiKey: this.apiKey,
+              merchantKeyId: this.merchantKeyId,
+              signUrl: this.signUrl,
+              service: this.state.pickerSelected,
             });
           }}
         />
@@ -250,12 +312,30 @@ class HomeScreen extends React.Component {
                 </View>
                 <View style={styles.horizontal}>
                   <TextInput
-                    style={styles.longEditText}
+                    style={[styles.editText, { width: '60%' }]}
                     placeholder="apiKey"
                     onChangeText={(text) => {
                       this.apiKey = text;
                     }}
                     defaultValue={this.apiKey}
+                  />
+                  <TextInput
+                    style={[styles.editText, { width: '30%' }]}
+                    placeholder="merchantKeyId"
+                    onChangeText={(text) => {
+                      this.merchantKeyId = text;
+                    }}
+                    defaultValue={this.merchantKeyId}
+                  />
+                </View>
+                <View style={styles.horizontal}>
+                  <TextInput
+                    style={styles.longEditText}
+                    placeholder="signUrl"
+                    onChangeText={(text) => {
+                      this.signUrl = text;
+                    }}
+                    defaultValue={this.signUrl}
                   />
                 </View>
               </View>
@@ -350,6 +430,15 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginVertical: 12,
     marginEnd: 20,
+  },
+  picker: {
+    height: 50,
+    width: 250,
+  },
+  pickerContainer: {
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 12,
   },
 });
 

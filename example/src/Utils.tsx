@@ -9,36 +9,27 @@ const uuidv4 = () => {
   });
 };
 
-const service: any = {};
-service.ec = 'in.juspay.ec';
-
-const generatePreFetchPayload = (clientId: string) => {
-  return {
-    service: service.ec,
-    betaAssets: false,
-    payload: {
-      clientId,
-    },
-  };
+const getTimestamp = () => {
+  return new Date().getTime().toString();
 };
 
-const generateInitiatePayload = (
-  merchantId: string,
-  clientId: string,
-  customerId: string
-) => {
-  return {
-    requestId: uuidv4(),
-    service: service.ec,
-    betaAssets: false,
-    payload: {
-      action: 'initiate',
-      merchantId,
-      clientId,
-      customerId,
-      environment: 'sandbox',
-    },
-  };
+const signData = (url: string, payload: string): Promise<string> => {
+  var orderUrl = url + '?payload=' + payload;
+  return new Promise((resolve, reject) => {
+    fetch(orderUrl)
+      .then((res) => {
+        if (res.status === 200) {
+          return res.text();
+        }
+        throw new Error();
+      })
+      .then((text) => resolve(text))
+      .catch((err) => {
+        console.log('error occurred in generate signature');
+        console.log(err);
+        reject(err);
+      });
+  });
 };
 
 const generateOrderId = () => {
@@ -64,6 +55,80 @@ const getClientAuthToken = (resp: string) => {
   return '';
 };
 
+const services: any = {};
+services.ec = 'in.juspay.ec';
+services.pp = 'in.juspay.hyperpay';
+
+const generatePreFetchPayload = (clientId: string, service: string) => {
+  return {
+    service: service === 'ec' ? services.ec : services.pp,
+    betaAssets: false,
+    payload: {
+      clientId,
+    },
+  };
+};
+
+const generateECInitiatePayload = (
+  merchantId: string,
+  clientId: string,
+  customerId: string
+) => {
+  return {
+    requestId: uuidv4(),
+    service: services.ec,
+    betaAssets: false,
+    payload: {
+      action: 'initiate',
+      merchantId,
+      clientId,
+      customerId,
+      environment: 'sandbox',
+    },
+  };
+};
+
+const generatePPInitiatePayload = (
+  clientId: string,
+  signaturePayload: string,
+  signature: string,
+  merchantKeyId: string
+) => {
+  return {
+    requestId: uuidv4(),
+    service: services.pp,
+    betaAssets: false,
+    payload: {
+      action: 'initiate',
+      clientId,
+      signaturePayload,
+      signature,
+      merchantKeyId,
+      environment: 'sandbox',
+    },
+  };
+};
+
+const generateProcessPayloadPP = (
+  action: string,
+  clientId: string,
+  orderDetails: string,
+  signature: string,
+  merchantKeyId: string
+) => {
+  return {
+    requestId: uuidv4(),
+    service: services.pp,
+    payload: {
+      action,
+      clientId,
+      orderDetails,
+      signature,
+      merchantKeyId,
+    },
+  };
+};
+
 const generateNBTxnPayload = (
   orderId: string,
   clientAuthToken: string,
@@ -71,7 +136,7 @@ const generateNBTxnPayload = (
 ) => {
   return {
     requestId: uuidv4(),
-    service: service.ec,
+    service: services.ec,
     payload: {
       action: 'nbTxn',
       orderId,
@@ -133,7 +198,7 @@ const generateCardTxnPayload = (
 
   return {
     requestId: uuidv4(),
-    service: service.ec,
+    service: services.ec,
     payload,
   };
 };
@@ -162,7 +227,7 @@ const generateWalletTxnPayload = (
 
   return {
     requestId: uuidv4(),
-    service: service.ec,
+    service: services.ec,
     payload,
   };
 };
@@ -196,7 +261,7 @@ const generateUPIIntentTxnPayload = (
 
   return {
     requestId: uuidv4(),
-    service: service.ec,
+    service: services.ec,
     payload,
   };
 };
@@ -204,7 +269,7 @@ const generateUPIIntentTxnPayload = (
 const generatePaymentMethodsPayload = () => {
   return {
     requestId: uuidv4(),
-    service: service.ec,
+    service: services.ec,
     payload: {
       action: 'getPaymentMethods',
     },
@@ -214,7 +279,7 @@ const generatePaymentMethodsPayload = () => {
 const generateGetUPIAppsPayload = (orderId: string) => {
   return {
     requestId: uuidv4(),
-    service: service.ec,
+    service: services.ec,
     payload: {
       action: 'upiTxn',
       orderId,
@@ -226,7 +291,7 @@ const generateGetUPIAppsPayload = (orderId: string) => {
 const generateListWalletsPayload = (clientAuthToken: string) => {
   return {
     requestId: uuidv4(),
-    service: service.ec,
+    service: services.ec,
     payload: {
       action: 'refreshWalletBalances',
       clientAuthToken,
@@ -237,7 +302,7 @@ const generateListWalletsPayload = (clientAuthToken: string) => {
 const generateListCardsPayload = (clientAuthToken: string) => {
   return {
     requestId: uuidv4(),
-    service: service.ec,
+    service: services.ec,
     payload: {
       action: 'cardList',
       clientAuthToken,
@@ -251,7 +316,7 @@ const generateCreateWalletPayload = (
 ) => {
   return {
     requestId: uuidv4(),
-    service: service.ec,
+    service: services.ec,
     payload: {
       action: 'createWallet',
       walletName,
@@ -268,7 +333,7 @@ const generateLinkWalletPayload = (
 ) => {
   return {
     requestId: uuidv4(),
-    service: service.ec,
+    service: services.ec,
     payload: {
       action: 'linkWallet',
       walletName,
@@ -286,7 +351,7 @@ const generateDeLinkWalletPayload = (
 ) => {
   return {
     requestId: uuidv4(),
-    service: service.ec,
+    service: services.ec,
     payload: {
       action: 'delinkWallet',
       walletName,
@@ -302,7 +367,7 @@ const generateDeleteCardPayload = (
 ) => {
   return {
     requestId: uuidv4(),
-    service: service.ec,
+    service: services.ec,
     payload: {
       action: 'deleteCard',
       cardToken,
@@ -314,7 +379,7 @@ const generateDeleteCardPayload = (
 const generateDeviceReadyPayload = (sdkPresent: string) => {
   return {
     requestId: uuidv4(),
-    service: service.ec,
+    service: services.ec,
     payload: {
       action: 'isDeviceReady',
       sdkPresent,
@@ -347,12 +412,27 @@ const alertCallbackResponse = (screen: string, resp: any) => {
 
 type HyperUtils = {
   uuidv4(): string;
-  generateInitiatePayload(
+  getTimestamp(): string;
+  signData(url: string, payload: string): Promise<string>;
+  generateECInitiatePayload(
     merchantId: string,
     clientId: string,
     customerId: string
   ): {};
-  generatePreFetchPayload(clientId: string): {};
+  generatePPInitiatePayload(
+    clientId: string,
+    signaturePayload: string,
+    signature: string,
+    merchantKeyId: string
+  ): {};
+  generateProcessPayloadPP(
+    action: string,
+    clientId: string,
+    orderDetails: string,
+    signature: string,
+    merchantKeyId: string
+  ): {};
+  generatePreFetchPayload(clientId: string, service: string): {};
   generateOrderId(): string;
   getClientAuthToken(resp: string): string;
   generateNBTxnPayload(
@@ -409,8 +489,12 @@ type HyperUtils = {
 
 export default {
   uuidv4,
+  getTimestamp,
+  signData,
   generatePreFetchPayload,
-  generateInitiatePayload,
+  generateECInitiatePayload,
+  generatePPInitiatePayload,
+  generateProcessPayloadPP,
   generateOrderId,
   getClientAuthToken,
   generateNBTxnPayload,
