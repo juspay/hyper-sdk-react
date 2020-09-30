@@ -121,13 +121,17 @@ repositories {
   }
 }
 
-def kotlin_version = getExtOrDefault('kotlinVersion')
-def hyper_sdk_version = '2.0.1-rc.08'
+def getHyperSDKVersion () {
+  if (rootProject.hasProperty('hyperSDKVersion')) {
+    return rootProject.hyperSDKVersion
+  }
+  def hyper_sdk_version = '2.0.1-rc.08'
+  return hyper_sdk_version
+}
 
 dependencies {
   // noinspection GradleDynamicVersion
   api 'com.facebook.react:react-native:+'
-  implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
   //noinspection GradleDependency
-  implementation "in.juspay:hypersdk:$hyper_sdk_version"
+  implementation "in.juspay:hypersdk:${getHyperSDKVersion()}"
 }
