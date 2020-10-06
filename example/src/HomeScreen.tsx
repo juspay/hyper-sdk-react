@@ -10,6 +10,7 @@ import {
   Animated,
   Dimensions,
   BackHandler,
+  ScrollView
 } from 'react-native';
 import HyperAPIUtils from './API';
 import HyperSdkReact from 'hyper-sdk-react';
@@ -45,14 +46,14 @@ class HomeScreen extends React.Component {
     this.navigation = props.navigation;
     this.isPopupVisible = false;
 
-    this.merchantId = '';
-    this.clientId = '';
+    this.merchantId = 'picasso';
+    this.clientId = 'picasso_ios';
     this.merchantKeyId = '';
     this.signUrl = '';
     this.signature = '';
-    this.customerId = '';
-    this.mobile = '';
-    this.email = '';
+    this.customerId = 'test_customer';
+    this.mobile = '7338513562';
+    this.email = 'customer@test.com';
     this.apiKey = '';
     this.amount = '1.0';
 
@@ -137,233 +138,235 @@ class HomeScreen extends React.Component {
     };
 
     return (
-      <View style={styles.container}>
-        <CustomButton
-          title="Set Params"
-          onPress={() => {
-            this.handleOpen();
-          }}
-        />
-        <View style={styles.pickerContainer}>
-          <Picker
-            style={styles.picker}
-            selectedValue={this.state.pickerSelected}
-            onValueChange={(val, index) => {
-              this.setState({ pickerSelected: val });
-              console.log(val, index);
-            }}
-          >
-            <Picker.Item label="Express Checkout" value="ec" />
-            <Picker.Item label="Payment Page" value="pp" />
-          </Picker>
-        </View>
-
-        <CustomButton
-          title="preFetch"
-          onPress={() => {
-            this.preFetchPayload = HyperUtils.generatePreFetchPayload(
-              this.clientId,
-              this.state.pickerSelected
-            );
-            console.warn('preFetchPayload:', this.preFetchPayload);
-            HyperSdkReact.preFetch(JSON.stringify(this.preFetchPayload));
-          }}
-        />
-        <CustomButton
-          title="Create HyperService Object"
-          onPress={() => {
-            HyperSdkReact.createHyperServices();
-          }}
-        />
-
-        <View style={styles.horizontal}>
-          {this.state.pickerSelected === 'pp' ? (
-            <CustomButton
-              title="Sign Initiate"
-              onPress={() => {
-                this.signaturePayload = {
-                  merchant_id: this.merchantId,
-                  customer_id: this.customerId,
-                  timestamp: HyperUtils.getTimestamp(),
-                };
-                HyperUtils.signData(
-                  this.signUrl,
-                  JSON.stringify(this.signaturePayload)
-                ).then((resp) => {
-                  console.warn(resp);
-                  this.signature = resp;
-                  HyperUtils.showCopyAlert('Payload signed', this.signature);
-                });
-              }}
-            />
-          ) : null}
+      <ScrollView>
+        <View style={styles.container}>
           <CustomButton
-            title="Initiate"
+            title="Set Params"
             onPress={() => {
-              this.initiatePayload =
-                this.state.pickerSelected === 'ec'
-                  ? HyperUtils.generateECInitiatePayload(
-                      this.merchantId,
-                      this.clientId,
-                      this.customerId
-                    )
-                  : HyperUtils.generatePPInitiatePayload(
-                      this.clientId,
-                      JSON.stringify(this.signaturePayload),
-                      this.signature,
-                      this.merchantKeyId
-                    );
-              console.warn('initiatePayload:', this.initiatePayload);
-              HyperSdkReact.initiate(JSON.stringify(this.initiatePayload));
+              this.handleOpen();
             }}
           />
-        </View>
-        <CustomButton
-          title="Process"
-          onPress={() => {
-            this.navigation.navigate('ProcessScreen', {
-              merchantId: this.merchantId,
-              clientId: this.clientId,
-              customerId: this.customerId,
-              mobile: this.mobile,
-              email: this.email,
-              amount: this.amount,
-              apiKey: this.apiKey,
-              merchantKeyId: this.merchantKeyId,
-              signUrl: this.signUrl,
-              service: this.state.pickerSelected,
-            });
-          }}
-        />
-        <CustomButton
-          title="Is Initialised?"
-          onPress={() => {
-            HyperSdkReact.isInitialised().then((init: boolean) => {
-              console.warn('isInitialised:', init);
-              HyperUtils.showCopyAlert('isInitialised', init + '');
-            });
-          }}
-        />
-        <CustomButton
-          title="Terminate"
-          onPress={() => {
-            HyperSdkReact.terminate();
-          }}
-        />
-        <Animated.View
-          style={[StyleSheet.absoluteFill, styles.cover, backdrop]}
-        >
-          <View style={[styles.sheet]}>
-            <Animated.View style={[styles.popup, slideUp]}>
-              <View>
-                <View style={styles.horizontal}>
-                  <TextInput
-                    style={styles.editText}
-                    placeholder="merchantId"
-                    onChangeText={(text) => {
-                      this.merchantId = text;
-                    }}
-                    defaultValue={this.merchantId}
-                  />
-                  <TextInput
-                    style={styles.editText}
-                    placeholder="clientId"
-                    onChangeText={(text) => {
-                      this.clientId = text;
-                    }}
-                    defaultValue={this.clientId}
-                  />
-                </View>
-                <View style={styles.horizontal}>
-                  <TextInput
-                    style={styles.editText}
-                    placeholder="customerId"
-                    onChangeText={(text) => {
-                      this.customerId = text;
-                    }}
-                    defaultValue={this.customerId}
-                  />
-                  <TextInput
-                    style={styles.editText}
-                    placeholder="mobile"
-                    onChangeText={(text) => {
-                      this.mobile = text;
-                    }}
-                    defaultValue={this.mobile}
-                  />
-                </View>
-                <View style={styles.horizontal}>
-                  <TextInput
-                    style={styles.editText}
-                    placeholder="email"
-                    onChangeText={(text) => {
-                      this.email = text;
-                    }}
-                    defaultValue={this.email}
-                  />
-                  <TextInput
-                    style={styles.editText}
-                    placeholder="amount"
-                    onChangeText={(text) => {
-                      this.amount = text;
-                    }}
-                    defaultValue={this.amount}
-                  />
-                </View>
-                <View style={styles.horizontal}>
-                  <TextInput
-                    style={[styles.editText, { width: '60%' }]}
-                    placeholder="apiKey"
-                    onChangeText={(text) => {
-                      this.apiKey = text;
-                    }}
-                    defaultValue={this.apiKey}
-                  />
-                  <TextInput
-                    style={[styles.editText, { width: '30%' }]}
-                    placeholder="merchantKeyId"
-                    onChangeText={(text) => {
-                      this.merchantKeyId = text;
-                    }}
-                    defaultValue={this.merchantKeyId}
-                  />
-                </View>
-                <View style={styles.horizontal}>
-                  <TextInput
-                    style={styles.longEditText}
-                    placeholder="signUrl"
-                    onChangeText={(text) => {
-                      this.signUrl = text;
-                    }}
-                    defaultValue={this.signUrl}
-                  />
-                </View>
-              </View>
-              <View style={styles.horizontal}>
-                <CustomButton
-                  title="Create Customer"
-                  onPress={() => {
-                    HyperAPIUtils.createCustomer(
-                      this.customerId,
-                      this.mobile,
-                      this.email,
-                      this.apiKey
-                    )
-                      .then((resp) => {
-                        console.log(resp);
-                        HyperUtils.showCopyAlert('createCustomer', resp);
-                      })
-                      .catch((err) => {
-                        console.error(err);
-                      });
-                  }}
-                />
-                <CustomButton title="Close" onPress={this.handleClose} />
-              </View>
-            </Animated.View>
+          <View style={styles.pickerContainer}>
+            <Picker
+              style={styles.picker}
+              selectedValue={this.state.pickerSelected}
+              onValueChange={(val, index) => {
+                this.setState({ pickerSelected: val });
+                console.log(val, index);
+              }}
+            >
+              <Picker.Item label="Express Checkout" value="ec" />
+              <Picker.Item label="Payment Page" value="pp" />
+            </Picker>
           </View>
-        </Animated.View>
-      </View>
+
+          <CustomButton
+            title="preFetch"
+            onPress={() => {
+              this.preFetchPayload = HyperUtils.generatePreFetchPayload(
+                this.clientId,
+                this.state.pickerSelected
+              );
+              // console.warn('preFetchPayload:', this.preFetchPayload);
+              HyperSdkReact.preFetch(JSON.stringify(this.preFetchPayload));
+            }}
+          />
+          <CustomButton
+            title="Create HyperService Object"
+            onPress={() => {
+              HyperSdkReact.createHyperServices();
+            }}
+          />
+
+          <View style={styles.horizontal}>
+            {this.state.pickerSelected === 'pp' ? (
+              <CustomButton
+                title="Sign Initiate"
+                onPress={() => {
+                  this.signaturePayload = {
+                    merchant_id: this.merchantId,
+                    customer_id: this.customerId,
+                    timestamp: HyperUtils.getTimestamp(),
+                  };
+                  HyperUtils.signData(
+                    this.signUrl,
+                    JSON.stringify(this.signaturePayload)
+                  ).then((resp) => {
+                    console.warn(resp);
+                    this.signature = resp;
+                    HyperUtils.showCopyAlert('Payload signed', this.signature);
+                  });
+                }}
+              />
+            ) : null}
+            <CustomButton
+              title="Initiate"
+              onPress={() => {
+                this.initiatePayload =
+                  this.state.pickerSelected === 'ec'
+                    ? HyperUtils.generateECInitiatePayload(
+                        this.merchantId,
+                        this.clientId,
+                        this.customerId
+                      )
+                    : HyperUtils.generatePPInitiatePayload(
+                        this.clientId,
+                        JSON.stringify(this.signaturePayload),
+                        this.signature,
+                        this.merchantKeyId
+                      );
+                // console.warn('initiatePayload:', this.initiatePayload);
+                HyperSdkReact.initiate(JSON.stringify(this.initiatePayload));
+              }}
+            />
+          </View>
+          <CustomButton
+            title="Process"
+            onPress={() => {
+              this.navigation.navigate('ProcessScreen', {
+                merchantId: this.merchantId,
+                clientId: this.clientId,
+                customerId: this.customerId,
+                mobile: this.mobile,
+                email: this.email,
+                amount: this.amount,
+                apiKey: this.apiKey,
+                merchantKeyId: this.merchantKeyId,
+                signUrl: this.signUrl,
+                service: this.state.pickerSelected,
+              });
+            }}
+          />
+          <CustomButton
+            title="Is Initialised?"
+            onPress={() => {
+              HyperSdkReact.isInitialised().then((init: boolean) => {
+                // console.warn('isInitialised:', init);
+                HyperUtils.showCopyAlert('isInitialised', init + '');
+              });
+            }}
+          />
+          <CustomButton
+            title="Terminate"
+            onPress={() => {
+              HyperSdkReact.terminate();
+            }}
+          />
+          <Animated.View
+            style={[StyleSheet.absoluteFill, styles.cover, backdrop]}
+          >
+            <View style={[styles.sheet]}>
+              <Animated.View style={[styles.popup, slideUp]}>
+                <View>
+                  <View style={styles.horizontal}>
+                    <TextInput
+                      style={styles.editText}
+                      placeholder="merchantId"
+                      onChangeText={(text) => {
+                        this.merchantId = text;
+                      }}
+                      defaultValue={this.merchantId}
+                    />
+                    <TextInput
+                      style={styles.editText}
+                      placeholder="clientId"
+                      onChangeText={(text) => {
+                        this.clientId = text;
+                      }}
+                      defaultValue={this.clientId}
+                    />
+                  </View>
+                  <View style={styles.horizontal}>
+                    <TextInput
+                      style={styles.editText}
+                      placeholder="customerId"
+                      onChangeText={(text) => {
+                        this.customerId = text;
+                      }}
+                      defaultValue={this.customerId}
+                    />
+                    <TextInput
+                      style={styles.editText}
+                      placeholder="mobile"
+                      onChangeText={(text) => {
+                        this.mobile = text;
+                      }}
+                      defaultValue={this.mobile}
+                    />
+                  </View>
+                  <View style={styles.horizontal}>
+                    <TextInput
+                      style={styles.editText}
+                      placeholder="email"
+                      onChangeText={(text) => {
+                        this.email = text;
+                      }}
+                      defaultValue={this.email}
+                    />
+                    <TextInput
+                      style={styles.editText}
+                      placeholder="amount"
+                      onChangeText={(text) => {
+                        this.amount = text;
+                      }}
+                      defaultValue={this.amount}
+                    />
+                  </View>
+                  <View style={styles.horizontal}>
+                    <TextInput
+                      style={[styles.editText, { width: '60%' }]}
+                      placeholder="apiKey"
+                      onChangeText={(text) => {
+                        this.apiKey = text;
+                      }}
+                      defaultValue={this.apiKey}
+                    />
+                    <TextInput
+                      style={[styles.editText, { width: '30%' }]}
+                      placeholder="merchantKeyId"
+                      onChangeText={(text) => {
+                        this.merchantKeyId = text;
+                      }}
+                      defaultValue={this.merchantKeyId}
+                    />
+                  </View>
+                  <View style={styles.horizontal}>
+                    <TextInput
+                      style={styles.longEditText}
+                      placeholder="signUrl"
+                      onChangeText={(text) => {
+                        this.signUrl = text;
+                      }}
+                      defaultValue={this.signUrl}
+                    />
+                  </View>
+                </View>
+                <View style={styles.horizontal}>
+                  <CustomButton
+                    title="Create Customer"
+                    onPress={() => {
+                      HyperAPIUtils.createCustomer(
+                        this.customerId,
+                        this.mobile,
+                        this.email,
+                        this.apiKey
+                      )
+                        .then((resp) => {
+                          console.log(resp);
+                          HyperUtils.showCopyAlert('createCustomer', resp);
+                        })
+                        .catch((err) => {
+                          console.error(err);
+                        });
+                    }}
+                  />
+                  <CustomButton title="Close" onPress={this.handleClose} />
+                </View>
+              </Animated.View>
+            </View>
+          </Animated.View>
+        </View>
+      </ScrollView>
     );
   }
 }
@@ -432,8 +435,7 @@ const styles = StyleSheet.create({
     marginEnd: 20,
   },
   picker: {
-    height: 50,
-    width: 250,
+    width: 250
   },
   pickerContainer: {
     borderColor: 'gray',

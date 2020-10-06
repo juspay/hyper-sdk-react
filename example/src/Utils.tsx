@@ -207,7 +207,8 @@ const generateWalletTxnPayload = (
   orderId: string,
   clientAuthToken: string,
   walletName: string,
-  directToken: string
+  directToken: string,
+  sdkPresent: String
 ) => {
   var payload: any = {
     action: 'walletTxn',
@@ -223,6 +224,10 @@ const generateWalletTxnPayload = (
 
   if (directToken !== '') {
     payload.directWalletToken = directToken;
+  }
+
+  if (sdkPresent !== '') {
+    payload.sdkPresent = sdkPresent;
   }
 
   return {
@@ -245,6 +250,7 @@ const generateUPIIntentTxnPayload = (
     clientAuthToken,
     paymentMethod: 'UPI',
     upiSdkPresent,
+    showLoader: false,
     endUrls: [
       '.*sandbox.juspay.in\\/thankyou.*',
       '.*sandbox.juspay.in\\/end.*',
@@ -407,7 +413,7 @@ const alertCallbackResponse = (screen: string, resp: any) => {
   var event: string = data.event || '';
   var payload = JSON.stringify(data.payload) || '';
   showCopyAlert(screen + ': ' + event, payload);
-  console.warn(screen, resp);
+  // console.warn(screen, resp);
 };
 
 type HyperUtils = {
@@ -456,7 +462,8 @@ type HyperUtils = {
     orderId: string,
     clientAuthToken: string,
     walletName: string,
-    directToken: string
+    directToken: string,
+    sdkPresent: String
   ): {};
   generateUPIIntentTxnPayload(
     orderId: string,

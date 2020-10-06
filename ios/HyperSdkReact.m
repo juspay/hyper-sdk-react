@@ -19,7 +19,7 @@
 
 @interface HyperSdkReact : RCTEventEmitter <RCTBridgeModule>
 @property HyperServices *hyperInstance;
-@property UINavigationController *baseavigationController;
+@property UINavigationController *baseNavigationController;
 @property UIViewController *baseViewController;
 @end
 
@@ -40,11 +40,11 @@
 RCT_EXPORT_METHOD(preFetch:(NSString *)data) {
     if (data && data.length>0) {
         @try {
-           NSDictionary *jsonData = [HyperSdkReact stringToDictionary:data];
+            NSDictionary *jsonData = [HyperSdkReact stringToDictionary:data];
             if (jsonData && [jsonData isKindOfClass:[NSDictionary class]] && jsonData.allKeys.count>0) {
                 [HyperServices preFetch:jsonData];
             } else {
-                
+
             }
         } @catch (NSException *exception) {
            //Parsing failure.
@@ -59,15 +59,19 @@ RCT_EXPORT_METHOD(createHyperServices) {
 RCT_EXPORT_METHOD(initiate:(NSString *)data) {
     if (data && data.length>0) {
         @try {
-           NSDictionary *jsonData = [HyperSdkReact stringToDictionary:data];
+            NSDictionary *jsonData = [HyperSdkReact stringToDictionary:data];
             if (jsonData && [jsonData isKindOfClass:[NSDictionary class]] && jsonData.allKeys.count>0) {
 
                 self.baseViewController = [[UIViewController alloc] init];
-                self.baseavigationController = [[UINavigationController alloc] initWithRootViewController:self.baseViewController];
-                self.baseavigationController.modalPresentationStyle = UIModalPresentationOverFullScreen;
-                self.baseavigationController.navigationBar.hidden = true;
+                self.baseNavigationController = [[UINavigationController alloc] initWithRootViewController:self.baseViewController];
+                self.baseNavigationController.modalPresentationStyle = UIModalPresentationOverFullScreen;
+                self.baseNavigationController.navigationBar.hidden = true;
                 __weak HyperSdkReact *weakSelf = self;
-                [_hyperInstance initiate:self.baseavigationController payload:jsonData callback:^(NSDictionary<NSString *,id> * _Nullable data) {
+                [_hyperInstance initiate:self.baseViewController payload:jsonData callback:^(NSDictionary<NSString *,id> * _Nullable data) {
+                    NSString *event = data[@"event"];
+                    if ([event isEqualToString:@"process_result"]) {
+                        [weakSelf.baseNavigationController dismissViewControllerAnimated:false completion:nil];
+                    }
                     [weakSelf sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
                 }];
             } else {
@@ -89,13 +93,10 @@ RCT_EXPORT_METHOD(process:(NSString *)data) {
         @try {
            NSDictionary *jsonData = [HyperSdkReact stringToDictionary:data];
             if (jsonData && [jsonData isKindOfClass:[NSDictionary class]] && jsonData.allKeys.count>0) {
-
-                self.baseViewController = [[UIViewController alloc] init];
-                self.baseavigationController = [[UINavigationController alloc] initWithRootViewController:self.baseViewController];
-                self.baseavigationController.modalPresentationStyle = UIModalPresentationOverFullScreen;
-                self.baseavigationController.navigationBar.hidden = true;
-                if ([self.hyperInstance isInitialised]) {
-                    [self.hyperInstance process:jsonData];
+                if ([self.hyperInstance isInitialised] && self.baseNavigationController && ![self.baseNavigationController isBeingPresented]) {
+                    [RCTPresentedViewController() presentViewController:self.baseNavigationController animated:false completion:^{
+                        [self.hyperInstance process:jsonData];
+                    }];
                 } else {
                     // Define proper error code and return proper error
                     // [self sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
