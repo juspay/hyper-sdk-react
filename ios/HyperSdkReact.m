@@ -116,7 +116,7 @@ RCT_EXPORT_METHOD(process:(NSString *)data) {
 }
 
 RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(isNull) {
-    return self.hyperInstance == NULL? @"true" : @"false";
+    return self.hyperInstance == NULL? @true : @false;
 }
 
 RCT_EXPORT_METHOD(terminate) {
@@ -127,9 +127,9 @@ RCT_EXPORT_METHOD(terminate) {
 
 RCT_EXPORT_METHOD(isInitialised:(RCTPromiseResolveBlock)resolve  reject:(RCTPromiseRejectBlock)reject) {
     if (self.hyperInstance) {
-        resolve(self.hyperInstance.isInitialised?@"true":@"false");
+        resolve(self.hyperInstance.isInitialised? @true : @false);
     } else {
-        resolve(@"false");
+        resolve(@false);
     }
 }
 
