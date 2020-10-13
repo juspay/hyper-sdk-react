@@ -93,7 +93,7 @@ RCT_EXPORT_METHOD(process:(NSString *)data) {
         @try {
            NSDictionary *jsonData = [HyperSdkReact stringToDictionary:data];
             if (jsonData && [jsonData isKindOfClass:[NSDictionary class]] && jsonData.allKeys.count>0) {
-                if ([self.hyperInstance isInitialised] && self.baseNavigationController && ![self.baseNavigationController isBeingPresented]) {
+                if ([self.hyperInstance isInitialised] && self.baseNavigationController && ![self.baseNavigationController presentingViewController]) {
                     [RCTPresentedViewController() presentViewController:self.baseNavigationController animated:false completion:^{
                         [self.hyperInstance process:jsonData];
                     }];
