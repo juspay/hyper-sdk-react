@@ -90,6 +90,7 @@ The `package.json` file contains various scripts for common tasks:
 
 To setup example project navigate to [example->src->HomeScreen.tsx](./example/src/HomeScreen.tsx) and update below values as required:
 
+  ```ts
     this.merchantId = '';
     this.clientId = '';
     this.merchantKeyId = '';
@@ -100,5 +101,4 @@ To setup example project navigate to [example->src->HomeScreen.tsx](./example/sr
     this.email = '';
     this.apiKey = '';
     this.amount = '';
-
-
+  ```
