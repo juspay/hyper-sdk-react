@@ -16,7 +16,7 @@ Add following maven url in top build.gradle:
 maven { url "https://maven.juspay.in/jp-build-packages/hyper-sdk/"}
 ```
 
-And add the following ext property in top build.gradle if you want to override the base SDK version present in plugin:
+**(Optional)** Add the following ext property in top build.gradle if you want to override the base SDK version present in plugin:
 
 ```groovy
 buildscript {
