@@ -46,15 +46,15 @@ class HomeScreen extends React.Component {
     this.navigation = props.navigation;
     this.isPopupVisible = false;
 
-    this.merchantId = 'picasso';
-    this.clientId = 'picasso_ios';
+    this.merchantId = '';
+    this.clientId = '';
     this.merchantKeyId = '';
     this.signUrl = '';
     this.signature = '';
-    this.customerId = 'test_customer';
-    this.mobile = '7338513562';
-    this.email = 'customer@test.com';
-    this.apiKey = '9E8BE20E66349BCA430C6FAC272B39';
+    this.customerId = '';
+    this.mobile = '';
+    this.email = '';
+    this.apiKey = '';
     this.amount = '1.0';
 
     this.preFetchPayload = HyperUtils.generatePreFetchPayload(
