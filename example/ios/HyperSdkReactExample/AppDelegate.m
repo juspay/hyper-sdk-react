@@ -10,6 +10,7 @@
 #import <React/RCTBridge.h>
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTRootView.h>
+#import <HyperSDK/HyperSDK.h>
 
 #if DEBUG
 #import <FlipperKit/FlipperClient.h>
@@ -49,6 +50,19 @@ static void InitializeFlipper(UIApplication *application) {
   self.window.rootViewController = rootViewController;
   [self.window makeKeyAndVisible];
   return YES;
+}
+
+- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
+  //Objective-C
+
+  NSRegularExpression *juspayRegex = [NSRegularExpression regularExpressionWithPattern:@"amzn-.*|juspay-.*" options:0 error:nil];
+      
+  if ([juspayRegex numberOfMatchesInString:[url absoluteString] options:0 range:NSMakeRange(0, [[url absoluteString] length])] > 0) {
+          
+    return [Hyper handleRedirectURL:url sourceApplication:options[UIApplicationOpenURLOptionsSourceApplicationKey]];
+  }
+  
+  return false;
 }
 
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge

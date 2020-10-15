@@ -62,11 +62,6 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void multiply(int a, int b, Promise promise) {
-    promise.resolve(a * b);
-  }
-
-  @ReactMethod
   public void preFetch(String data) {
     try {
       JSONObject payload = new JSONObject(data);
