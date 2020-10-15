@@ -18,5 +18,5 @@ Pod::Spec.new do |s|
 
 
   s.dependency "React"
-  s.dependency "HyperSDK", "2.0.15"
+  s.dependency "HyperSDK", "2.0.17"
 end

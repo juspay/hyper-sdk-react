@@ -68,11 +68,11 @@ PODS:
     - glog
   - glog (0.3.5)
   - hyper-sdk-react (2.0.2):
-    - HyperSDK (= 2.0.15)
+    - HyperSDK (= 2.0.17)
     - React
-  - HyperSDK (2.0.15):
-    - JuspaySafeBrowser (= 0.1.64)
-  - JuspaySafeBrowser (0.1.64)
+  - HyperSDK (2.0.17):
+    - JuspaySafeBrowser (= 0.1.65)
+  - JuspaySafeBrowser (0.1.65)
   - OpenSSL-Universal (1.0.2.19):
     - OpenSSL-Universal/Static (= 1.0.2.19)
   - OpenSSL-Universal/Static (1.0.2.19)
@@ -460,9 +460,9 @@ SPEC CHECKSUMS:
   FlipperKit: 6dc9b8f4ef60d9e5ded7f0264db299c91f18832e
   Folly: 30e7936e1c45c08d884aa59369ed951a8e68cf51
   glog: 1f3da668190260b06b429bb211bfbee5cd790c28
-  hyper-sdk-react: 449af9f4266af961806f42ef3b134a697a3a87c9
-  HyperSDK: 8ec681c797e5f65a925fcc416e1ab71264afb5fe
-  JuspaySafeBrowser: a1161e91e33847aa243d79757790cb578f7be4be
+  hyper-sdk-react: a5f81ac15f4d2bad4b0aa0771cd604c97ebab0a1
+  HyperSDK: 94abd91ad6e96fc572ceedccebdb31e15a63c2e6
+  JuspaySafeBrowser: b23aa291e2dfa9bbe3c48b2a2cad13d47450171d
   OpenSSL-Universal: 8b48cc0d10c1b2923617dfe5c178aa9ed2689355
   RCTRequired: cec6a34b3ac8a9915c37e7e4ad3aa74726ce4035
   RCTTypeSafety: 93006131180074cffa227a1075802c89a49dd4ce

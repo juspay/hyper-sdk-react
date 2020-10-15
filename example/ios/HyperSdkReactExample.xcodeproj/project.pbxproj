@@ -128,8 +128,8 @@
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				682FE4A9648B2955366078AB /* [CP] Embed Pods Frameworks */,
-				C7C3B61AC858148BCCA9C5D8 /* [CP] Copy Pods Resources */,
+				E30E6E3D607D14EB2BA34567 /* [CP] Embed Pods Frameworks */,
+				7B258A039D6EE7E75C2C2B6D /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -202,29 +202,7 @@
 			shellPath = /bin/sh;
 			shellScript = "export NODE_BINARY=node\n../node_modules/react-native/scripts/react-native-xcode.sh\n";
 		};
-		682FE4A9648B2955366078AB /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-HyperSdkReactExample/Pods-HyperSdkReactExample-frameworks.sh",
-				"${PODS_ROOT}/HyperSDK/HyperSDK.framework",
-				"${PODS_ROOT}/HyperSDK/HyperSDK.framework.dSYM",
-				"${PODS_ROOT}/HyperSDK/SimplFingerPrint.framework",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/HyperSDK.framework",
-				"${DWARF_DSYM_FOLDER_PATH}/HyperSDK.framework.dSYM",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SimplFingerPrint.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-HyperSdkReactExample/Pods-HyperSdkReactExample-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		C7C3B61AC858148BCCA9C5D8 /* [CP] Copy Pods Resources */ = {
+		7B258A039D6EE7E75C2C2B6D /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -262,6 +240,28 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		E30E6E3D607D14EB2BA34567 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-HyperSdkReactExample/Pods-HyperSdkReactExample-frameworks.sh",
+				"${PODS_ROOT}/HyperSDK/HyperSDK.framework",
+				"${PODS_ROOT}/HyperSDK/HyperSDK.framework.dSYM",
+				"${PODS_ROOT}/HyperSDK/SimplFingerPrint.framework",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/HyperSDK.framework",
+				"${DWARF_DSYM_FOLDER_PATH}/HyperSDK.framework.dSYM",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SimplFingerPrint.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-HyperSdkReactExample/Pods-HyperSdkReactExample-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		FD10A7F022414F080027D42C /* Start Packager */ = {
