@@ -11,7 +11,7 @@ import {
   BackHandler,
   Animated,
   Dimensions,
-  ScrollView
+  ScrollView,
 } from 'react-native';
 import { Picker } from '@react-native-community/picker';
 import CheckBox from '@react-native-community/checkbox';
@@ -190,559 +190,574 @@ class ProcessScreen extends React.Component {
 
     return (
       <View>
-      <ScrollView>
-        <View style={styles.container}>
-          <CustomButton
-            title={this.service === 'ec' ? 'Create Order' : 'Generate Order ID'}
-            onPress={() => {
-              this.orderId = HyperUtils.generateOrderId();
-              // console.warn('merchantId:', this.merchantId);
-              // console.warn('orderId:', this.orderId);
-              if (this.service === 'ec') {
-                HyperAPIUtils.generateOrder(
-                  this.orderId,
-                  this.amount,
-                  this.customerId,
-                  this.mobile,
-                  this.email,
-                  this.apiKey
-                )
-                  .then((resp) => {
-                    console.log(resp);
-                    HyperUtils.showCopyAlert('OrderID', this.orderId);
-                    this.clientAuthToken = HyperUtils.getClientAuthToken(resp);
-                    // console.warn('clientAuthToken:', this.clientAuthToken);
-                  })
-                  .catch((err) => {
-                    console.error(err);
-                  });
-              } else {
-                HyperUtils.showCopyAlert('OrderID', this.orderId);
+        <ScrollView>
+          <View style={styles.container}>
+            <CustomButton
+              title={
+                this.service === 'ec' ? 'Create Order' : 'Generate Order ID'
               }
-            }}
-          />
-          <View style={styles.pickerContainer}>
-            {this.service === 'ec' ? (
-              <Picker
-                style={styles.picker}
-                selectedValue={this.state.pickerSelected}
-                onValueChange={(val, index) => {
-                  this.setState({ pickerSelected: val });
-                  console.log(val, index);
-                }}
-              >
-                <Picker.Item label="Get Payment Methods" value="getPM" />
-                <Picker.Item label="List Saved Cards" value="cardList" />
-                <Picker.Item label="Get UPI Apps" value="getUPI" />
-                <Picker.Item label="Refresh Wallet Balances" value="listWallet" />
-                <Picker.Item label="Check IsDeviceReady" value="isDeviceReady" />
-                <Picker.Item label="NB Txn" value="nbTxn" />
-                <Picker.Item label="Card Txn" value="cardTxn" />
-                <Picker.Item label="UPI Txn" value="upiTxn" />
-                <Picker.Item label="Create Wallet" value="createWallet" />
-                <Picker.Item label="Link Wallet" value="linkWallet" />
-                <Picker.Item label="Wallet Txn" value="walletTxn" />
-                <Picker.Item label="Delete Saved Card" value="deleteCard" />
-                <Picker.Item label="DeLink Wallet" value="delinkWallet" />
-              </Picker>
-            ) : (
-              <Picker
-                style={styles.picker}
-                selectedValue={this.state.pickerSelected}
-                onValueChange={(val, index) => {
-                  this.setState({ pickerSelected: val });
-                  console.log(val, index);
-                }}
-              >
-                <Picker.Item label="quickPay" value="quickPay" />
-                <Picker.Item label="paymentPage" value="paymentPage" />
-              </Picker>
-            )}
-          </View>
-
-          {this.state.pickerSelected === 'getPM' ? (
-            <CustomButton
-              title="Get Payment Methods"
               onPress={() => {
-                var payload = HyperUtils.generatePaymentMethodsPayload();
-                HyperSdkReact.process(JSON.stringify(payload));
+                this.orderId = HyperUtils.generateOrderId();
+                // console.warn('merchantId:', this.merchantId);
+                // console.warn('orderId:', this.orderId);
+                if (this.service === 'ec') {
+                  HyperAPIUtils.generateOrder(
+                    this.orderId,
+                    this.amount,
+                    this.customerId,
+                    this.mobile,
+                    this.email,
+                    this.apiKey
+                  )
+                    .then((resp) => {
+                      console.log(resp);
+                      HyperUtils.showCopyAlert('OrderID', this.orderId);
+                      this.clientAuthToken = HyperUtils.getClientAuthToken(
+                        resp
+                      );
+                      // console.warn('clientAuthToken:', this.clientAuthToken);
+                    })
+                    .catch((err) => {
+                      console.error(err);
+                    });
+                } else {
+                  HyperUtils.showCopyAlert('OrderID', this.orderId);
+                }
               }}
             />
-          ) : null}
-
-          {this.state.pickerSelected === 'cardList' ? (
-            <CustomButton
-              title="List Saved Cards"
-              onPress={() => {
-                var payload = HyperUtils.generateListCardsPayload(
-                  this.clientAuthToken
-                );
-                HyperSdkReact.process(JSON.stringify(payload));
-              }}
-            />
-          ) : null}
-
-          {this.state.pickerSelected === 'getUPI' ? (
-            <CustomButton
-              title="Get UPI Apps"
-              onPress={() => {
-                var payload = HyperUtils.generateGetUPIAppsPayload(this.orderId);
-                HyperSdkReact.process(JSON.stringify(payload));
-              }}
-            />
-          ) : null}
-
-          {this.state.pickerSelected === 'listWallet' ? (
-            <CustomButton
-              title="Refresh Wallet Balances"
-              onPress={() => {
-                var payload = HyperUtils.generateListWalletsPayload(
-                  this.clientAuthToken
-                );
-                console.log(payload);
-                HyperSdkReact.process(JSON.stringify(payload));
-              }}
-            />
-          ) : null}
-
-          {this.state.pickerSelected === 'isDeviceReady' ? (
-            <View>
-              <TextInput
-                style={styles.editText}
-                placeholder="sdkPresent"
-                onChangeText={(text) => {
-                  this.sdkPresent = text;
-                }}
-                defaultValue={this.sdkPresent}
-              />
-              <CustomButton
-                title="Is Device Ready"
-                onPress={() => {
-                  var payload: {} = HyperUtils.generateDeviceReadyPayload(
-                    this.sdkPresent
-                  );
-                  console.log(payload);
-                  HyperSdkReact.process(JSON.stringify(payload));
-                }}
-              />
-            </View>
-          ) : null}
-
-          {this.state.pickerSelected === 'nbTxn' ? (
-            <View>
-              <TextInput
-                style={styles.editText}
-                placeholder="NB_SBI"
-                onChangeText={(text) => {
-                  this.nbTxnBank = text;
-                }}
-                defaultValue={this.nbTxnBank}
-              />
-              <CustomButton
-                title="NB Txn"
-                onPress={() => {
-                  var payload: {} = HyperUtils.generateNBTxnPayload(
-                    this.orderId,
-                    this.clientAuthToken,
-                    this.nbTxnBank
-                  );
-                  HyperSdkReact.process(JSON.stringify(payload));
-                }}
-              />
-            </View>
-          ) : null}
-
-          {this.state.pickerSelected === 'cardTxn' ? (
-            <View>
-              <TextInput
-                style={styles.editText}
-                placeholder="card number (new card)"
-                onChangeText={(text) => {
-                  this.cardNumber = text;
-                }}
-                defaultValue={this.cardNumber}
-              />
-              <TextInput
-                style={styles.editText}
-                placeholder="card token (saved card)"
-                onChangeText={(text) => {
-                  this.cardToken = text;
-                }}
-                defaultValue={this.cardToken}
-              />
-              <TextInput
-                style={styles.editText}
-                placeholder="expMonth (for new card)"
-                onChangeText={(text) => {
-                  this.expMonth = text;
-                }}
-                defaultValue={this.expMonth}
-              />
-              <TextInput
-                style={styles.editText}
-                placeholder="expYear (for new card)"
-                onChangeText={(text) => {
-                  this.expYear = text;
-                }}
-                defaultValue={this.expYear}
-              />
-              <TextInput
-                style={styles.editText}
-                placeholder="card network (e.g. VISA)"
-                onChangeText={(text) => {
-                  this.cardNetwork = text;
-                }}
-                defaultValue={this.cardNetwork}
-              />
-              <TextInput
-                style={styles.editText}
-                placeholder="cvv"
-                onChangeText={(text) => {
-                  this.cvv = text;
-                }}
-                defaultValue={this.cvv}
-              />
-              <TextInput
-                style={styles.editText}
-                placeholder="authType"
-                onChangeText={(text) => {
-                  this.authType = text;
-                }}
-                defaultValue={this.authType}
-              />
-              <CustomCheckBox
-                value={this.state.saveToLocker}
-                onValueChange={(toggle: boolean) => {
-                  console.log(toggle);
-                  this.setState({ saveToLocker: toggle });
-                }}
-                text="Save to locker"
-              />
-              <CustomButton
-                title="Card Txn"
-                onPress={() => {
-                  var payload: {} = HyperUtils.generateCardTxnPayload(
-                    this.orderId,
-                    this.clientAuthToken,
-                    this.cardNetwork,
-                    this.cardToken,
-                    this.cardNumber,
-                    this.expMonth,
-                    this.expYear,
-                    this.cvv,
-                    this.authType,
-                    this.state.saveToLocker
-                  );
-                  HyperSdkReact.process(JSON.stringify(payload));
-                }}
-              />
-            </View>
-          ) : null}
-
-          {this.state.pickerSelected === 'upiTxn' ? (
-            <View>
-              <TextInput
-                style={styles.editText}
-                placeholder="package name"
-                onChangeText={(text) => {
-                  this.upiTxnApp = text;
-                }}
-                defaultValue={this.upiTxnApp}
-              />
-              <TextInput
-                style={styles.editText}
-                placeholder="vpa"
-                onChangeText={(text) => {
-                  this.vpa = text;
-                }}
-                defaultValue={this.vpa}
-              />
-              <CustomCheckBox
-                value={this.state.upiSdkPresent}
-                onValueChange={(toggle: boolean) => {
-                  console.log(toggle);
-                  this.setState({ upiSdkPresent: toggle });
-                }}
-                text="UPI SDK Present"
-              />
-              <CustomButton
-                title="UPI Txn"
-                onPress={() => {
-                  var payload: {} = HyperUtils.generateUPIIntentTxnPayload(
-                    this.orderId,
-                    this.clientAuthToken,
-                    this.upiTxnApp,
-                    this.vpa,
-                    this.state.upiSdkPresent
-                  );
-                  HyperSdkReact.process(JSON.stringify(payload));
-                }}
-              />
-            </View>
-          ) : null}
-
-          {this.state.pickerSelected === 'createWallet' ? (
-            <View>
-              <TextInput
-                style={styles.editText}
-                placeholder="PAYTM"
-                onChangeText={(text) => {
-                  this.walletName = text;
-                }}
-                defaultValue={this.walletName}
-              />
-              <CustomButton
-                title="Create Wallet"
-                onPress={() => {
-                  var payload: {} = HyperUtils.generateCreateWalletPayload(
-                    this.walletName,
-                    this.clientAuthToken
-                  );
-                  console.log(payload);
-                  HyperSdkReact.process(JSON.stringify(payload));
-                }}
-              />
-            </View>
-          ) : null}
-
-          {this.state.pickerSelected === 'linkWallet' ? (
-            <View>
-              <TextInput
-                style={styles.editText}
-                placeholder="walletId from createWallet"
-                onChangeText={(text) => {
-                  this.walletId = text;
-                }}
-                defaultValue={this.walletId}
-              />
-              <TextInput
-                style={styles.editText}
-                placeholder="Enter otp"
-                onChangeText={(text) => {
-                  this.otp = text;
-                }}
-                defaultValue={this.otp}
-              />
-              <TextInput
-                style={styles.editText}
-                placeholder="PAYTM"
-                onChangeText={(text) => {
-                  this.walletName = text;
-                }}
-                defaultValue={this.walletName}
-              />
-              <CustomButton
-                title="Link Wallet"
-                onPress={() => {
-                  var payload: {} = HyperUtils.generateLinkWalletPayload(
-                    this.walletName,
-                    this.walletId,
-                    this.otp,
-                    this.clientAuthToken
-                  );
-                  HyperSdkReact.process(JSON.stringify(payload));
-                }}
-              />
-            </View>
-          ) : null}
-
-          {this.state.pickerSelected === 'walletTxn' ? (
-            <View>
-              <TextInput
-                style={styles.editText}
-                placeholder="paymentMethod"
-                onChangeText={(text) => {
-                  this.walletName = text;
-                }}
-                defaultValue={this.walletName}
-              />
-              <TextInput
-                style={styles.editText}
-                placeholder="directWalletToken"
-                onChangeText={(text) => {
-                  this.directWalletToken = text;
-                }}
-                defaultValue={this.directWalletToken}
-              />
-              <TextInput
-                style={styles.editText}
-                placeholder="sdkPresent"
-                onChangeText={(text) => {
-                  this.sdkPresent = text;
-                }}
-                defaultValue={this.sdkPresent}
-              />
-              <TextInput
-                style={styles.editText}
-                placeholder="walletMobileNumber"
-                onChangeText={(text) => {
-                  this.walletMobile = text;
-                }}
-                defaultValue={this.walletMobile}
-              />
-              <CustomCheckBox
-                value={this.state.shouldLink}
-                onValueChange={(toggle: boolean) => {
-                  console.log(toggle);
-                  this.setState({ shouldLink: toggle });
-                }}
-                text="Should Link"
-              />
-              <CustomButton
-                title="Wallet Txn"
-                onPress={() => {
-                  var payload: {} = HyperUtils.generateWalletTxnPayload(
-                    this.orderId,
-                    this.clientAuthToken,
-                    this.walletName,
-                    this.directWalletToken,
-                    this.sdkPresent
-                  );
-                  HyperSdkReact.process(JSON.stringify(payload));
-                }}
-              />
-            </View>
-          ) : null}
-
-          {this.state.pickerSelected === 'delinkWallet' ? (
-            <View>
-              <TextInput
-                style={styles.editText}
-                placeholder="walletName"
-                onChangeText={(text) => {
-                  this.walletName = text;
-                }}
-                defaultValue={this.walletName}
-              />
-              <TextInput
-                style={styles.editText}
-                placeholder="walletId"
-                onChangeText={(text) => {
-                  this.walletId = text;
-                }}
-                defaultValue={this.walletId}
-              />
-              <CustomButton
-                title="DeLink Wallet"
-                onPress={() => {
-                  var payload: {} = HyperUtils.generateDeLinkWalletPayload(
-                    this.walletName,
-                    this.walletId,
-                    this.clientAuthToken
-                  );
-                  HyperSdkReact.process(JSON.stringify(payload));
-                }}
-              />
-            </View>
-          ) : null}
-
-          {this.state.pickerSelected === 'deleteCard' ? (
-            <View>
-              <TextInput
-                style={styles.editText}
-                placeholder="cardToken"
-                onChangeText={(text) => {
-                  this.cardToken = text;
-                }}
-                defaultValue={this.cardToken}
-              />
-              <CustomButton
-                title="Delete Card"
-                onPress={() => {
-                  var payload: {} = HyperUtils.generateDeleteCardPayload(
-                    this.cardToken,
-                    this.clientAuthToken
-                  );
-                  console.log(payload);
-                  HyperSdkReact.process(JSON.stringify(payload));
-                }}
-              />
-            </View>
-          ) : null}
-
-          {this.service === 'pp' ? (
-            <View>
-              <CustomButton
-                title="Sign Order Details"
-                onPress={() => {
-                  this.orderDetails = {
-                    merchant_id: this.merchantId,
-                    customer_id: this.customerId,
-                    order_id: this.orderId,
-                    amount: this.amount,
-                    timestamp: HyperUtils.getTimestamp(),
-                  };
-                  HyperUtils.signData(
-                    this.signUrl,
-                    JSON.stringify(this.orderDetails)
-                  ).then((resp) => {
-                    console.warn(resp);
-                    this.signature = resp;
-                    HyperUtils.showCopyAlert('Payload signed', this.signature);
-                  });
-                }}
-              />
-              <CustomButton
-                title="Process"
-                onPress={() => {
-                  var payload = HyperUtils.generateProcessPayloadPP(
-                    this.state.pickerSelected,
-                    this.clientId,
-                    JSON.stringify(this.orderDetails),
-                    this.signature,
-                    this.merchantKeyId
-                  );
-
-                  HyperSdkReact.process(JSON.stringify(payload));
-                }}
-              />
-            </View>
-          ) : null}
-
-          <CustomButton
-            title="Is Initialised?"
-            onPress={() => {
-              HyperSdkReact.isInitialised().then((init: boolean) => {
-                // console.warn('isInitialised:', init);
-                HyperUtils.showCopyAlert('isInitialised', init + '');
-              });
-            }}
-          />
-          <CustomButton
-            title="Terminate"
-            onPress={() => {
-              HyperSdkReact.terminate();
-            }}
-          />
-          <CustomButton
-            title="Check Result"
-            onPress={() => {
-              this.handleOpen();
-            }}
-          />
-          </View>
-          </ScrollView>
-
-          <Animated.View
-            style={[StyleSheet.absoluteFill, styles.cover, backdrop]}
-          >
-            <View style={[styles.sheet]}>
-              <Animated.View style={[styles.popup, slideUp]}>
-                <View>
-                  <TextInput
-                    style={styles.textArea}
-                    underlineColorAndroid="transparent"
-                    placeholder="Type something"
-                    placeholderTextColor="grey"
-                    numberOfLines={100}
-                    multiline={true}
-                    value={this.state.resultText}
+            <View style={styles.pickerContainer}>
+              {this.service === 'ec' ? (
+                <Picker
+                  style={styles.picker}
+                  selectedValue={this.state.pickerSelected}
+                  onValueChange={(val, index) => {
+                    this.setState({ pickerSelected: val });
+                    console.log(val, index);
+                  }}
+                >
+                  <Picker.Item label="Get Payment Methods" value="getPM" />
+                  <Picker.Item label="List Saved Cards" value="cardList" />
+                  <Picker.Item label="Get UPI Apps" value="getUPI" />
+                  <Picker.Item
+                    label="Refresh Wallet Balances"
+                    value="listWallet"
                   />
-                  <CustomButton title="Close" onPress={this.handleClose} />
-                </View>
-              </Animated.View>
+                  <Picker.Item
+                    label="Check IsDeviceReady"
+                    value="isDeviceReady"
+                  />
+                  <Picker.Item label="NB Txn" value="nbTxn" />
+                  <Picker.Item label="Card Txn" value="cardTxn" />
+                  <Picker.Item label="UPI Txn" value="upiTxn" />
+                  <Picker.Item label="Create Wallet" value="createWallet" />
+                  <Picker.Item label="Link Wallet" value="linkWallet" />
+                  <Picker.Item label="Wallet Txn" value="walletTxn" />
+                  <Picker.Item label="Delete Saved Card" value="deleteCard" />
+                  <Picker.Item label="DeLink Wallet" value="delinkWallet" />
+                </Picker>
+              ) : (
+                <Picker
+                  style={styles.picker}
+                  selectedValue={this.state.pickerSelected}
+                  onValueChange={(val, index) => {
+                    this.setState({ pickerSelected: val });
+                    console.log(val, index);
+                  }}
+                >
+                  <Picker.Item label="quickPay" value="quickPay" />
+                  <Picker.Item label="paymentPage" value="paymentPage" />
+                </Picker>
+              )}
             </View>
-          </Animated.View>
+
+            {this.state.pickerSelected === 'getPM' ? (
+              <CustomButton
+                title="Get Payment Methods"
+                onPress={() => {
+                  var payload = HyperUtils.generatePaymentMethodsPayload();
+                  HyperSdkReact.process(JSON.stringify(payload));
+                }}
+              />
+            ) : null}
+
+            {this.state.pickerSelected === 'cardList' ? (
+              <CustomButton
+                title="List Saved Cards"
+                onPress={() => {
+                  var payload = HyperUtils.generateListCardsPayload(
+                    this.clientAuthToken
+                  );
+                  HyperSdkReact.process(JSON.stringify(payload));
+                }}
+              />
+            ) : null}
+
+            {this.state.pickerSelected === 'getUPI' ? (
+              <CustomButton
+                title="Get UPI Apps"
+                onPress={() => {
+                  var payload = HyperUtils.generateGetUPIAppsPayload(
+                    this.orderId
+                  );
+                  HyperSdkReact.process(JSON.stringify(payload));
+                }}
+              />
+            ) : null}
+
+            {this.state.pickerSelected === 'listWallet' ? (
+              <CustomButton
+                title="Refresh Wallet Balances"
+                onPress={() => {
+                  var payload = HyperUtils.generateListWalletsPayload(
+                    this.clientAuthToken
+                  );
+                  console.log(payload);
+                  HyperSdkReact.process(JSON.stringify(payload));
+                }}
+              />
+            ) : null}
+
+            {this.state.pickerSelected === 'isDeviceReady' ? (
+              <View>
+                <TextInput
+                  style={styles.editText}
+                  placeholder="sdkPresent"
+                  onChangeText={(text) => {
+                    this.sdkPresent = text;
+                  }}
+                  defaultValue={this.sdkPresent}
+                />
+                <CustomButton
+                  title="Is Device Ready"
+                  onPress={() => {
+                    var payload: {} = HyperUtils.generateDeviceReadyPayload(
+                      this.sdkPresent
+                    );
+                    console.log(payload);
+                    HyperSdkReact.process(JSON.stringify(payload));
+                  }}
+                />
+              </View>
+            ) : null}
+
+            {this.state.pickerSelected === 'nbTxn' ? (
+              <View>
+                <TextInput
+                  style={styles.editText}
+                  placeholder="NB_SBI"
+                  onChangeText={(text) => {
+                    this.nbTxnBank = text;
+                  }}
+                  defaultValue={this.nbTxnBank}
+                />
+                <CustomButton
+                  title="NB Txn"
+                  onPress={() => {
+                    var payload: {} = HyperUtils.generateNBTxnPayload(
+                      this.orderId,
+                      this.clientAuthToken,
+                      this.nbTxnBank
+                    );
+                    HyperSdkReact.process(JSON.stringify(payload));
+                  }}
+                />
+              </View>
+            ) : null}
+
+            {this.state.pickerSelected === 'cardTxn' ? (
+              <View>
+                <TextInput
+                  style={styles.editText}
+                  placeholder="card number (new card)"
+                  onChangeText={(text) => {
+                    this.cardNumber = text;
+                  }}
+                  defaultValue={this.cardNumber}
+                />
+                <TextInput
+                  style={styles.editText}
+                  placeholder="card token (saved card)"
+                  onChangeText={(text) => {
+                    this.cardToken = text;
+                  }}
+                  defaultValue={this.cardToken}
+                />
+                <TextInput
+                  style={styles.editText}
+                  placeholder="expMonth (for new card)"
+                  onChangeText={(text) => {
+                    this.expMonth = text;
+                  }}
+                  defaultValue={this.expMonth}
+                />
+                <TextInput
+                  style={styles.editText}
+                  placeholder="expYear (for new card)"
+                  onChangeText={(text) => {
+                    this.expYear = text;
+                  }}
+                  defaultValue={this.expYear}
+                />
+                <TextInput
+                  style={styles.editText}
+                  placeholder="card network (e.g. VISA)"
+                  onChangeText={(text) => {
+                    this.cardNetwork = text;
+                  }}
+                  defaultValue={this.cardNetwork}
+                />
+                <TextInput
+                  style={styles.editText}
+                  placeholder="cvv"
+                  onChangeText={(text) => {
+                    this.cvv = text;
+                  }}
+                  defaultValue={this.cvv}
+                />
+                <TextInput
+                  style={styles.editText}
+                  placeholder="authType"
+                  onChangeText={(text) => {
+                    this.authType = text;
+                  }}
+                  defaultValue={this.authType}
+                />
+                <CustomCheckBox
+                  value={this.state.saveToLocker}
+                  onValueChange={(toggle: boolean) => {
+                    console.log(toggle);
+                    this.setState({ saveToLocker: toggle });
+                  }}
+                  text="Save to locker"
+                />
+                <CustomButton
+                  title="Card Txn"
+                  onPress={() => {
+                    var payload: {} = HyperUtils.generateCardTxnPayload(
+                      this.orderId,
+                      this.clientAuthToken,
+                      this.cardNetwork,
+                      this.cardToken,
+                      this.cardNumber,
+                      this.expMonth,
+                      this.expYear,
+                      this.cvv,
+                      this.authType,
+                      this.state.saveToLocker
+                    );
+                    HyperSdkReact.process(JSON.stringify(payload));
+                  }}
+                />
+              </View>
+            ) : null}
+
+            {this.state.pickerSelected === 'upiTxn' ? (
+              <View>
+                <TextInput
+                  style={styles.editText}
+                  placeholder="package name"
+                  onChangeText={(text) => {
+                    this.upiTxnApp = text;
+                  }}
+                  defaultValue={this.upiTxnApp}
+                />
+                <TextInput
+                  style={styles.editText}
+                  placeholder="vpa"
+                  onChangeText={(text) => {
+                    this.vpa = text;
+                  }}
+                  defaultValue={this.vpa}
+                />
+                <CustomCheckBox
+                  value={this.state.upiSdkPresent}
+                  onValueChange={(toggle: boolean) => {
+                    console.log(toggle);
+                    this.setState({ upiSdkPresent: toggle });
+                  }}
+                  text="UPI SDK Present"
+                />
+                <CustomButton
+                  title="UPI Txn"
+                  onPress={() => {
+                    var payload: {} = HyperUtils.generateUPIIntentTxnPayload(
+                      this.orderId,
+                      this.clientAuthToken,
+                      this.upiTxnApp,
+                      this.vpa,
+                      this.state.upiSdkPresent
+                    );
+                    HyperSdkReact.process(JSON.stringify(payload));
+                  }}
+                />
+              </View>
+            ) : null}
+
+            {this.state.pickerSelected === 'createWallet' ? (
+              <View>
+                <TextInput
+                  style={styles.editText}
+                  placeholder="PAYTM"
+                  onChangeText={(text) => {
+                    this.walletName = text;
+                  }}
+                  defaultValue={this.walletName}
+                />
+                <CustomButton
+                  title="Create Wallet"
+                  onPress={() => {
+                    var payload: {} = HyperUtils.generateCreateWalletPayload(
+                      this.walletName,
+                      this.clientAuthToken
+                    );
+                    console.log(payload);
+                    HyperSdkReact.process(JSON.stringify(payload));
+                  }}
+                />
+              </View>
+            ) : null}
+
+            {this.state.pickerSelected === 'linkWallet' ? (
+              <View>
+                <TextInput
+                  style={styles.editText}
+                  placeholder="walletId from createWallet"
+                  onChangeText={(text) => {
+                    this.walletId = text;
+                  }}
+                  defaultValue={this.walletId}
+                />
+                <TextInput
+                  style={styles.editText}
+                  placeholder="Enter otp"
+                  onChangeText={(text) => {
+                    this.otp = text;
+                  }}
+                  defaultValue={this.otp}
+                />
+                <TextInput
+                  style={styles.editText}
+                  placeholder="PAYTM"
+                  onChangeText={(text) => {
+                    this.walletName = text;
+                  }}
+                  defaultValue={this.walletName}
+                />
+                <CustomButton
+                  title="Link Wallet"
+                  onPress={() => {
+                    var payload: {} = HyperUtils.generateLinkWalletPayload(
+                      this.walletName,
+                      this.walletId,
+                      this.otp,
+                      this.clientAuthToken
+                    );
+                    HyperSdkReact.process(JSON.stringify(payload));
+                  }}
+                />
+              </View>
+            ) : null}
+
+            {this.state.pickerSelected === 'walletTxn' ? (
+              <View>
+                <TextInput
+                  style={styles.editText}
+                  placeholder="paymentMethod"
+                  onChangeText={(text) => {
+                    this.walletName = text;
+                  }}
+                  defaultValue={this.walletName}
+                />
+                <TextInput
+                  style={styles.editText}
+                  placeholder="directWalletToken"
+                  onChangeText={(text) => {
+                    this.directWalletToken = text;
+                  }}
+                  defaultValue={this.directWalletToken}
+                />
+                <TextInput
+                  style={styles.editText}
+                  placeholder="sdkPresent"
+                  onChangeText={(text) => {
+                    this.sdkPresent = text;
+                  }}
+                  defaultValue={this.sdkPresent}
+                />
+                <TextInput
+                  style={styles.editText}
+                  placeholder="walletMobileNumber"
+                  onChangeText={(text) => {
+                    this.walletMobile = text;
+                  }}
+                  defaultValue={this.walletMobile}
+                />
+                <CustomCheckBox
+                  value={this.state.shouldLink}
+                  onValueChange={(toggle: boolean) => {
+                    console.log(toggle);
+                    this.setState({ shouldLink: toggle });
+                  }}
+                  text="Should Link"
+                />
+                <CustomButton
+                  title="Wallet Txn"
+                  onPress={() => {
+                    var payload: {} = HyperUtils.generateWalletTxnPayload(
+                      this.orderId,
+                      this.clientAuthToken,
+                      this.walletName,
+                      this.directWalletToken,
+                      this.sdkPresent
+                    );
+                    HyperSdkReact.process(JSON.stringify(payload));
+                  }}
+                />
+              </View>
+            ) : null}
+
+            {this.state.pickerSelected === 'delinkWallet' ? (
+              <View>
+                <TextInput
+                  style={styles.editText}
+                  placeholder="walletName"
+                  onChangeText={(text) => {
+                    this.walletName = text;
+                  }}
+                  defaultValue={this.walletName}
+                />
+                <TextInput
+                  style={styles.editText}
+                  placeholder="walletId"
+                  onChangeText={(text) => {
+                    this.walletId = text;
+                  }}
+                  defaultValue={this.walletId}
+                />
+                <CustomButton
+                  title="DeLink Wallet"
+                  onPress={() => {
+                    var payload: {} = HyperUtils.generateDeLinkWalletPayload(
+                      this.walletName,
+                      this.walletId,
+                      this.clientAuthToken
+                    );
+                    HyperSdkReact.process(JSON.stringify(payload));
+                  }}
+                />
+              </View>
+            ) : null}
+
+            {this.state.pickerSelected === 'deleteCard' ? (
+              <View>
+                <TextInput
+                  style={styles.editText}
+                  placeholder="cardToken"
+                  onChangeText={(text) => {
+                    this.cardToken = text;
+                  }}
+                  defaultValue={this.cardToken}
+                />
+                <CustomButton
+                  title="Delete Card"
+                  onPress={() => {
+                    var payload: {} = HyperUtils.generateDeleteCardPayload(
+                      this.cardToken,
+                      this.clientAuthToken
+                    );
+                    console.log(payload);
+                    HyperSdkReact.process(JSON.stringify(payload));
+                  }}
+                />
+              </View>
+            ) : null}
+
+            {this.service === 'pp' ? (
+              <View>
+                <CustomButton
+                  title="Sign Order Details"
+                  onPress={() => {
+                    this.orderDetails = {
+                      merchant_id: this.merchantId,
+                      customer_id: this.customerId,
+                      order_id: this.orderId,
+                      amount: this.amount,
+                      timestamp: HyperUtils.getTimestamp(),
+                    };
+                    HyperUtils.signData(
+                      this.signUrl,
+                      JSON.stringify(this.orderDetails)
+                    ).then((resp) => {
+                      console.warn(resp);
+                      this.signature = resp;
+                      HyperUtils.showCopyAlert(
+                        'Payload signed',
+                        this.signature
+                      );
+                    });
+                  }}
+                />
+                <CustomButton
+                  title="Process"
+                  onPress={() => {
+                    var payload = HyperUtils.generateProcessPayloadPP(
+                      this.state.pickerSelected,
+                      this.clientId,
+                      JSON.stringify(this.orderDetails),
+                      this.signature,
+                      this.merchantKeyId
+                    );
+
+                    HyperSdkReact.process(JSON.stringify(payload));
+                  }}
+                />
+              </View>
+            ) : null}
+
+            <CustomButton
+              title="Is Initialised?"
+              onPress={() => {
+                HyperSdkReact.isInitialised().then((init: boolean) => {
+                  // console.warn('isInitialised:', init);
+                  HyperUtils.showCopyAlert('isInitialised', init + '');
+                });
+              }}
+            />
+            <CustomButton
+              title="Terminate"
+              onPress={() => {
+                HyperSdkReact.terminate();
+              }}
+            />
+            <CustomButton
+              title="Check Result"
+              onPress={() => {
+                this.handleOpen();
+              }}
+            />
+          </View>
+        </ScrollView>
+
+        <Animated.View
+          style={[StyleSheet.absoluteFill, styles.cover, backdrop]}
+        >
+          <View style={[styles.sheet]}>
+            <Animated.View style={[styles.popup, slideUp]}>
+              <View>
+                <TextInput
+                  style={styles.textArea}
+                  underlineColorAndroid="transparent"
+                  placeholder="Type something"
+                  placeholderTextColor="grey"
+                  numberOfLines={100}
+                  multiline={true}
+                  value={this.state.resultText}
+                />
+                <CustomButton title="Close" onPress={this.handleClose} />
+              </View>
+            </Animated.View>
+          </View>
+        </Animated.View>
       </View>
     );
   }
@@ -788,7 +803,7 @@ const styles = StyleSheet.create({
     marginVertical: 12,
   },
   picker: {
-    width: 250
+    width: 250,
   },
   pickerContainer: {
     borderColor: 'gray',

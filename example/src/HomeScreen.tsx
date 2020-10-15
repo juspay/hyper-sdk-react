@@ -10,7 +10,7 @@ import {
   Animated,
   Dimensions,
   BackHandler,
-  ScrollView
+  ScrollView,
 } from 'react-native';
 import HyperAPIUtils from './API';
 import HyperSdkReact from 'hyper-sdk-react';
@@ -435,7 +435,7 @@ const styles = StyleSheet.create({
     marginEnd: 20,
   },
   picker: {
-    width: 250
+    width: 250,
   },
   pickerContainer: {
     borderColor: 'gray',
