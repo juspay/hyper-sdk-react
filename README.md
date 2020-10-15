@@ -8,6 +8,37 @@ React native module for HyperSDK which enables payment orchestration via differe
 npm install hyper-sdk-react
 ```
 
+### Android
+
+Add following maven url in top build.gradle:
+
+```groovy
+maven { url "https://maven.juspay.in/jp-build-packages/hyper-sdk/"}
+```
+
+And add the following ext property in top build.gradle if you want to override the base SDK version present in plugin:
+
+```groovy
+buildscript {
+  ....
+   ext {
+       ....
+       hyperSDKVersion = "2.0.1-rc.16"
+   }
+   ....
+}
+```
+
+Note: This version is just for explanatory purposes and may change in future. Contact Juspay support team for latest SDK version.
+
+### iOS
+
+Run the following command inside the ios folder of your react native project:
+
+```sh
+pod install
+```
+
 ## Usage
 
 ### Exposed APIs
