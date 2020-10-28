@@ -19,7 +19,10 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import in.juspay.hypersdk.data.JuspayResponseHandler;
@@ -29,9 +32,9 @@ import in.juspay.services.HyperServices;
 public class HyperSdkReactModule extends ReactContextBaseJavaModule {
 
   private static final String HYPER_EVENT = "HyperEvent";
+  private static List<WeakReference<HyperServices>> hyperServiceReferences = new ArrayList<>();
   private ReactContext reactContext;
   private HyperServices hyperServices;
-
   private final ActivityEventListener activityEventListener = new BaseActivityEventListener() {
     @Override
     public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
@@ -45,6 +48,15 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule {
     super(reactContext);
     this.reactContext = reactContext;
     reactContext.addActivityEventListener(activityEventListener);
+  }
+
+  public static void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    for (WeakReference<HyperServices> hyperServicesWeakReference : hyperServiceReferences) {
+      HyperServices hyperServices = hyperServicesWeakReference.get();
+      if (hyperServices != null) {
+        hyperServices.onRequestPermissionsResult(requestCode, permissions, grantResults);
+      }
+    }
   }
 
   @NonNull
@@ -76,6 +88,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule {
     if (getCurrentActivity() != null) {
       FragmentActivity activity = (FragmentActivity) getCurrentActivity();
       hyperServices = new HyperServices(activity);
+      hyperServiceReferences.add(new WeakReference<>(hyperServices));
     }
   }
 
