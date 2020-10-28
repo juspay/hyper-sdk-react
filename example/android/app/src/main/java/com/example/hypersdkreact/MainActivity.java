@@ -5,6 +5,8 @@ import android.webkit.WebView;
 
 import com.facebook.react.ReactActivity;
 
+import in.juspay.hypersdkreact.HyperSdkReactModule;
+
 public class MainActivity extends ReactActivity {
 
   /**
@@ -20,5 +22,11 @@ public class MainActivity extends ReactActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     WebView.setWebContentsDebuggingEnabled(true);
+  }
+
+  @Override
+  public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    HyperSdkReactModule.onRequestPermissionsResult(requestCode, permissions, grantResults);
   }
 }
