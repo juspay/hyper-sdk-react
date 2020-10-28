@@ -682,6 +682,8 @@ class ProcessScreen extends React.Component {
                       customer_id: this.customerId,
                       order_id: this.orderId,
                       amount: this.amount,
+                      mobile_number: this.mobile,
+                      customer_email: this.email,
                       timestamp: HyperUtils.getTimestamp(),
                     };
                     HyperUtils.signData(
