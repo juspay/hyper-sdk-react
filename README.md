@@ -16,7 +16,7 @@ Add following maven url in top build.gradle:
 maven { url "https://maven.juspay.in/jp-build-packages/hyper-sdk/"}
 ```
 
-**(Optional)** Add the following ext property in top build.gradle if you want to override the base SDK version present in plugin:
+**(Optional)** Add the following ext property in top `build.gradle` if you want to override the base SDK version present in plugin:
 
 ```groovy
 buildscript {
@@ -37,6 +37,12 @@ Run the following command inside the ios folder of your react native project:
 
 ```sh
 pod install
+```
+
+**(Optional)** Add the following property in `package.json` of your project if you want to override the base SDK version present in plugin:
+
+```js
+  "hyperSdkIOSVersion": "2.0.19"
 ```
 
 ## Usage
