@@ -6,6 +6,8 @@ begin
   apps_package = JSON.parse(File.read(File.join(__dir__, "../../package.json")))
   if apps_package["hyperSdkIOSVersion"]
     hyper_sdk_version = apps_package["hyperSdkIOSVersion"]
+  else
+    hyper_sdk_version = "2.0.18"
   end
 rescue
   hyper_sdk_version = "2.0.18"
