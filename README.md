@@ -16,7 +16,7 @@ Add following maven url in top build.gradle:
 maven { url "https://maven.juspay.in/jp-build-packages/hyper-sdk/"}
 ```
 
-**(Optional)** Add the following ext property in top `build.gradle` if you want to override the base SDK version present in plugin:
+**(Optional)** Add the following ext property in top `build.gradle` if you want to override the base SDK version present in plugin *(Compulsory for Payment Page SDK)*:
 
 ```groovy
 buildscript {
@@ -29,7 +29,7 @@ buildscript {
 }
 ```
 
-Note: This version is just for explanatory purposes and may change in future. Contact Juspay support team for latest SDK version.
+Note: This version is just for explanatory purposes and may change in future. Contact Juspay support team for the latest SDK version.
 
 ### iOS
 
@@ -39,11 +39,26 @@ Run the following command inside the ios folder of your react native project:
 pod install
 ```
 
-**(Optional)** Add the following property in `package.json` of your project if you want to override the base SDK version present in plugin:
+**(Optional)** Add the following property in `package.json` of your project before running pod install if you want to override the base SDK version present in the plugin *(Compulsory for Payment Page SDK)*:
 
-```js
-  "hyperSdkIOSVersion": "2.0.19"
+```json
+  {
+    ....
+    "scripts": {
+      ....
+    },
+    "dependencies": {
+      ....
+    },
+    "devDependencies": {
+      ....
+    },
+    "hyperSdkIOSVersion": "2.0.19"
+    ....
+  }
 ```
+
+Note: This version is just for explanatory purposes and may change in future. Contact Juspay support team for the latest SDK version.
 
 ## Usage
 
@@ -198,7 +213,19 @@ If the blocking asynchronous call `HyperSdkReact.onBackPressed()` returns true, 
  }
 ```
 
-### Step-6: Terminate
+### Step-6: Android Permissions Handling
+
+Hyper SDK needs to listen to the response of permissions asked to the user for handling auto SMS reading (wherever applicable). To do so, the merchant's activity should delegate the response to Hyper SDK once it is received from the user. This can be done by adding the following snippet in merchant's react activity (`MainActivity`):
+
+```java
+  @Override
+  public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    HyperSdkReactModule.onRequestPermissionsResult(requestCode, permissions, grantResults);
+  }
+```
+
+### Step-7: Terminate
 
 This method shall be triggered when `HyperSDK` is no longer required.
 
