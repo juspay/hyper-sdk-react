@@ -7,10 +7,10 @@ begin
   if apps_package["hyperSdkIOSVersion"]
     hyper_sdk_version = apps_package["hyperSdkIOSVersion"]
   else
-    hyper_sdk_version = "2.0.18"
+    hyper_sdk_version = "2.0.21"
   end
 rescue
-  hyper_sdk_version = "2.0.18"
+  hyper_sdk_version = "2.0.21"
 end
 
 Pod::Spec.new do |s|
@@ -22,9 +22,9 @@ Pod::Spec.new do |s|
   s.authors      = package["author"]
 
   s.platforms    = { :ios => "10.0" }
-  s.source       = { :git => "https://bitbucket.org/juspay/hyper-sdk-react.git", :tag => "#{s.version}" }
+  s.source       = { :git => "https://bitbucket.org/juspay/hyper-sdk-react.git", :tag => "v#{s.version}" }
 
-
+  s.static_framework = true
   s.source_files = "ios/**/*.{h,m,mm,swift}"
 
 
