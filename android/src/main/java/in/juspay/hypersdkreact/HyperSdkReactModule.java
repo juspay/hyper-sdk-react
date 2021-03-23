@@ -135,6 +135,14 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void isInitialised(Promise promise) {
-    promise.resolve(hyperServices.isInitialised());
+    if (hyperServices != null) {
+      try {
+        promise.resolve(hyperServices.isInitialised());
+        return;
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+    promise.resolve(false);
   }
 }
