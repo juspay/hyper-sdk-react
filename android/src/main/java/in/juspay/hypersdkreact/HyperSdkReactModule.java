@@ -100,21 +100,12 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
         synchronized (lock) {
             FragmentActivity activity = (FragmentActivity) getCurrentActivity();
 
+            if (activity == null) {
+                return;
+            }
+
             HyperServices hyperServices = new HyperServices(activity);
-
-            // FIXME: The next line remains to be commented until a fix is made in HyperSDK for this
-            //        which can take time as this won't be the highest priority.
-            //
-            // In React plugin, we want to have the HyperServices instance in multi-activity mode.
-            // Now, since we won't be needing this reference to activity until `initiate` is called
-            // again, we have to call resetActivity() method. However, in current HyperSDK, this
-            // call will cause a NullPointerException since fragment instance will be null until
-            // initiate happens.
-            //
-            // Having this uncommented won't cause any issues, but if merchant changes activity
-            // after calling `createHyperServices` a memory leak will occur until initiate is called.
-
-            // hyperServices.resetActivity();
+            hyperServices.resetActivity();
 
             hyperServicesHolder.set(hyperServices);
         }
@@ -135,6 +126,10 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                 JSONObject payload = new JSONObject(data);
                 FragmentActivity activity = (FragmentActivity) getCurrentActivity();
                 HyperServices hyperServices = hyperServicesHolder.get();
+
+                if (activity == null || hyperServices == null) {
+                    return;
+                }
 
                 hyperServices.initiate(activity, payload, new HyperPaymentsCallbackAdapter() {
                     @Override
@@ -164,8 +159,13 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
             try {
                 JSONObject payload = new JSONObject(data);
                 FragmentActivity activity = (FragmentActivity) getCurrentActivity();
+                HyperServices hyperServices = hyperServicesHolder.get();
 
-                hyperServicesHolder.get().process(activity, payload);
+                if (activity == null || hyperServices == null) {
+                    return;
+                }
+
+                hyperServices.process(activity, payload);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
