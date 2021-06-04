@@ -125,7 +125,7 @@ def getHyperSDKVersion () {
   if (rootProject.hasProperty('hyperSDKVersion')) {
     return rootProject.hyperSDKVersion
   }
-  def hyper_sdk_version = '2.0.2-rc.83'
+  def hyper_sdk_version = '2.0.2-rc.90'
   return hyper_sdk_version
 }
 
@@ -133,5 +133,10 @@ dependencies {
   // noinspection GradleDynamicVersion
   api 'com.facebook.react:react-native:+'
   //noinspection GradleDependency
-  implementation "in.juspay:hypersdk:${getHyperSDKVersion()}"
+
+  if (Boolean.parseBoolean(rootProject.properties['proxy.isEnabled'])) {
+    implementation project(":hyper-sdk")
+  } else {
+    implementation "in.juspay:hypersdk:${getHyperSDKVersion()}"
+  }
 }

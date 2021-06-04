@@ -134,13 +134,6 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                 hyperServices.initiate(activity, payload, new HyperPaymentsCallbackAdapter() {
                     @Override
                     public void onEvent(JSONObject data, JuspayResponseHandler handler) {
-                        // Prevent leaks, reset activity references once a result is returned
-                        switch (data.optString("event", "")) {
-                            case "initiate_result":
-                            case "process_result":
-                                hyperServices.resetActivity();
-                        }
-
                         // Send out the event to the merchant on JS side
                         getReactApplicationContext()
                             .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)

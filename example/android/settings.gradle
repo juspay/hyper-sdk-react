@@ -7,3 +7,27 @@ project(':hypersdkreact').projectDir = new File(rootProject.projectDir, '../../a
 
 include ':MagnesSDK'
 include ':GooglePaySDK'
+
+if (Boolean.parseBoolean(properties["proxy.isEnabled"])) {
+  // We don't want to include HyperSDK module directly here since HyperSDK is complex and includes a
+  // ton of flavours and variant filters across three dimensions.
+  // Instead, we implement a proxy module to include it.
+
+  def hyperSdkLinkModules = [
+    'AmazonIdentityMobileAndroidSDK-silentPay-release',
+    'android-magnessdk-4.0.3',
+    'secure-component-sdk',
+    '[Prod]HardenedSilentPayAndroidSDK'
+  ]
+
+  def hyperSdkDirectory = new File(rootProject.projectDir, properties["proxy.hyperSdkDir"])
+
+  for (moduleName in hyperSdkLinkModules) {
+    include ":${moduleName}"
+    project(":${moduleName}").projectDir = new File(hyperSdkDirectory, moduleName)
+  }
+
+  // The proxy HyperSDK module
+  include ':hyper-sdk'
+  project(':hyper-sdk').projectDir = new File(rootProject.projectDir, '../../hyper-sdk-proxy')
+}
