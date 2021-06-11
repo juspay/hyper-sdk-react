@@ -6,13 +6,13 @@ buildscript {
         minSdkVersion = 19
         compileSdkVersion = 28
         targetSdkVersion = 28
-        hyperSDKVersion = "2.0.2-rc.90" // for merchant's code reference
+        hyperSDKVersion = "2.0.2-rc.93" // for merchant's code reference
     }
     repositories {
         google()
         jcenter()
     }
-    dependencies {
+  dependencies {
         classpath('com.android.tools.build:gradle:4.0.1')
 
         // NOTE: Do not place your application dependencies here; they belong
