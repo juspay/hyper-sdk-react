@@ -1,142 +1,148 @@
 buildscript {
-  // Buildscript is evaluated before everything else so we can't use getExtOrDefault
-  def kotlin_version = rootProject.ext.has('kotlinVersion') ? rootProject.ext.get('kotlinVersion') : project.properties['HyperSdkReact_kotlinVersion']
+    // Buildscript is evaluated before everything else so we can't use getExtOrDefault
+    def kotlin_version = rootProject.ext.has('kotlinVersion') ? rootProject.ext.get('kotlinVersion') : project.properties['HyperSdkReact_kotlinVersion']
 
-  repositories {
-    google()
-    jcenter()
-  }
+    repositories {
+        google()
+        jcenter()
 
-  dependencies {
-    classpath 'com.android.tools.build:gradle:4.0.1'
-    // noinspection DifferentKotlinGradleVersion
-    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-  }
+        maven {
+            url "https://maven.juspay.in/jp-build-packages/hypersdk-asset-download/releases/"
+        }
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:4.0.1'
+        // noinspection DifferentKotlinGradleVersion
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'in.juspay:hypersdk-asset-plugin:1.0.3'
+    }
 }
 
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+apply plugin: 'hypersdk-asset-plugin'
 
 def getExtOrDefault(name) {
-  return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties['HyperSdkReact_' + name]
+    return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties['HyperSdkReact_' + name]
 }
 
 def getExtOrIntegerDefault(name) {
-  return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties['HyperSdkReact_' + name]).toInteger()
+    return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties['HyperSdkReact_' + name]).toInteger()
 }
 
 android {
-  compileSdkVersion getExtOrIntegerDefault('compileSdkVersion')
-  buildToolsVersion getExtOrDefault('buildToolsVersion')
-  defaultConfig {
-    minSdkVersion 19
-    targetSdkVersion getExtOrIntegerDefault('targetSdkVersion')
-    versionCode 1
-    versionName "1.0"
+    compileSdkVersion getExtOrIntegerDefault('compileSdkVersion')
+    buildToolsVersion getExtOrDefault('buildToolsVersion')
+    defaultConfig {
+        minSdkVersion 19
+        targetSdkVersion getExtOrIntegerDefault('targetSdkVersion')
+        versionCode 1
+        versionName "1.0"
 
-  }
-
-  buildTypes {
-    release {
-      minifyEnabled false
     }
-  }
-  lintOptions {
-    disable 'GradleCompatible'
-  }
-  compileOptions {
-    sourceCompatibility JavaVersion.VERSION_1_8
-    targetCompatibility JavaVersion.VERSION_1_8
-  }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+    lintOptions {
+        disable 'GradleCompatible'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 repositories {
-  mavenCentral()
-  jcenter()
-  google()
+    mavenCentral()
+    jcenter()
+    google()
 
-  def found = false
-  def defaultDir = null
-  def androidSourcesName = 'React Native sources'
+    def found = false
+    def defaultDir = null
+    def androidSourcesName = 'React Native sources'
 
-  if (rootProject.ext.has('reactNativeAndroidRoot')) {
-    defaultDir = rootProject.ext.get('reactNativeAndroidRoot')
-  } else {
-    defaultDir = new File(
+    if (rootProject.ext.has('reactNativeAndroidRoot')) {
+        defaultDir = rootProject.ext.get('reactNativeAndroidRoot')
+    } else {
+        defaultDir = new File(
             projectDir,
             '/../../../node_modules/react-native/android'
-    )
-  }
-
-  if (defaultDir.exists()) {
-    maven {
-      url defaultDir.toString()
-      name androidSourcesName
+        )
     }
 
-    logger.info(":${project.name}:reactNativeAndroidRoot ${defaultDir.canonicalPath}")
-    found = true
-  } else {
-    def parentDir = rootProject.projectDir
-
-    1.upto(5, {
-      if (found) return true
-      parentDir = parentDir.parentFile
-
-      def androidSourcesDir = new File(
-              parentDir,
-              'node_modules/react-native'
-      )
-
-      def androidPrebuiltBinaryDir = new File(
-              parentDir,
-              'node_modules/react-native/android'
-      )
-
-      if (androidPrebuiltBinaryDir.exists()) {
+    if (defaultDir.exists()) {
         maven {
-          url androidPrebuiltBinaryDir.toString()
-          name androidSourcesName
+            url defaultDir.toString()
+            name androidSourcesName
         }
 
-        logger.info(":${project.name}:reactNativeAndroidRoot ${androidPrebuiltBinaryDir.canonicalPath}")
+        logger.info(":${project.name}:reactNativeAndroidRoot ${defaultDir.canonicalPath}")
         found = true
-      } else if (androidSourcesDir.exists()) {
-        maven {
-          url androidSourcesDir.toString()
-          name androidSourcesName
-        }
+    } else {
+        def parentDir = rootProject.projectDir
 
-        logger.info(":${project.name}:reactNativeAndroidRoot ${androidSourcesDir.canonicalPath}")
-        found = true
-      }
-    })
-  }
+        1.upto(5, {
+            if (found) return true
+            parentDir = parentDir.parentFile
 
-  if (!found) {
-    throw new GradleException(
+            def androidSourcesDir = new File(
+                parentDir,
+                'node_modules/react-native'
+            )
+
+            def androidPrebuiltBinaryDir = new File(
+                parentDir,
+                'node_modules/react-native/android'
+            )
+
+            if (androidPrebuiltBinaryDir.exists()) {
+                maven {
+                    url androidPrebuiltBinaryDir.toString()
+                    name androidSourcesName
+                }
+
+                logger.info(":${project.name}:reactNativeAndroidRoot ${androidPrebuiltBinaryDir.canonicalPath}")
+                found = true
+            } else if (androidSourcesDir.exists()) {
+                maven {
+                    url androidSourcesDir.toString()
+                    name androidSourcesName
+                }
+
+                logger.info(":${project.name}:reactNativeAndroidRoot ${androidSourcesDir.canonicalPath}")
+                found = true
+            }
+        })
+    }
+
+    if (!found) {
+        throw new GradleException(
             "${project.name}: unable to locate React Native android sources. " +
-                    "Ensure you have you installed React Native as a dependency in your project and try again."
-    )
-  }
+                "Ensure you have you installed React Native as a dependency in your project and try again."
+        )
+    }
 }
 
-def getHyperSDKVersion () {
-  if (rootProject.hasProperty('hyperSDKVersion')) {
-    return rootProject.hyperSDKVersion
-  }
-  def hyper_sdk_version = '2.0.2-rc.90'
-  return hyper_sdk_version
+def getHyperSDKVersion() {
+    if (rootProject.hasProperty('hyperSDKVersion')) {
+        return rootProject.hyperSDKVersion
+    }
+    def hyper_sdk_version = '2.0.2-rc.93'
+    return hyper_sdk_version
 }
 
 dependencies {
-  // noinspection GradleDynamicVersion
-  api 'com.facebook.react:react-native:+'
-  //noinspection GradleDependency
+    // noinspection GradleDynamicVersion
+    api 'com.facebook.react:react-native:+'
+    //noinspection GradleDependency
 
-  if (Boolean.parseBoolean(rootProject.properties['proxy.isEnabled'])) {
-    implementation project(":hyper-sdk")
-  } else {
-    implementation "in.juspay:hypersdk:${getHyperSDKVersion()}"
-  }
+    if (Boolean.parseBoolean(rootProject.properties['proxy.isEnabled'])) {
+        implementation project(":hyper-sdk")
+    } else {
+        implementation "in.juspay:hypersdk:${getHyperSDKVersion()}"
+    }
 }
