@@ -21,6 +21,8 @@ import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 
+import in.juspay.hypersdk.core.PaymentConstants;
+import in.juspay.hypersdk.core.SdkTracker;
 import in.juspay.hypersdk.data.JuspayResponseHandler;
 import in.juspay.hypersdk.ui.HyperPaymentsCallbackAdapter;
 import in.juspay.services.HyperServices;
@@ -32,6 +34,7 @@ import in.juspay.services.HyperServices;
  */
 public class HyperSdkReactModule extends ReactContextBaseJavaModule implements ActivityEventListener {
     private static final String HYPER_EVENT = "HyperEvent";
+    private static final String SDK_TRACKER_LABEL = "hyper_sdk_react";
 
     /**
      * All the React methods in here should be synchronized on this specific object because there
@@ -98,6 +101,12 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
             FragmentActivity activity = (FragmentActivity) getCurrentActivity();
 
             if (activity == null) {
+                SdkTracker.trackBootLifecycle(
+                    PaymentConstants.SubCategory.LifeCycle.HYPER_SDK,
+                    PaymentConstants.LogLevel.ERROR,
+                    SDK_TRACKER_LABEL,
+                    "createHyperServices",
+                    "activity is null");
                 return;
             }
 
@@ -122,7 +131,23 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                 JSONObject payload = new JSONObject(data);
                 FragmentActivity activity = (FragmentActivity) getCurrentActivity();
 
-                if (activity == null || hyperServices == null) {
+                if (activity == null) {
+                    SdkTracker.trackBootLifecycle(
+                        PaymentConstants.SubCategory.LifeCycle.HYPER_SDK,
+                        PaymentConstants.LogLevel.ERROR,
+                        SDK_TRACKER_LABEL,
+                        "initiate",
+                        "activity is null");
+                    return;
+                }
+
+                if (hyperServices == null) {
+                    SdkTracker.trackBootLifecycle(
+                        PaymentConstants.SubCategory.LifeCycle.HYPER_SDK,
+                        PaymentConstants.LogLevel.ERROR,
+                        SDK_TRACKER_LABEL,
+                        "initiate",
+                        "hyperServices is null");
                     return;
                 }
 
@@ -148,7 +173,23 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                 JSONObject payload = new JSONObject(data);
                 FragmentActivity activity = (FragmentActivity) getCurrentActivity();
 
-                if (activity == null || hyperServices == null) {
+                if (activity == null) {
+                    SdkTracker.trackBootLifecycle(
+                        PaymentConstants.SubCategory.LifeCycle.HYPER_SDK,
+                        PaymentConstants.LogLevel.ERROR,
+                        SDK_TRACKER_LABEL,
+                        "initiate",
+                        "activity is null");
+                    return;
+                }
+
+                if (hyperServices == null) {
+                    SdkTracker.trackBootLifecycle(
+                        PaymentConstants.SubCategory.LifeCycle.HYPER_SDK,
+                        PaymentConstants.LogLevel.ERROR,
+                        SDK_TRACKER_LABEL,
+                        "initiate",
+                        "hyperServices is null");
                     return;
                 }
 
@@ -196,6 +237,12 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
     public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
         synchronized (lock) {
             if (hyperServices == null) {
+                SdkTracker.trackBootLifecycle(
+                    PaymentConstants.SubCategory.LifeCycle.HYPER_SDK,
+                    PaymentConstants.LogLevel.ERROR,
+                    SDK_TRACKER_LABEL,
+                    "onActivityResult",
+                    "hyperServices is null");
                 return;
             }
 
@@ -223,6 +270,12 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
             HyperServices hyperServices = hyperServicesHolder.get();
 
             if (hyperServices == null) {
+                SdkTracker.trackBootLifecycle(
+                    PaymentConstants.SubCategory.LifeCycle.HYPER_SDK,
+                    PaymentConstants.LogLevel.ERROR,
+                    SDK_TRACKER_LABEL,
+                    "onRequestPermissionsResult",
+                    "hyperServices is null");
                 return;
             }
 
