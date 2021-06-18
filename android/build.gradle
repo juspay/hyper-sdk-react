@@ -1,13 +1,16 @@
 buildscript {
     // Buildscript is evaluated before everything else so we can't use getExtOrDefault
     def kotlin_version = rootProject.ext.has('kotlinVersion') ? rootProject.ext.get('kotlinVersion') : project.properties['HyperSdkReact_kotlinVersion']
+    def useDynamicAssets = rootProject.ext.has('useDynamicAssets') ? rootProject.ext.get('useDynamicAssets') : false
 
     repositories {
         google()
         jcenter()
 
-        maven {
-            url "https://maven.juspay.in/jp-build-packages/hypersdk-asset-download/releases/"
+        if (useDynamicAssets) {
+            maven {
+                url "https://maven.juspay.in/jp-build-packages/hypersdk-asset-download/releases/"
+            }
         }
     }
 
@@ -15,13 +18,17 @@ buildscript {
         classpath 'com.android.tools.build:gradle:4.0.1'
         // noinspection DifferentKotlinGradleVersion
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'in.juspay:hypersdk-asset-plugin:1.0.3'
+        if (useDynamicAssets) {
+            classpath 'in.juspay:hypersdk-asset-plugin:1.0.3'
+        }
     }
 }
 
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
-apply plugin: 'hypersdk-asset-plugin'
+if (rootProject.hasProperty('useDynamicAssets') && rootProject.useDynamicAssets) {
+    apply plugin: 'hypersdk-asset-plugin'
+}
 
 def getExtOrDefault(name) {
     return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties['HyperSdkReact_' + name]
@@ -131,7 +138,10 @@ def getHyperSDKVersion() {
     if (rootProject.hasProperty('hyperSDKVersion')) {
         return rootProject.hyperSDKVersion
     }
-    def hyper_sdk_version = '2.0.2-rc.93'
+    def hyper_sdk_version = '2.0.2-rc.90'
+    if (rootProject.hasProperty('useDynamicAssets') && rootProject.useDynamicAssets) {
+        hyper_sdk_version = '2.0.2-rc.93'
+    }
     return hyper_sdk_version
 }
 
