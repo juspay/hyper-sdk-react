@@ -40,7 +40,10 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
      */
     private static final Object lock = new Object();
 
-    private static final HyperServicesHolder hyperServicesHolder = new HyperServicesHolder();
+    private static final RequestPermissionsResultDelegate requestPermissionsResultDelegate = new RequestPermissionsResultDelegate();
+
+    @Nullable
+    private HyperServices hyperServices;
 
     HyperSdkReactModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -61,13 +64,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
      */
     public static void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         synchronized (lock) {
-            HyperServices hyperServices = hyperServicesHolder.get();
-
-            if (hyperServices == null) {
-                return;
-            }
-
-            hyperServices.onRequestPermissionsResult(requestCode, permissions, grantResults);
+            requestPermissionsResultDelegate.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
 
@@ -104,17 +101,16 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                 return;
             }
 
-            HyperServices hyperServices = new HyperServices(activity);
+            hyperServices = new HyperServices(activity);
             hyperServices.resetActivity();
 
-            hyperServicesHolder.set(hyperServices);
+            requestPermissionsResultDelegate.set(hyperServices);
         }
     }
 
     @ReactMethod(isBlockingSynchronousMethod = true)
     public boolean onBackPressed() {
         synchronized (lock) {
-            HyperServices hyperServices = hyperServicesHolder.get();
             return hyperServices != null && hyperServices.onBackPressed();
         }
     }
@@ -125,7 +121,6 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
             try {
                 JSONObject payload = new JSONObject(data);
                 FragmentActivity activity = (FragmentActivity) getCurrentActivity();
-                HyperServices hyperServices = hyperServicesHolder.get();
 
                 if (activity == null || hyperServices == null) {
                     return;
@@ -152,7 +147,6 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
             try {
                 JSONObject payload = new JSONObject(data);
                 FragmentActivity activity = (FragmentActivity) getCurrentActivity();
-                HyperServices hyperServices = hyperServicesHolder.get();
 
                 if (activity == null || hyperServices == null) {
                     return;
@@ -168,17 +162,17 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
     @ReactMethod
     public void terminate() {
         synchronized (lock) {
-            HyperServices hyperServices = hyperServicesHolder.get();
-
             if (hyperServices != null) {
                 hyperServices.terminate();
             }
+
+            hyperServices = null;
         }
     }
 
     @ReactMethod(isBlockingSynchronousMethod = true)
     public boolean isNull() {
-        return hyperServicesHolder.get() == null;
+        return hyperServices == null;
     }
 
     @ReactMethod
@@ -186,8 +180,6 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
         boolean isInitialized = false;
 
         synchronized (lock) {
-            HyperServices hyperServices = hyperServicesHolder.get();
-
             if (hyperServices != null) {
                 try {
                     isInitialized = hyperServices.isInitialised();
@@ -203,8 +195,6 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
     @Override
     public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
         synchronized (lock) {
-            HyperServices hyperServices = hyperServicesHolder.get();
-
             if (hyperServices == null) {
                 return;
             }
@@ -222,16 +212,21 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
      * memory leak. This was required because HyperServices class maintains a reference to the
      * activity internally.
      */
-    private static class HyperServicesHolder {
-        @NonNull private WeakReference<HyperServices> hyperServices = new WeakReference<>(null);
+    private static class RequestPermissionsResultDelegate {
+        @NonNull private WeakReference<HyperServices> hyperServicesHolder = new WeakReference<>(null);
 
         synchronized void set(@NonNull HyperServices hyperServices) {
-            this.hyperServices = new WeakReference<>(hyperServices);
+            this.hyperServicesHolder = new WeakReference<>(hyperServices);
         }
 
-        @Nullable
-        synchronized HyperServices get() {
-            return hyperServices.get();
+        void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+            HyperServices hyperServices = hyperServicesHolder.get();
+
+            if (hyperServices == null) {
+                return;
+            }
+
+            hyperServices.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
 }
