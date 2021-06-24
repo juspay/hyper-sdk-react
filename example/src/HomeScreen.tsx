@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 import * as React from 'react';
 import {
   StyleSheet,
@@ -195,7 +196,10 @@ class HomeScreen extends React.Component {
                     ).then((resp) => {
                       console.warn(resp);
                       this.signature = resp;
-                      HyperUtils.showCopyAlert('Payload signed', this.signature);
+                      HyperUtils.showCopyAlert(
+                        'Payload signed',
+                        this.signature
+                      );
                     });
                   }}
                 />
@@ -206,16 +210,16 @@ class HomeScreen extends React.Component {
                   this.initiatePayload =
                     this.state.pickerSelected === 'ec'
                       ? HyperUtils.generateECInitiatePayload(
-                        this.merchantId,
-                        this.clientId,
-                        this.customerId
-                      )
+                          this.merchantId,
+                          this.clientId,
+                          this.customerId
+                        )
                       : HyperUtils.generatePPInitiatePayload(
-                        this.clientId,
-                        JSON.stringify(this.signaturePayload),
-                        this.signature,
-                        this.merchantKeyId
-                      );
+                          this.clientId,
+                          JSON.stringify(this.signaturePayload),
+                          this.signature,
+                          this.merchantKeyId
+                        );
                   // console.warn('initiatePayload:', this.initiatePayload);
                   HyperSdkReact.initiate(JSON.stringify(this.initiatePayload));
                 }}
@@ -377,7 +381,7 @@ const styles = StyleSheet.create({
   scrollView: {
     flexGrow: 1,
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
   container: {
     flex: 1,
