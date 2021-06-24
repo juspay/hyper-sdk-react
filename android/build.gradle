@@ -149,10 +149,5 @@ dependencies {
     // noinspection GradleDynamicVersion
     api 'com.facebook.react:react-native:+'
     //noinspection GradleDependency
-
-    if (Boolean.parseBoolean(rootProject.properties['proxy.isEnabled'])) {
-        implementation project(":hyper-sdk")
-    } else {
-        implementation "in.juspay:hypersdk:${getHyperSDKVersion()}"
-    }
+    implementation "in.juspay:hypersdk:${getHyperSDKVersion()}"
 }
