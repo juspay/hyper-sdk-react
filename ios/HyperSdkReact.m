@@ -70,9 +70,12 @@ RCT_EXPORT_METHOD(initiate:(NSString *)data) {
                 [_hyperInstance initiate:self.baseViewController payload:jsonData callback:^(NSDictionary<NSString *,id> * _Nullable data) {
                     NSString *event = data[@"event"];
                     if ([event isEqualToString:@"process_result"]) {
-                        [weakSelf.baseNavigationController dismissViewControllerAnimated:false completion:nil];
+                        [weakSelf.baseNavigationController dismissViewControllerAnimated:false completion:^{
+                            [weakSelf sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
+                        }];
+                    } else {
+                        [weakSelf sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
                     }
-                    [weakSelf sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
                 }];
             } else {
                 // Define proper error code and return proper error
