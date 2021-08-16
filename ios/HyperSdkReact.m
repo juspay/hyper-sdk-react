@@ -19,8 +19,6 @@
 
 @interface HyperSdkReact : RCTEventEmitter <RCTBridgeModule>
 @property HyperServices *hyperInstance;
-@property UINavigationController *baseNavigationController;
-@property UIViewController *baseViewController;
 @end
 
 @implementation RCT_EXTERN_MODULE(HyperSdkReact, RCTEventEmitter)
@@ -62,20 +60,10 @@ RCT_EXPORT_METHOD(initiate:(NSString *)data) {
             NSDictionary *jsonData = [HyperSdkReact stringToDictionary:data];
             if (jsonData && [jsonData isKindOfClass:[NSDictionary class]] && jsonData.allKeys.count>0) {
 
-                self.baseViewController = [[UIViewController alloc] init];
-                self.baseNavigationController = [[UINavigationController alloc] initWithRootViewController:self.baseViewController];
-                self.baseNavigationController.modalPresentationStyle = UIModalPresentationOverFullScreen;
-                self.baseNavigationController.navigationBar.hidden = true;
+                UIViewController *baseViewController = RCTPresentedViewController();
                 __weak HyperSdkReact *weakSelf = self;
-                [_hyperInstance initiate:self.baseViewController payload:jsonData callback:^(NSDictionary<NSString *,id> * _Nullable data) {
-                    NSString *event = data[@"event"];
-                    if ([event isEqualToString:@"process_result"]) {
-                        [weakSelf.baseNavigationController dismissViewControllerAnimated:false completion:^{
-                            [weakSelf sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
-                        }];
-                    } else {
-                        [weakSelf sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
-                    }
+                [_hyperInstance initiate:baseViewController payload:jsonData callback:^(NSDictionary<NSString *,id> * _Nullable data) {
+                    [weakSelf sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
                 }];
             } else {
                 // Define proper error code and return proper error
@@ -96,14 +84,8 @@ RCT_EXPORT_METHOD(process:(NSString *)data) {
         @try {
            NSDictionary *jsonData = [HyperSdkReact stringToDictionary:data];
             if (jsonData && [jsonData isKindOfClass:[NSDictionary class]] && jsonData.allKeys.count>0) {
-                if ([self.hyperInstance isInitialised] && self.baseNavigationController && ![self.baseNavigationController presentingViewController]) {
-                    [RCTPresentedViewController() presentViewController:self.baseNavigationController animated:false completion:^{
-                        [self.hyperInstance process:jsonData];
-                    }];
-                } else {
-                    // Define proper error code and return proper error
-                    // [self sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
-                }
+                self.hyperInstance.baseViewController = RCTPresentedViewController();
+                [self.hyperInstance process:jsonData];
             } else {
                 // Define proper error code and return proper error
                 // [self sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
