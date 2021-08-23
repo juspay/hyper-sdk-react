@@ -23,13 +23,39 @@ buildscript {
   ....
    ext {
        ....
-       hyperSDKVersion = "2.0.1-rc.62"
+       hyperSDKVersion = "2.0.3-rc.06"
+       ....
    }
    ....
 }
 ```
 
 Note: This version is just for explanatory purposes and may change in future. Contact Juspay support team for the latest SDK version.
+
+#### **Dynamic Assets**
+
+Add the following ext property in top `build.gradle` if you are using the Dynamic Assets Feature:
+
+```groovy
+buildscript {
+  ....
+   ext {
+       ....
+       hyperSDKVersion = "2.0.3-rc.46"
+       useDynamicAssets = true
+       ....
+   }
+   ....
+}
+```
+
+Place the `MerchantConfig.txt` file alongside the root(top) `build.gradle` file. The contents of the file should be as follows.
+
+```txt
+clientId = <clientId shared by Juspay Team>
+```
+
+
 
 ### iOS
 
@@ -53,12 +79,34 @@ pod install
     "devDependencies": {
       ....
     },
-    "hyperSdkIOSVersion": "2.0.19"
+    "hyperSdkIOSVersion": "2.0.76"
     ....
   }
 ```
 
 Note: This version is just for explanatory purposes and may change in future. Contact Juspay support team for the latest SDK version.
+
+#### **Dynamic Assets**
+
+Change the `hyperSdkIOSVersion` to `2.0.78` (This version is just for explanatory purposes and may change in future. Contact Juspay support team for the latest SDK version).
+
+Add below post_install script in the Podfile
+```sh
+post_install do |installer|
+ fuse_path = "./Pods/HyperSDK/Fuse.rb"
+ clean_assets = false # Pass true to re-download all the assets
+ if File.exist?(fuse_path)
+   if system("ruby", fuse_path.to_s, clean_assets.to_s)
+   end
+ end
+end
+```
+
+Place the `MerchantConfig.txt` file alongside the Podfile. The contents of the file should be as follows.
+
+```txt
+clientId = <clientId shared by Juspay Team>
+```
 
 ## Usage
 
@@ -123,7 +171,7 @@ This API should be triggered for all operations required from `HyperSDK`. The op
 
 - Displaying payment options on your payment page
 - Performing a transaction
-- User’s payment profile management
+- User's payment profile management
 
 The result of the process call is provided in the `Hyper Event listener`, later discussed in [step-4](#step-4-listen-to-events-from-hypersdk).
 
