@@ -111,6 +111,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
             }
 
             hyperServices = new HyperServices(activity);
+            hyperServices.setActivityLaunchDelegate(new ReactLaunchDelegate(getReactApplicationContext()));
             hyperServices.resetActivity();
 
             requestPermissionsResultDelegate.set(hyperServices);
