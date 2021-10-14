@@ -1,0 +1,23 @@
+package in.juspay.hypersdkreact;
+
+import android.content.Intent;
+import android.os.Bundle;
+
+import com.facebook.react.bridge.ReactApplicationContext;
+
+import in.juspay.hypersdk.ui.ActivityLaunchDelegate;
+
+public final class ReactLaunchDelegate implements ActivityLaunchDelegate {
+
+    private ReactApplicationContext context;
+
+    public ReactLaunchDelegate(ReactApplicationContext context) {
+        this.context = context;
+    }
+
+    @Override
+    public void startActivityForResult(Intent intent, int i, Bundle bundle) {
+        context.startActivityForResult(intent, i, bundle);
+    }
+}
+

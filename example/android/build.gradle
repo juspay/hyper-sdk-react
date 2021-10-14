@@ -6,7 +6,7 @@ buildscript {
         minSdkVersion = 19
         compileSdkVersion = 28
         targetSdkVersion = 28
-        hyperSDKVersion = "2.0.2-rc.93" // for merchant's code reference
+        hyperSDKVersion = "2.0.3-rc.78" // for merchant's code reference
     }
     repositories {
         google()
