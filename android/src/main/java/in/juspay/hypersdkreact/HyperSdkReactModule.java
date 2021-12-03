@@ -18,6 +18,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.ref.WeakReference;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,7 +35,7 @@ import in.juspay.services.HyperServices;
  */
 public class HyperSdkReactModule extends ReactContextBaseJavaModule implements ActivityEventListener {
     private static final String HYPER_EVENT = "HyperEvent";
-    private static final String SDK_TRACKER_LABEL = "hyper_sdk_react";
+    public static final String SDK_TRACKER_LABEL = "hyper_sdk_react";
 
     /**
      * All the React methods in here should be synchronized on this specific object because there
@@ -112,6 +113,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
             hyperServices = new HyperServices(activity);
             hyperServices.setActivityLaunchDelegate(new ReactLaunchDelegate(getReactApplicationContext()));
+            hyperServices.setRequestPermissionDelegate(new ReactRequestDelegate(activity));
             hyperServices.resetActivity();
 
             requestPermissionsResultDelegate.set(hyperServices);
@@ -279,6 +281,13 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                     "hyperServices is null");
                 return;
             }
+
+            SdkTracker.trackBootLifecycle(
+                PaymentConstants.SubCategory.LifeCycle.HYPER_SDK,
+                PaymentConstants.LogLevel.INFO,
+                SDK_TRACKER_LABEL,
+                "onRequestPermissionsResult",
+                "onRequestPermissionsResult() called with: requestCode = [" + requestCode + "], permissions = [" + Arrays.toString(permissions) + "], grantResults = [" + Arrays.toString(grantResults) + "]");
 
             hyperServices.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
