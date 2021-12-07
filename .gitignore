@@ -37,6 +37,10 @@ local.properties
 android.iml
 gradlew
 gradlew.bat
+android/.settings/
+example/android/.settings
+android/.project
+example/android/.project
 
 # Cocoapods
 #

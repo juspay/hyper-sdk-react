@@ -9,15 +9,14 @@ import in.juspay.hypersdk.ui.ActivityLaunchDelegate;
 
 public final class ReactLaunchDelegate implements ActivityLaunchDelegate {
 
-    private ReactApplicationContext context;
+    private final ReactApplicationContext context;
 
     public ReactLaunchDelegate(ReactApplicationContext context) {
         this.context = context;
     }
 
     @Override
-    public void startActivityForResult(Intent intent, int i, Bundle bundle) {
-        context.startActivityForResult(intent, i, bundle);
+    public void startActivityForResult(Intent intent, int requestCode, Bundle bundle) {
+        context.startActivityForResult(intent, requestCode, bundle);
     }
 }
-

@@ -7,10 +7,10 @@ begin
   if apps_package["hyperSdkIOSVersion"]
     hyper_sdk_version = apps_package["hyperSdkIOSVersion"]
   else
-    hyper_sdk_version = "2.0.76"
+    hyper_sdk_version = "2.1.0"
   end
 rescue
-  hyper_sdk_version = "2.0.76"
+  hyper_sdk_version = "2.1.0"
 end
 
 Pod::Spec.new do |s|
