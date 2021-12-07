@@ -214,8 +214,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-base:17.4.0'
     implementation 'androidx.browser:browser:1.2.0'
     implementation 'com.simpl.android:fingerprintSDK:1.0.29'
-    implementation project(':GooglePaySDK')
-    implementation project(':MagnesSDK')
+    implementation 'in.juspay:google-pay-client-api:1.0.0'
 }
 
 // Run this once to be able to run the application with BUCK

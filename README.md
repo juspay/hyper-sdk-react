@@ -1,6 +1,6 @@
 # Hyper-SDK-React
 
-React native module for HyperSDK which enables payment orchestration via different dynamic modules. More details available at <https://developer.juspay.in/v2.0/docs/introduction> . Some part of module depends heavily on native functionalities are not updatable dynamically.
+React native module for HyperSDK which enables payment orchestration via different dynamic modules. More details available at Juspay Developer Docs for [Express Checkout SDK](https://developer.juspay.in/v2.0/docs/introduction) and [Payment Page SDK](https://developer.juspay.in/v4.0/docs/introduction). Some part of module depends heavily on native functionalities are not updatable dynamically.
 
 ## Installation
 
@@ -16,14 +16,14 @@ Add following maven url in top build.gradle:
 maven { url "https://maven.juspay.in/jp-build-packages/hyper-sdk/"}
 ```
 
-**(Optional)** Add the following ext property in top `build.gradle` if you want to override the base SDK version present in plugin *(Compulsory for Payment Page SDK)*:
+**(Optional)** Add the following ext property in top `build.gradle` if you want to override the base SDK version present in plugin *(Compulsory for Payment Page SDK when you are not using [Dynamic Assets feature](####dynamic-assets-android))*:
 
 ```groovy
 buildscript {
   ....
    ext {
        ....
-       hyperSDKVersion = "2.0.3-rc.06"
+       hyperSDKVersion = "2.0.4-rc.13"
        ....
    }
    ....
@@ -32,7 +32,7 @@ buildscript {
 
 Note: This version is just for explanatory purposes and may change in future. Contact Juspay support team for the latest SDK version.
 
-#### **Dynamic Assets**
+#### **Dynamic Assets Android**
 
 Add the following ext property in top `build.gradle` if you are using the Dynamic Assets Feature:
 
@@ -41,7 +41,7 @@ buildscript {
   ....
    ext {
        ....
-       hyperSDKVersion = "2.0.3-rc.46"
+       hyperSDKVersion = "2.0.4-rc.12"
        useDynamicAssets = true
        ....
    }
@@ -55,6 +55,10 @@ Place the `MerchantConfig.txt` file alongside the root(top) `build.gradle` file.
 clientId = <clientId shared by Juspay Team>
 ```
 
+#### **Important Warning for Android**
+
+For `hyper-sdk-react` version >= `2.1.0`, minimum native android `HyperSDK` version supported is `2.0.4-rc.12`. Please upgrade to latest Hyper SDK as well if you are updating the `hyper-sdk-react` version in `package.json` of your react-native app. Contact Juspay support team for any queries.
+
 
 
 ### iOS
@@ -65,7 +69,7 @@ Run the following command inside the ios folder of your react native project:
 pod install
 ```
 
-**(Optional)** Add the following property in `package.json` of your project before running pod install if you want to override the base SDK version present in the plugin *(Compulsory for Payment Page SDK)*:
+**(Optional)** Add the following property in `package.json` of your project before running pod install if you want to override the base SDK version present in the plugin *(Compulsory for Payment Page SDK when you are not using [Dynamic Assets feature](####dynamic-assets-ios))*:
 
 ```json
   {
@@ -86,7 +90,7 @@ pod install
 
 Note: This version is just for explanatory purposes and may change in future. Contact Juspay support team for the latest SDK version.
 
-#### **Dynamic Assets**
+#### **Dynamic Assets iOS**
 
 Change the `hyperSdkIOSVersion` to `2.0.78` (This version is just for explanatory purposes and may change in future. Contact Juspay support team for the latest SDK version).
 
@@ -302,7 +306,7 @@ HyperSdkReact.isInitialised().then((init: boolean) => {
 
 ## Payload Structure
 
-Please refer to <https://developer.juspay.in/v2.0/docs/payload> for all request and response payload structure.
+Please refer [here for Express Checkout SDK](https://developer.juspay.in/v2.0/docs/payload) and [here for Payment Page SDK](https://developer.juspay.in/v4.0/docs/payload), for all request and response payload structure.
 
 ## Contributing
 

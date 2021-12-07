@@ -35,7 +35,7 @@ import in.juspay.services.HyperServices;
  */
 public class HyperSdkReactModule extends ReactContextBaseJavaModule implements ActivityEventListener {
     private static final String HYPER_EVENT = "HyperEvent";
-    public static final String SDK_TRACKER_LABEL = "hyper_sdk_react";
+    protected static final String SDK_TRACKER_LABEL = "hyper_sdk_react";
 
     /**
      * All the React methods in here should be synchronized on this specific object because there
