@@ -84,7 +84,6 @@ RCT_EXPORT_METHOD(process:(NSString *)data) {
         @try {
            NSDictionary *jsonData = [HyperSdkReact stringToDictionary:data];
             if (jsonData && [jsonData isKindOfClass:[NSDictionary class]] && jsonData.allKeys.count>0) {
-                self.hyperInstance.baseViewController = RCTPresentedViewController();
                 [self.hyperInstance process:jsonData];
             } else {
                 // Define proper error code and return proper error
@@ -115,6 +114,12 @@ RCT_EXPORT_METHOD(isInitialised:(RCTPromiseResolveBlock)resolve  reject:(RCTProm
         resolve(self.hyperInstance.isInitialised? @true : @false);
     } else {
         resolve(@false);
+    }
+}
+
+RCT_EXPORT_METHOD(updateBaseViewController) {
+    if (self.hyperInstance && [self.hyperInstance isInitialised]) {
+        self.hyperInstance.baseViewController = RCTPresentedViewController();
     }
 }
 
