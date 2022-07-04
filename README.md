@@ -16,14 +16,14 @@ Add following maven url in top build.gradle:
 maven { url "https://maven.juspay.in/jp-build-packages/hyper-sdk/"}
 ```
 
-**(Optional)** Add the following ext property in top `build.gradle` if you want to override the base SDK version present in plugin:
+**(Optional)** Add the following ext property in top `build.gradle` if you want to override the base SDK version present in plugin (the newer version among both would be considered):
 
 ```groovy
 buildscript {
   ....
    ext {
        ....
-       hyperSDKVersion = "2.0.4-rc.13"
+       hyperSDKVersion = "2.0.4-rc.78"
        ....
    }
    ....
@@ -41,7 +41,7 @@ buildscript {
   ....
    ext {
        ....
-       hyperSDKVersion = "2.0.4-rc.12"
+       hyperSDKVersion = "2.0.4-rc.78"
        useDynamicAssets = true
        ....
    }
@@ -69,7 +69,7 @@ Run the following command inside the ios folder of your react native project:
 pod install
 ```
 
-**(Optional)** Add the following property in `package.json` of your project before running pod install if you want to override the base SDK version present in the plugin:
+**(Optional)** Add the following property in `package.json` of your project before running pod install if you want to override the base SDK version present in the plugin (the newer version among both would be considered):
 
 ```json
   {
@@ -83,7 +83,7 @@ pod install
     "devDependencies": {
       ....
     },
-    "hyperSdkIOSVersion": "2.1.4"
+    "hyperSdkIOSVersion": "2.1.9"
     ....
   }
 ```
@@ -92,7 +92,7 @@ Note: This version is just for explanatory purposes and may change in future. Co
 
 #### **Dynamic Assets iOS**
 
-Change the `hyperSdkIOSVersion` to `2.1.4` (This version is just for explanatory purposes and may change in future. Contact Juspay support team for the latest SDK version).
+Change the `hyperSdkIOSVersion` to `2.1.9` (This version is just for explanatory purposes and may change in future. Contact Juspay support team for the latest SDK version).
 
 Add below post_install script in the Podfile
 ```sh

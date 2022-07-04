@@ -134,14 +134,29 @@ repositories {
     }
 }
 
+static def mostRecentVersion(List<String> versions) {
+    return versions.sort(false) { a, b ->
+        [a, b]*.tokenize('-rc')*.join('')*.tokenize('.')*.collect {
+            it as int
+        }.with { u, v ->
+            [u, v].transpose().findResult { x, y -> x <=> y ?: null } ?: u.size() <=> v.size()
+        }
+    } [-1]
+}
+
 def getHyperSDKVersion() {
-    if (rootProject.hasProperty('hyperSDKVersion')) {
-        return rootProject.hyperSDKVersion
-    }
-    def hyper_sdk_version = '2.0.4-rc.13'
+    def hyper_sdk_version = '2.0.4-rc.79'
     if (rootProject.hasProperty('useDynamicAssets') && rootProject.useDynamicAssets) {
-        hyper_sdk_version = '2.0.4-rc.12'
+        hyper_sdk_version = '2.0.4-rc.78'
     }
+    if (rootProject.hasProperty('hyperSDKVersion')) {
+        def rootVersion = rootProject.hyperSDKVersion
+        hyper_sdk_version = mostRecentVersion([hyper_sdk_version, rootVersion])
+        if (hyper_sdk_version != rootVersion) {
+            System.out.println("Ignoring the overriden SDK version present in root build.gradle ($rootVersion), as there is a newer version present in the SDK ($hyper_sdk_version).")
+        }
+    }
+    System.out.println("HyperSDK Version: $hyper_sdk_version")
     return hyper_sdk_version
 }
 
