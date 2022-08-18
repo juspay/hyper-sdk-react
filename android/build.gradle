@@ -145,9 +145,9 @@ static def mostRecentVersion(List<String> versions) {
 }
 
 def getHyperSDKVersion() {
-    def hyper_sdk_version = '2.0.4-rc.79'
+    def hyper_sdk_version = '2.1.2-rc.01'
     if (rootProject.hasProperty('useDynamicAssets') && rootProject.useDynamicAssets) {
-        hyper_sdk_version = '2.0.4-rc.78'
+        hyper_sdk_version = '2.1.2'
     }
     if (rootProject.hasProperty('hyperSDKVersion')) {
         def rootVersion = rootProject.hyperSDKVersion

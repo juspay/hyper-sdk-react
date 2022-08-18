@@ -23,7 +23,7 @@ buildscript {
   ....
    ext {
        ....
-       hyperSDKVersion = "2.0.4-rc.78"
+       hyperSDKVersion = "2.1.2"
        ....
    }
    ....
@@ -41,7 +41,7 @@ buildscript {
   ....
    ext {
        ....
-       hyperSDKVersion = "2.0.4-rc.78"
+       hyperSDKVersion = "2.1.2"
        useDynamicAssets = true
        ....
    }
@@ -83,7 +83,7 @@ pod install
     "devDependencies": {
       ....
     },
-    "hyperSdkIOSVersion": "2.1.9"
+    "hyperSdkIOSVersion": "2.1.15"
     ....
   }
 ```
@@ -92,7 +92,7 @@ Note: This version is just for explanatory purposes and may change in future. Co
 
 #### **Dynamic Assets iOS**
 
-Change the `hyperSdkIOSVersion` to `2.1.9` (This version is just for explanatory purposes and may change in future. Contact Juspay support team for the latest SDK version).
+Change the `hyperSdkIOSVersion` to `2.1.15` (This version is just for explanatory purposes and may change in future. Contact Juspay support team for the latest SDK version).
 
 Add below post_install script in the Podfile
 ```sh
