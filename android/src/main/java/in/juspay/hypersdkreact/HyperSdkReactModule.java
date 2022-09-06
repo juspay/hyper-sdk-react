@@ -158,15 +158,40 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                     @Override
                     public void onEvent(JSONObject data, JuspayResponseHandler handler) {
                         // Send out the event to the merchant on JS side
-                        getReactApplicationContext()
-                            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                            .emit(HYPER_EVENT, data.toString());
+                        try {
+                            sendEventToJS(data);
+                        } catch (InterruptedException e) {
+                            SdkTracker.trackAndLogBootException(
+                                PaymentConstants.SubCategory.LifeCycle.HYPER_SDK,
+                                PaymentConstants.LogLevel.ERROR,
+                                SDK_TRACKER_LABEL,
+                                "initiate",
+                                "Interrupted while sending event to JS",
+                                e
+                            );
+                        }
                     }
                 });
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void sendEventToJS(JSONObject data) throws InterruptedException {
+        DeviceEventManagerModule.RCTDeviceEventEmitter jsModule = getJSModule();
+        if (jsModule == null) {
+            Thread.sleep(200);
+            sendEventToJS(data);
+            return;
+        }
+
+        jsModule.emit(HYPER_EVENT, data.toString());
+    }
+
+    private DeviceEventManagerModule.RCTDeviceEventEmitter getJSModule() {
+        return getReactApplicationContext()
+            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class);
     }
 
     @ReactMethod
@@ -263,7 +288,8 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
      * activity internally.
      */
     private static class RequestPermissionsResultDelegate {
-        @NonNull private WeakReference<HyperServices> hyperServicesHolder = new WeakReference<>(null);
+        @NonNull
+        private WeakReference<HyperServices> hyperServicesHolder = new WeakReference<>(null);
 
         synchronized void set(@NonNull HyperServices hyperServices) {
             this.hyperServicesHolder = new WeakReference<>(hyperServices);
