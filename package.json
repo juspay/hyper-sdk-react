@@ -36,7 +36,7 @@
   ],
   "repository": "https://bitbucket.org/juspay/hyper-sdk-react",
   "author": "harshgarg-juspay <harsh.garg@juspay.in>",
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "bugs": {
     "url": "https://bitbucket.org/juspay/hyper-sdk-react/issues"
   },
