@@ -320,6 +320,6 @@ Please refer [here for Express Checkout SDK](https://developer.juspay.in/v2.0/do
 
 See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the repository and the development workflow.
 
-## License
+# License
 
-[MIT](LICENSE)
+hyper-sdk-react is distributed under [AGPL-3.0-only](https://bitbucket.org/juspay/hyper-sdk-react/src/master/LICENSE).
