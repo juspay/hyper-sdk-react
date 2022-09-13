@@ -2,6 +2,7 @@ package in.juspay.hypersdkreact;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Handler;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -158,18 +159,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                     @Override
                     public void onEvent(JSONObject data, JuspayResponseHandler handler) {
                         // Send out the event to the merchant on JS side
-                        try {
-                            sendEventToJS(data);
-                        } catch (InterruptedException e) {
-                            SdkTracker.trackAndLogBootException(
-                                PaymentConstants.SubCategory.LifeCycle.HYPER_SDK,
-                                PaymentConstants.LogLevel.ERROR,
-                                SDK_TRACKER_LABEL,
-                                "initiate",
-                                "Interrupted while sending event to JS",
-                                e
-                            );
-                        }
+                        sendEventToJS(data);
                     }
                 });
             } catch (Exception e) {
@@ -178,11 +168,11 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
         }
     }
 
-    private void sendEventToJS(JSONObject data) throws InterruptedException {
+    private void sendEventToJS(JSONObject data) {
         DeviceEventManagerModule.RCTDeviceEventEmitter jsModule = getJSModule();
         if (jsModule == null) {
-            Thread.sleep(200);
-            sendEventToJS(data);
+            Handler handler = new Handler();
+            handler.postDelayed(() -> sendEventToJS(data), 200);
             return;
         }
 
