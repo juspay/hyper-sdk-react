@@ -22,6 +22,7 @@ import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import in.juspay.hypersdk.core.PaymentConstants;
 import in.juspay.hypersdk.core.SdkTracker;
@@ -46,6 +47,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
     private static final Object lock = new Object();
 
     private static final RequestPermissionsResultDelegate requestPermissionsResultDelegate = new RequestPermissionsResultDelegate();
+    private static final ActivityResultDelegate activityResultDelegate = new ActivityResultDelegate();
 
     @Nullable
     private HyperServices hyperServices;
@@ -71,6 +73,32 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
         synchronized (lock) {
             requestPermissionsResultDelegate.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
+    }
+
+    /**
+     * Used to forward the intent result to HyperSDK,
+     * for the cases when it is not forwarded by React Native implicitly.
+     *
+     * @param requestCode The requestCode that was received in your activity's
+     *                    {@code onActivityResult} method.
+     * @param resultCode  The requestCode that was received in your activity's
+     *                    {@code onActivityResult} method.
+     * @param data        The intent data that was received in your activity's
+     *                    {@code onActivityResult} method.
+     */
+    public static void onActivityResult(int requestCode, int resultCode, Intent data) {
+        synchronized (lock) {
+            activityResultDelegate.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    /**
+     * Used to get the list of requestCodes for which intent was started by HyperSDK.
+     *
+     * @return {@link Set set} of {@link Integer} requestCodes.
+     */
+    public static Set<Integer> getIntentRequestCodes() {
+        return ReactLaunchDelegate.getIntentRequestCodes();
     }
 
     @NonNull
@@ -104,11 +132,11 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
             if (activity == null) {
                 SdkTracker.trackBootLifecycle(
-                    PaymentConstants.SubCategory.LifeCycle.HYPER_SDK,
-                    PaymentConstants.LogLevel.ERROR,
-                    SDK_TRACKER_LABEL,
-                    "createHyperServices",
-                    "activity is null");
+                        PaymentConstants.SubCategory.LifeCycle.HYPER_SDK,
+                        PaymentConstants.LogLevel.ERROR,
+                        SDK_TRACKER_LABEL,
+                        "createHyperServices",
+                        "activity is null");
                 return;
             }
 
@@ -118,6 +146,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
             hyperServices.resetActivity();
 
             requestPermissionsResultDelegate.set(hyperServices);
+            activityResultDelegate.set(hyperServices);
         }
     }
 
@@ -137,21 +166,21 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
                 if (activity == null) {
                     SdkTracker.trackBootLifecycle(
-                        PaymentConstants.SubCategory.LifeCycle.HYPER_SDK,
-                        PaymentConstants.LogLevel.ERROR,
-                        SDK_TRACKER_LABEL,
-                        "initiate",
-                        "activity is null");
+                            PaymentConstants.SubCategory.LifeCycle.HYPER_SDK,
+                            PaymentConstants.LogLevel.ERROR,
+                            SDK_TRACKER_LABEL,
+                            "initiate",
+                            "activity is null");
                     return;
                 }
 
                 if (hyperServices == null) {
                     SdkTracker.trackBootLifecycle(
-                        PaymentConstants.SubCategory.LifeCycle.HYPER_SDK,
-                        PaymentConstants.LogLevel.ERROR,
-                        SDK_TRACKER_LABEL,
-                        "initiate",
-                        "hyperServices is null");
+                            PaymentConstants.SubCategory.LifeCycle.HYPER_SDK,
+                            PaymentConstants.LogLevel.ERROR,
+                            SDK_TRACKER_LABEL,
+                            "initiate",
+                            "hyperServices is null");
                     return;
                 }
 
@@ -181,7 +210,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
     private DeviceEventManagerModule.RCTDeviceEventEmitter getJSModule() {
         return getReactApplicationContext()
-            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class);
+                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class);
     }
 
     @ReactMethod
@@ -193,21 +222,21 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
                 if (activity == null) {
                     SdkTracker.trackBootLifecycle(
-                        PaymentConstants.SubCategory.LifeCycle.HYPER_SDK,
-                        PaymentConstants.LogLevel.ERROR,
-                        SDK_TRACKER_LABEL,
-                        "initiate",
-                        "activity is null");
+                            PaymentConstants.SubCategory.LifeCycle.HYPER_SDK,
+                            PaymentConstants.LogLevel.ERROR,
+                            SDK_TRACKER_LABEL,
+                            "initiate",
+                            "activity is null");
                     return;
                 }
 
                 if (hyperServices == null) {
                     SdkTracker.trackBootLifecycle(
-                        PaymentConstants.SubCategory.LifeCycle.HYPER_SDK,
-                        PaymentConstants.LogLevel.ERROR,
-                        SDK_TRACKER_LABEL,
-                        "initiate",
-                        "hyperServices is null");
+                            PaymentConstants.SubCategory.LifeCycle.HYPER_SDK,
+                            PaymentConstants.LogLevel.ERROR,
+                            SDK_TRACKER_LABEL,
+                            "initiate",
+                            "hyperServices is null");
                     return;
                 }
 
@@ -256,11 +285,11 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
         synchronized (lock) {
             if (hyperServices == null) {
                 SdkTracker.trackBootLifecycle(
-                    PaymentConstants.SubCategory.LifeCycle.HYPER_SDK,
-                    PaymentConstants.LogLevel.ERROR,
-                    SDK_TRACKER_LABEL,
-                    "onActivityResult",
-                    "hyperServices is null");
+                        PaymentConstants.SubCategory.LifeCycle.HYPER_SDK,
+                        PaymentConstants.LogLevel.ERROR,
+                        SDK_TRACKER_LABEL,
+                        "onActivityResult",
+                        "hyperServices is null");
                 return;
             }
 
@@ -290,22 +319,54 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
             if (hyperServices == null) {
                 SdkTracker.trackBootLifecycle(
-                    PaymentConstants.SubCategory.LifeCycle.HYPER_SDK,
-                    PaymentConstants.LogLevel.ERROR,
-                    SDK_TRACKER_LABEL,
-                    "onRequestPermissionsResult",
-                    "hyperServices is null");
+                        PaymentConstants.SubCategory.LifeCycle.HYPER_SDK,
+                        PaymentConstants.LogLevel.ERROR,
+                        SDK_TRACKER_LABEL,
+                        "onRequestPermissionsResult",
+                        "hyperServices is null");
                 return;
             }
 
             SdkTracker.trackBootLifecycle(
-                PaymentConstants.SubCategory.LifeCycle.HYPER_SDK,
-                PaymentConstants.LogLevel.INFO,
-                SDK_TRACKER_LABEL,
-                "onRequestPermissionsResult",
-                "onRequestPermissionsResult() called with: requestCode = [" + requestCode + "], permissions = [" + Arrays.toString(permissions) + "], grantResults = [" + Arrays.toString(grantResults) + "]");
+                    PaymentConstants.SubCategory.LifeCycle.HYPER_SDK,
+                    PaymentConstants.LogLevel.INFO,
+                    SDK_TRACKER_LABEL,
+                    "onRequestPermissionsResult",
+                    "onRequestPermissionsResult() called with: requestCode = [" + requestCode + "], permissions = [" + Arrays.toString(permissions) + "], grantResults = [" + Arrays.toString(grantResults) + "]");
 
             hyperServices.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+    }
+
+    private static class ActivityResultDelegate {
+        @NonNull
+        private WeakReference<HyperServices> hyperServicesHolder = new WeakReference<>(null);
+
+        synchronized void set(@NonNull HyperServices hyperServices) {
+            this.hyperServicesHolder = new WeakReference<>(hyperServices);
+        }
+
+        void onActivityResult(int requestCode, int resultCode, Intent data) {
+            HyperServices hyperServices = hyperServicesHolder.get();
+
+            if (hyperServices == null) {
+                SdkTracker.trackBootLifecycle(
+                        PaymentConstants.SubCategory.LifeCycle.HYPER_SDK,
+                        PaymentConstants.LogLevel.ERROR,
+                        SDK_TRACKER_LABEL,
+                        "onActivityResult",
+                        "hyperServices is null");
+                return;
+            }
+
+            SdkTracker.trackBootLifecycle(
+                    PaymentConstants.SubCategory.LifeCycle.HYPER_SDK,
+                    PaymentConstants.LogLevel.INFO,
+                    SDK_TRACKER_LABEL,
+                    "onActivityResult",
+                    "onActivityResult() called with: requestCode = [" + requestCode + "], resultCode = [" + resultCode + "], data = [" + data + "]"
+            );
+            hyperServices.onActivityResult(requestCode, resultCode, data);
         }
     }
 }
