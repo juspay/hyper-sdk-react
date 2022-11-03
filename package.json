@@ -16,6 +16,9 @@
     "hyper-sdk-react.podspec",
     "!lib/typescript/example",
     "!**/__tests__",
+    "!**/build",
+    "!*.DS_STORE",
+    "!*.editorconfig",
     "!**/__fixtures__",
     "!**/__mocks__"
   ],
