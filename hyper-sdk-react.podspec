@@ -2,7 +2,7 @@ require "json"
 
 package = JSON.parse(File.read(File.join(__dir__, "package.json")))
 
-hyper_sdk_version = "2.1.15"
+hyper_sdk_version = "2.1.17"
 
 begin
   apps_package = JSON.parse(File.read(File.join(__dir__, "../../package.json")))

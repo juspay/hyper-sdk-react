@@ -8,7 +8,6 @@ import androidx.annotation.NonNull;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
 
-import in.juspay.hypersdk.core.PaymentConstants;
 import in.juspay.hypersdk.core.SdkTracker;
 import in.juspay.hypersdk.ui.RequestPermissionDelegate;
 
@@ -23,8 +22,8 @@ public class ReactRequestDelegate implements RequestPermissionDelegate {
     @Override
     public void requestPermission(String[] permissions, int requestCode) {
         SdkTracker.trackBootLifecycle(
-            PaymentConstants.SubCategory.LifeCycle.HYPER_SDK,
-            PaymentConstants.LogLevel.INFO,
+            LogConstants.SUBCATEGORY_HYPER_SDK,
+            LogConstants.LEVEL_INFO,
             HyperSdkReactModule.SDK_TRACKER_LABEL,
             "requestPermission",
             "requestPermission() called with: permissions = [" + Arrays.toString(permissions) + "], requestCode = [" + requestCode + "]");
