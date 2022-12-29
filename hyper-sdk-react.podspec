@@ -13,6 +13,7 @@ begin
       puts ("Ignoring the overriden SDK version present in package.json (#{override_version}) as there is a newer version present in the SDK (#{hyper_sdk_version}).")
     end
   end
+rescue
 end
 
 puts ("HyperSDK Version: #{hyper_sdk_version}")
