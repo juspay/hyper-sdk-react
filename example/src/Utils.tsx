@@ -57,9 +57,10 @@ const getClientAuthToken = (resp: string) => {
   return '';
 };
 
-const services: any = {};
-services.ec = 'in.juspay.ec';
-services.pp = 'in.juspay.hyperpay';
+const services = {
+  ec: 'in.juspay.ec',
+  pp: 'in.juspay.hyperpay',
+};
 
 const generatePreFetchPayload = (clientId: string, service: string) => {
   return {
