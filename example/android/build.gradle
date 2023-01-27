@@ -3,15 +3,15 @@
 buildscript {
     ext {
         buildToolsVersion = "28.0.3"
-        minSdkVersion = 19
-        compileSdkVersion = 28
-        targetSdkVersion = 28
+        minSdkVersion = 21
+        compileSdkVersion = 30
+        targetSdkVersion = 30
         hyperSDKVersion = "2.1.2" // for merchant's code reference
         useDynamicAssets = true
     }
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
   dependencies {
         classpath('com.android.tools.build:gradle:4.0.1')
@@ -37,7 +37,7 @@ allprojects {
         maven { url "https://maven.getsimpl.com" }
 
         google()
-        jcenter()
+        mavenCentral()
         maven { url 'https://www.jitpack.io' }
     }
 }
