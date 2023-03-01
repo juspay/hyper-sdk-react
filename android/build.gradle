@@ -36,6 +36,8 @@ def getExtOrIntegerDefault(name) {
     return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties['HyperSdkReact_' + name]).toInteger()
 }
 
+def useDynamicAssets = rootProject.ext.has('useDynamicAssets') ? rootProject.ext.get('useDynamicAssets') : false
+
 android {
     compileSdkVersion getExtOrIntegerDefault('compileSdkVersion')
     buildToolsVersion getExtOrDefault('buildToolsVersion')
@@ -52,6 +54,13 @@ android {
             minifyEnabled false
         }
     }
+
+    if(useDynamicAssets) {
+        sourceSets {
+            main.res.srcDirs += ['build/dynamic-assets/res']
+        }
+    }
+
     lintOptions {
         disable 'GradleCompatible'
     }
