@@ -18,6 +18,7 @@ const getTimestamp = () => {
 const signData = (url: string, payload: string): Promise<string> => {
   var orderUrl = url + '?payload=' + payload;
   return new Promise((resolve, reject) => {
+    console.log('orderUrl : ' + orderUrl);
     fetch(orderUrl)
       .then((res) => {
         if (res.status === 200) {
@@ -93,6 +94,7 @@ const generateECInitiatePayload = (
 
 const generatePPInitiatePayload = (
   clientId: string,
+  merchantId: string,
   signaturePayload: string,
   signature: string,
   merchantKeyId: string
@@ -104,6 +106,7 @@ const generatePPInitiatePayload = (
     payload: {
       action: 'initiate',
       clientId,
+      merchantId,
       signaturePayload,
       signature,
       merchantKeyId,
@@ -115,6 +118,7 @@ const generatePPInitiatePayload = (
 const generateProcessPayloadPP = (
   action: string,
   clientId: string,
+  merchantId: string,
   orderDetails: string,
   signature: string,
   merchantKeyId: string
@@ -125,6 +129,7 @@ const generateProcessPayloadPP = (
     payload: {
       action,
       clientId,
+      merchantId,
       orderDetails,
       signature,
       merchantKeyId,
@@ -415,6 +420,7 @@ const alertCallbackResponse = (screen: string, resp: any) => {
   var data = JSON.parse(resp);
   var event: string = data.event || '';
   var payload = JSON.stringify(data.payload) || '';
+  console.log('callback response' + payload);
   showCopyAlert(screen + ': ' + event, payload);
   // console.warn(screen, resp);
 };
@@ -430,6 +436,7 @@ type HyperUtils = {
   ): {};
   generatePPInitiatePayload(
     clientId: string,
+    merchantId: string,
     signaturePayload: string,
     signature: string,
     merchantKeyId: string
@@ -437,6 +444,7 @@ type HyperUtils = {
   generateProcessPayloadPP(
     action: string,
     clientId: string,
+    merchantId: string,
     orderDetails: string,
     signature: string,
     merchantKeyId: string

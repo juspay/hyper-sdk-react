@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import 'react-native-gesture-handler';
 import * as React from 'react';
 import {
@@ -70,6 +71,8 @@ class ProcessScreen extends React.Component {
   directWalletToken: string;
   sdkPresent: string;
   walletMobile: string;
+  initiatePayload: {};
+  inItsignaturePayload: {};
 
   constructor(props: { navigation: any; route: any }, context: any) {
     super(props, context);
@@ -109,6 +112,8 @@ class ProcessScreen extends React.Component {
     this.otp = '';
     this.sdkPresent = '';
     this.walletMobile = '';
+    this.initiatePayload = {};
+    this.inItsignaturePayload = {};
 
     if (this.service === 'pp') {
       this.state.pickerSelected = 'quickPay';
@@ -686,6 +691,7 @@ class ProcessScreen extends React.Component {
                       customer_email: this.email,
                       timestamp: HyperUtils.getTimestamp(),
                     };
+                    console.warn('OrderDetails : ' + this.orderDetails);
                     HyperUtils.signData(
                       this.signUrl,
                       JSON.stringify(this.orderDetails)
@@ -705,11 +711,12 @@ class ProcessScreen extends React.Component {
                     var payload = HyperUtils.generateProcessPayloadPP(
                       this.state.pickerSelected,
                       this.clientId,
+                      this.merchantId,
                       JSON.stringify(this.orderDetails),
                       this.signature,
                       this.merchantKeyId
                     );
-
+                    console.log('Process Payload : ', payload);
                     HyperSdkReact.process(JSON.stringify(payload));
                   }}
                 />
@@ -723,6 +730,50 @@ class ProcessScreen extends React.Component {
                   // console.warn('isInitialised:', init);
                   HyperUtils.showCopyAlert('isInitialised', init + '');
                 });
+              }}
+            />
+            <CustomButton
+              title="Sign Initiate"
+              onPress={() => {
+                this.inItsignaturePayload = {
+                  merchant_id: this.merchantId,
+                  customer_id: this.customerId,
+                  timestamp: HyperUtils.getTimestamp(),
+                };
+                HyperUtils.signData(
+                  this.signUrl,
+                  JSON.stringify(this.inItsignaturePayload)
+                ).then((resp) => {
+                  console.warn(resp);
+                  this.signature = resp;
+                  HyperUtils.showCopyAlert(
+                    'Payload signed',
+                    this.signature
+                  );
+                }).catch((err) => {
+                  console.error("Error : ", err);
+                });
+              }}
+            />
+            <CustomButton
+              title="Initiate"
+              onPress={() => {
+                this.initiatePayload =
+                  this.state.pickerSelected === 'ec'
+                    ? HyperUtils.generateECInitiatePayload(
+                        this.merchantId,
+                        this.clientId,
+                        this.customerId
+                      )
+                    : HyperUtils.generatePPInitiatePayload(
+                        this.clientId,
+                        this.merchantId,
+                        JSON.stringify(this.inItsignaturePayload),
+                        this.signature,
+                        this.merchantKeyId
+                      );
+                // console.warn('initiatePayload:', this.initiatePayload);
+                HyperSdkReact.initiate(JSON.stringify(this.initiatePayload));
               }}
             />
             <CustomButton

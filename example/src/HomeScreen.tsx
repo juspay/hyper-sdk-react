@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable react-native/no-inline-styles */
 import * as React from 'react';
 import {
@@ -47,14 +48,14 @@ class HomeScreen extends React.Component {
     this.navigation = props.navigation;
     this.isPopupVisible = false;
 
-    this.merchantId = '';
-    this.clientId = '';
-    this.merchantKeyId = '';
-    this.signUrl = '';
+    this.merchantId = 'picasso';
+    this.clientId = 'picasso';
+    this.merchantKeyId = '8321';
+    this.signUrl = 'https://generate-signature.onrender.com/sign-payload';
     this.signature = '';
-    this.customerId = '';
-    this.mobile = '';
-    this.email = '';
+    this.customerId = 'test_customer';
+    this.mobile = '9742144874';
+    this.email = 'test@gmail.com';
     this.apiKey = '';
     this.amount = '1.0';
 
@@ -200,6 +201,8 @@ class HomeScreen extends React.Component {
                         'Payload signed',
                         this.signature
                       );
+                    }).catch((err) => {
+                      console.error("Error : ", err);
                     });
                   }}
                 />
@@ -216,6 +219,7 @@ class HomeScreen extends React.Component {
                         )
                       : HyperUtils.generatePPInitiatePayload(
                           this.clientId,
+                          this.merchantId,
                           JSON.stringify(this.signaturePayload),
                           this.signature,
                           this.merchantKeyId
