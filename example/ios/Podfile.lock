@@ -71,13 +71,13 @@ PODS:
     - FlipperKit/Core
     - FlipperKit/FlipperKitNetworkPlugin
   - glog (0.3.5)
-  - hyper-sdk-react (2.1.10):
-    - HyperSDK (= 2.1.17)
+  - hyper-sdk-react (2.1.11):
+    - HyperSDK (= 2.1.15)
     - React
-  - HyperSDK (2.1.17):
-    - JuspaySafeBrowser (= 0.1.75)
-    - Salvator (= 1.0.2)
-  - JuspaySafeBrowser (0.1.75)
+  - HyperSDK (2.1.15):
+    - JuspaySafeBrowser (= 0.1.73)
+    - Salvator (= 1.0.1)
+  - JuspaySafeBrowser (0.1.73)
   - libevent (2.1.12)
   - OpenSSL-Universal (1.1.1100)
   - RCT-Folly (2020.01.13.00):
@@ -345,13 +345,13 @@ PODS:
     - React
   - RNCPicker (1.6.6):
     - React
-  - RNGestureHandler (1.7.0):
-    - React
+  - RNGestureHandler (2.9.0):
+    - React-Core
   - RNReanimated (1.13.0):
     - React
   - RNScreens (2.10.1):
     - React
-  - Salvator (1.0.2)
+  - Salvator (1.0.1)
   - Yoga (1.14.0)
   - YogaKit (1.18.1):
     - Yoga (~> 1.14)
@@ -500,7 +500,7 @@ SPEC CHECKSUMS:
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
   DoubleConversion: cf9b38bf0b2d048436d9a82ad2abe1404f11e7de
   FBLazyVector: fa8275d5086566e22a26ddc385ab5772e7f9b1bd
-  FBReactNativeSpec: e6e168efc02042b985ded6066abb7c83b5686c5b
+  FBReactNativeSpec: c791b1d7c529e5846f369c7168b31676fbee0af2
   Flipper: 30e8eeeed6abdc98edaf32af0cda2f198be4b733
   Flipper-Boost-iOSX: fd1e2b8cbef7e662a122412d7ac5f5bea715403c
   Flipper-DoubleConversion: 2dc99b02f658daf147069aad9dbd29d8feb06d30
@@ -511,9 +511,9 @@ SPEC CHECKSUMS:
   Flipper-RSocket: d9d9ade67cbecf6ac10730304bf5607266dd2541
   FlipperKit: d8d346844eca5d9120c17d441a2f38596e8ed2b9
   glog: 73c2498ac6884b13ede40eda8228cb1eee9d9d62
-  hyper-sdk-react: 61a57548125fb5d46dd873ad267ab98dddd292ed
-  HyperSDK: 20f94984b5c1118952f665a35edc9341aa665b66
-  JuspaySafeBrowser: 24dd74329c58fd4c21fbb993639a83bdd853c26f
+  hyper-sdk-react: 5ddc7a4f2a4317c3d5494ac497d15b5b25001f62
+  HyperSDK: d078d8ada3cb1654e1a5f7c15cb60323d238fb6b
+  JuspaySafeBrowser: 0193990c52e8865bd57f2875b03a20a598d8643d
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   RCT-Folly: ec7a233ccc97cc556cf7237f0db1ff65b986f27c
@@ -543,13 +543,13 @@ SPEC CHECKSUMS:
   RNCCheckbox: 48d578b57e1022ab0ae573cb2b105add6030ef32
   RNCMaskedView: 5a8ec07677aa885546a0d98da336457e2bea557f
   RNCPicker: 494015f2b7ec4bee5484b6f235aa19691426dcdb
-  RNGestureHandler: b6b359bb800ae399a9c8b27032bdbf7c18f08a08
+  RNGestureHandler: 071d7a9ad81e8b83fe7663b303d132406a7d8f39
   RNReanimated: 89f5e0a04d1dd52fbf27e7e7030d8f80a646a3fc
   RNScreens: b748efec66e095134c7166ca333b628cd7e6f3e2
-  Salvator: 084905ad83586b10de2c283c87b9241fefac5405
+  Salvator: e388abcd1c8a526aff3e952ed94219bb4e12c85f
   Yoga: d1fc3575b8b68891ff5ef3c276daa855e841eb32
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: 98f5bddbeb2079be44f1a704ab8176d5b9ae43a8
+PODFILE CHECKSUM: 00ad019567647d7425d5729d9d8fb7fe9b905930
 
 COCOAPODS: 1.11.3
