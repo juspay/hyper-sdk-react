@@ -8,9 +8,36 @@ React native module for HyperSDK which enables payment orchestration via differe
 npm install hyper-sdk-react
 ```
 
-### Android
+### Android (2.2.x and above)
 
-Add following maven url in top build.gradle:
+Add following maven url in the allProjects > repositories section of root(top) build.gradle:
+
+```groovy
+maven { url "https://maven.juspay.in/jp-build-packages/hyper-sdk/" }
+```
+
+Add the clientId ext property in root(top) `build.gradle`:
+
+```groovy
+buildscript {
+    ....
+    ext {
+        ....
+        clientId = "<clientId shared by Juspay team>"
+        hyperSDKVersion = "2.1.12"
+        ....
+    }
+    ....
+}
+```
+
+This is the same clientId present earlier in the `MerchantConfig.txt` file.
+
+Optionally, you can also provide an override for base SDK version present in plugin (the newer version among both would be considered).
+
+### Android (2.1.x and below) [Deprecated]
+
+Add following maven url in the allProjects > repositories section of root(top) build.gradle:
 
 ```groovy
 maven { url "https://maven.juspay.in/jp-build-packages/hyper-sdk/"}
@@ -20,19 +47,19 @@ maven { url "https://maven.juspay.in/jp-build-packages/hyper-sdk/"}
 
 ```groovy
 buildscript {
-  ....
-   ext {
-       ....
-       hyperSDKVersion = "2.1.2"
-       ....
-   }
-   ....
+    ....
+    ext {
+        ....
+        hyperSDKVersion = "2.1.12"
+        ....
+    }
+    ....
 }
 ```
 
 Note: This version is just for explanatory purposes and may change in future. Contact Juspay support team for the latest SDK version.
 
-#### **Dynamic Assets Android**
+#### **Dynamic Assets Android** (Only applicable for version 2.1.x and below) [Deprecated]
 
 Add the following ext property in top `build.gradle` if you are using the Dynamic Assets Feature:
 
@@ -59,7 +86,13 @@ clientId = <clientId shared by Juspay Team>
 
 For `hyper-sdk-react` version >= `2.1.0`, minimum native android `HyperSDK` version supported is `2.0.4-rc.12`. Please upgrade to latest Hyper SDK as well if you are updating the `hyper-sdk-react` version in `package.json` of your react-native app. Contact Juspay support team for any queries.
 
+### Migration Guide from 2.1.x to 2.2.x
 
+Step-1: Add the clientId ext property in root(top) `build.gradle`. Refer [here](#android-22x-and-above) for more info. This is the same clientId present in the `MerchantConfig.txt` file.
+
+Step-2: Delete MerchantConfig.txt file.
+
+Step-3: Remove useDynamicAssets property defined in root(top) `build.gradle`. Refer [here](#dynamic-assets-android-only-applicable-for-version-21x-and-below-deprecated) for the exact property which needs to be removed.
 
 ### iOS
 
@@ -95,6 +128,7 @@ Note: This version is just for explanatory purposes and may change in future. Co
 Change the `hyperSdkIOSVersion` to `2.1.15` (This version is just for explanatory purposes and may change in future. Contact Juspay support team for the latest SDK version).
 
 Add below post_install script in the Podfile
+
 ```sh
 post_install do |installer|
  fuse_path = "./Pods/HyperSDK/Fuse.rb"
@@ -320,6 +354,6 @@ Please refer [here for Express Checkout SDK](https://developer.juspay.in/v2.0/do
 
 See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the repository and the development workflow.
 
-# License
+## License
 
-hyper-sdk-react is distributed under [AGPL-3.0-only](https://bitbucket.org/juspay/hyper-sdk-react/src/master/LICENSE.md).
+hyper-sdk-react is distributed under [AGPL-3.0-only](https://bitbucket.org/juspay/hyper-sdk-react/src/master/LICENSE.md) license.
