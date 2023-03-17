@@ -13,7 +13,8 @@ import in.juspay.hypersdk.ui.RequestPermissionDelegate;
 
 public class ReactRequestDelegate implements RequestPermissionDelegate {
 
-    @NonNull private final WeakReference<Activity> activity;
+    @NonNull
+    private final WeakReference<Activity> activity;
 
     public ReactRequestDelegate(Activity activity) {
         this.activity = new WeakReference<>(activity);
@@ -22,11 +23,11 @@ public class ReactRequestDelegate implements RequestPermissionDelegate {
     @Override
     public void requestPermission(String[] permissions, int requestCode) {
         SdkTracker.trackBootLifecycle(
-            LogConstants.SUBCATEGORY_HYPER_SDK,
-            LogConstants.LEVEL_INFO,
-            HyperSdkReactModule.SDK_TRACKER_LABEL,
-            "requestPermission",
-            "requestPermission() called with: permissions = [" + Arrays.toString(permissions) + "], requestCode = [" + requestCode + "]");
+                LogConstants.SUBCATEGORY_HYPER_SDK,
+                LogConstants.LEVEL_INFO,
+                HyperSdkReactModule.SDK_TRACKER_LABEL,
+                "requestPermission",
+                "requestPermission() called with: permissions = [" + Arrays.toString(permissions) + "], requestCode = [" + requestCode + "]");
         Activity activity = this.activity.get();
         if (activity != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             activity.requestPermissions(permissions, requestCode);

@@ -4,16 +4,16 @@ buildscript {
     ext {
         buildToolsVersion = "28.0.3"
         minSdkVersion = 21
-        compileSdkVersion = 30
-        targetSdkVersion = 30
-        hyperSDKVersion = "2.1.2" // for merchant's code reference
-        useDynamicAssets = true
+        compileSdkVersion = 33
+        targetSdkVersion = 33
+        clientId = 'picasso'
+        hyperSDKVersion = '2.1.12'
     }
     repositories {
         google()
         mavenCentral()
     }
-  dependencies {
+    dependencies {
         classpath('com.android.tools.build:gradle:4.0.1')
 
         // NOTE: Do not place your application dependencies here; they belong
