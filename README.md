@@ -88,7 +88,7 @@ For `hyper-sdk-react` version >= `2.1.0`, minimum native android `HyperSDK` vers
 
 ### Migration Guide from 2.1.x to 3.y.x
 
-Step-1: Add the clientId ext property in root(top) `build.gradle`. Refer [here](#android-22x-and-above) for more info. This is the same clientId present in the `MerchantConfig.txt` file.
+Step-1: Add the clientId ext property in root(top) `build.gradle`. Refer [here](#android-300-and-above) for more info. This is the same clientId present in the `MerchantConfig.txt` file.
 
 Step-2: Delete MerchantConfig.txt file.
 
