@@ -8,7 +8,7 @@ React native module for HyperSDK which enables payment orchestration via differe
 npm install hyper-sdk-react
 ```
 
-### Android (2.2.x and above)
+### Android (3.0.0 and above)
 
 Add following maven url in the allProjects > repositories section of root(top) build.gradle:
 
@@ -86,7 +86,7 @@ clientId = <clientId shared by Juspay Team>
 
 For `hyper-sdk-react` version >= `2.1.0`, minimum native android `HyperSDK` version supported is `2.0.4-rc.12`. Please upgrade to latest Hyper SDK as well if you are updating the `hyper-sdk-react` version in `package.json` of your react-native app. Contact Juspay support team for any queries.
 
-### Migration Guide from 2.1.x to 2.2.x
+### Migration Guide from 2.1.x to 3.y.x
 
 Step-1: Add the clientId ext property in root(top) `build.gradle`. Refer [here](#android-22x-and-above) for more info. This is the same clientId present in the `MerchantConfig.txt` file.
 
