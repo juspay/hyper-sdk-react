@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 /* eslint-disable react-native/no-inline-styles */
 import * as React from 'react';
 import {
@@ -17,12 +16,15 @@ import {
 import HyperAPIUtils from './API';
 import HyperSdkReact from 'hyper-sdk-react';
 import HyperUtils from './Utils';
-import { Picker } from '@react-native-community/picker';
+import merchantConfig from './merchant_config.json';
+import customerConfig from './customer_config.json';
+import { Picker } from '@react-native-picker/picker';
+import { useNavigation } from '@react-navigation/native';
 
 class HomeScreen extends React.Component {
   state = {
     animation: new Animated.Value(0),
-    pickerSelected: 'ec',
+    pickerSelected: 'pp',
   };
 
   navigation: any;
@@ -35,12 +37,12 @@ class HomeScreen extends React.Component {
   merchantId: string;
   clientId: string;
   merchantKeyId: string;
-  signUrl: string;
   signature: string;
   customerId: string;
   mobile: string;
   email: string;
   apiKey: string;
+  privateKey: string;
   amount: string;
 
   constructor(props: { navigation: any }, context: any) {
@@ -48,16 +50,16 @@ class HomeScreen extends React.Component {
     this.navigation = props.navigation;
     this.isPopupVisible = false;
 
-    this.merchantId = 'picasso';
-    this.clientId = 'picasso';
-    this.merchantKeyId = '8321';
-    this.signUrl = 'https://generate-signature.onrender.com/sign-payload';
+    this.merchantId = merchantConfig.merchantId;
+    this.clientId = merchantConfig.clientId;
+    this.merchantKeyId = merchantConfig.merchantKeyId;
     this.signature = '';
-    this.customerId = 'test_customer';
-    this.mobile = '9742144874';
-    this.email = 'test@gmail.com';
-    this.apiKey = '';
-    this.amount = '1.0';
+    this.customerId = customerConfig.customerId;
+    this.mobile = customerConfig.mobile;
+    this.email = customerConfig.email;
+    this.apiKey = merchantConfig.apiKey;
+    this.privateKey = merchantConfig.privateKey;
+    this.amount = customerConfig.amount;
 
     this.preFetchPayload = HyperUtils.generatePreFetchPayload(
       this.clientId,
@@ -69,9 +71,12 @@ class HomeScreen extends React.Component {
 
   componentDidMount() {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
-    this.eventListener = eventEmitter.addListener('HyperEvent', (resp) => {
-      HyperUtils.alertCallbackResponse('HomeScreen', resp);
-    });
+    this.eventListener = eventEmitter.addListener(
+      HyperSdkReact.HyperEvent,
+      (resp) => {
+        HyperUtils.alertCallbackResponse('HomeScreen', resp);
+      }
+    );
 
     BackHandler.addEventListener('hardwareBackPress', () => {
       if (this.isPopupVisible) {
@@ -191,19 +196,20 @@ class HomeScreen extends React.Component {
                       customer_id: this.customerId,
                       timestamp: HyperUtils.getTimestamp(),
                     };
-                    HyperUtils.signData(
-                      this.signUrl,
+                    HyperAPIUtils.generateSign(
+                      this.privateKey,
                       JSON.stringify(this.signaturePayload)
-                    ).then((resp) => {
-                      console.warn(resp);
-                      this.signature = resp;
-                      HyperUtils.showCopyAlert(
-                        'Payload signed',
-                        this.signature
-                      );
-                    }).catch((err) => {
-                      console.error("Error : ", err);
-                    });
+                    )
+                      .then((resp) => {
+                        this.signature = resp;
+                        HyperUtils.showCopyAlert(
+                          'Payload signed',
+                          this.signature
+                        );
+                      })
+                      .catch((err) => {
+                        console.warn(err);
+                      });
                   }}
                 />
               ) : null}
@@ -241,7 +247,7 @@ class HomeScreen extends React.Component {
                   amount: this.amount,
                   apiKey: this.apiKey,
                   merchantKeyId: this.merchantKeyId,
-                  signUrl: this.signUrl,
+                  privateKey: this.privateKey,
                   service: this.state.pickerSelected,
                 });
               }}
@@ -344,11 +350,11 @@ class HomeScreen extends React.Component {
                 <View style={styles.horizontal}>
                   <TextInput
                     style={styles.longEditText}
-                    placeholder="signUrl"
+                    placeholder="privateKey"
                     onChangeText={(text) => {
-                      this.signUrl = text;
+                      this.privateKey = text;
                     }}
-                    defaultValue={this.signUrl}
+                    defaultValue={this.privateKey}
                   />
                 </View>
               </View>
@@ -467,4 +473,7 @@ const CustomButton = (props: any) => {
   );
 };
 
-export default HomeScreen;
+export default function WithNavigate(props: any) {
+  const navigation = useNavigation();
+  return <HomeScreen {...props} navigate={navigation} />;
+}

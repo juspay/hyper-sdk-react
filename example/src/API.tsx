@@ -1,4 +1,23 @@
-import { NativeModules } from 'react-native';
+import { NativeModules, Platform } from 'react-native';
+
+const LINKING_ERROR =
+  `The package 'HyperAPIUtils' doesn't seem to be linked. Make sure: \n\n` +
+  Platform.select({ ios: "- You have run 'pod install'\n", default: '' }) +
+  '- You rebuilt the app after installing the package\n' +
+  '- You are not using Expo Go\n';
+
+const HyperAPIUtils = NativeModules.HyperAPIUtils
+  ? NativeModules.HyperAPIUtils
+  : new Proxy(
+      {},
+      {
+        get() {
+          throw new Error(LINKING_ERROR);
+        },
+      }
+    );
+
+console.log('NativeModules', NativeModules);
 
 type HyperAPIUtilsType = {
   createCustomer(
@@ -16,8 +35,7 @@ type HyperAPIUtilsType = {
     apiKey: string
   ): Promise<string>;
   copyToClipBoard(header: string, message: string): void;
+  generateSign(keyString: string, payload: string): Promise<string>;
 };
-
-const { HyperAPIUtils } = NativeModules;
 
 export default HyperAPIUtils as HyperAPIUtilsType;

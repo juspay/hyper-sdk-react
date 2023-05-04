@@ -5,10 +5,8 @@
 //  Copyright © Juspay. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
-#import <React/RCTEventEmitter.h>
+#import "React/RCTBridgeModule.h"
 
-
-@interface HyperAPIUtils : RCTEventEmitter
+@interface HyperAPIUtils : NSObject <RCTBridgeModule>
 
 @end
