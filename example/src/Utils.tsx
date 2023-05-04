@@ -15,26 +15,6 @@ const getTimestamp = () => {
   return new Date().getTime().toString();
 };
 
-const signData = (url: string, payload: string): Promise<string> => {
-  var orderUrl = url + '?payload=' + payload;
-  return new Promise((resolve, reject) => {
-    console.log('orderUrl : ' + orderUrl);
-    fetch(orderUrl)
-      .then((res) => {
-        if (res.status === 200) {
-          return res.text();
-        }
-        throw new Error();
-      })
-      .then((text) => resolve(text))
-      .catch((err) => {
-        console.log('error occurred in generate signature');
-        console.log(err);
-        reject(err);
-      });
-  });
-};
-
 const generateOrderId = () => {
   var result = 'hyperOrder-' + Math.floor(Math.random() * 10000) + '-';
   var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
@@ -428,7 +408,6 @@ const alertCallbackResponse = (screen: string, resp: any) => {
 type HyperUtils = {
   uuidv4(): string;
   getTimestamp(): string;
-  signData(url: string, payload: string): Promise<string>;
   generateECInitiatePayload(
     merchantId: string,
     clientId: string,
@@ -508,7 +487,6 @@ type HyperUtils = {
 export default {
   uuidv4,
   getTimestamp,
-  signData,
   generatePreFetchPayload,
   generateECInitiatePayload,
   generatePPInitiatePayload,

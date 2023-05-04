@@ -11,7 +11,7 @@ import java.util.Arrays;
 import in.juspay.hypersdk.core.SdkTracker;
 import in.juspay.hypersdk.ui.RequestPermissionDelegate;
 
-public class ReactRequestDelegate implements RequestPermissionDelegate {
+final class ReactRequestDelegate implements RequestPermissionDelegate {
 
     @NonNull
     private final WeakReference<Activity> activity;
@@ -25,7 +25,7 @@ public class ReactRequestDelegate implements RequestPermissionDelegate {
         SdkTracker.trackBootLifecycle(
                 LogConstants.SUBCATEGORY_HYPER_SDK,
                 LogConstants.LEVEL_INFO,
-                HyperSdkReactModule.SDK_TRACKER_LABEL,
+                LogConstants.SDK_TRACKER_LABEL,
                 "requestPermission",
                 "requestPermission() called with: permissions = [" + Arrays.toString(permissions) + "], requestCode = [" + requestCode + "]");
         Activity activity = this.activity.get();

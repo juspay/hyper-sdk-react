@@ -1,0 +1,12 @@
+pre-commit:
+  parallel: true
+  commands:
+    lint:
+      run: yarn lint
+    types:
+      run: yarn typecheck
+commit-msg:
+  parallel: true
+  commands:
+    commitlint:
+      run: yarn commitlint --edit

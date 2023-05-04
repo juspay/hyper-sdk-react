@@ -10,7 +10,7 @@ import java.util.Set;
 
 import in.juspay.hypersdk.ui.ActivityLaunchDelegate;
 
-public final class ReactLaunchDelegate implements ActivityLaunchDelegate {
+final class ReactLaunchDelegate implements ActivityLaunchDelegate {
 
     private final ReactApplicationContext context;
     private static final Set<Integer> intentRequestCodes = new HashSet<>();
