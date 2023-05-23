@@ -356,4 +356,4 @@ See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the 
 
 ## License
 
-hyper-sdk-react is distributed under [AGPL-3.0-only](https://bitbucket.org/juspay/hyper-sdk-react/src/master/LICENSE.md) license.
+hyper-sdk-react is distributed under [AGPL-3.0-only](https://github.com/juspay/hyper-sdk-react/src/main/LICENSE.md) license.
