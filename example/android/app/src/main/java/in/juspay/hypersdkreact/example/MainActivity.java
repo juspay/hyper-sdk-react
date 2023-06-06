@@ -47,9 +47,10 @@ public class MainActivity extends ReactActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (HyperSdkReactModule.getIntentRequestCodes().contains(requestCode)) {
+        if (HyperSdkReactModule.getPermissionRequestCodes().contains(requestCode)) {
             HyperSdkReactModule.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        } else {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
 }

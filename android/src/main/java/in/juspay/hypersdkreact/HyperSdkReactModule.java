@@ -132,6 +132,15 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
         return ReactLaunchDelegate.getIntentRequestCodes();
     }
 
+    /**
+     * Used to get the list of requestCodes for which permission was requested by HyperSDK.
+     *
+     * @return {@link Set set} of {@link Integer} requestCodes.
+     */
+    public static Set<Integer> getPermissionRequestCodes() {
+        return ReactRequestDelegate.getPermissionRequestCodes();
+    }
+
     @Nullable
     @Override
     public Map<String, Object> getConstants() {
