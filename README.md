@@ -306,8 +306,11 @@ Hyper SDK needs to listen to the response of permissions asked to the user for h
 ```java
   @Override
   public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    HyperSdkReactModule.onRequestPermissionsResult(requestCode, permissions, grantResults);
+      if (HyperSdkReactModule.getPermissionRequestCodes().contains(requestCode)) {
+          HyperSdkReactModule.onRequestPermissionsResult(requestCode, permissions, grantResults);
+      } else {
+          super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+      }
   }
 ```
 
