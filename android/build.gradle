@@ -35,7 +35,7 @@ def getExtOrIntegerDefault(name) {
 
 android {
     namespace "in.juspay.hypersdkreact"
-    compileSdk getExtOrIntegerDefault('compileSdkVersion')
+    compileSdkVersion getExtOrIntegerDefault('compileSdkVersion')
 
     defaultConfig {
         minSdkVersion getExtOrIntegerDefault('minSdkVersion')
