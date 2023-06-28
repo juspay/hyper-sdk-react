@@ -11,7 +11,7 @@ buildscript {
         ndkVersion = "23.1.7779620"
 
         // Hyper SDK
-        clientId = 'geddit'
+        clientId = 'picasso'
     }
     repositories {
         google()

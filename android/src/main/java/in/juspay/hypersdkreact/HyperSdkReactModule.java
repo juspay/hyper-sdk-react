@@ -48,6 +48,8 @@ import in.juspay.services.HyperServices;
 public class HyperSdkReactModule extends ReactContextBaseJavaModule implements ActivityEventListener {
     static final String NAME = "HyperSdkReact";
     private static final String HYPER_EVENT = "HyperEvent";
+    public static final String PROCESS_PAYLOAD_ARG = "processPayload";
+    private static ProcessCallback processCallback;
 
     /**
      * All the React methods in here should be synchronized on this specific object because there
@@ -60,7 +62,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
     private static final ActivityResultDelegate activityResultDelegate = new ActivityResultDelegate();
 
     @Nullable
-    private HyperServices hyperServices;
+    private static HyperServices hyperServices;
 
     private final ReactApplicationContext context;
 
@@ -184,7 +186,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
     }
 
     @ReactMethod(isBlockingSynchronousMethod = true)
-    public boolean onBackPressed() {
+    public static boolean onBackPressed() {
         synchronized (lock) {
             return hyperServices != null && hyperServices.onBackPressed();
         }
@@ -221,6 +223,9 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                     @Override
                     public void onEvent(JSONObject data, JuspayResponseHandler handler) {
                         // Send out the event to the merchant on JS side
+                        if (isPPMerchant(payload) && "process_result".equals(data.optString("event"))) {
+                            processCallback.onResult();
+                        }
                         sendEventToJS(data);
                     }
                 });
@@ -272,12 +277,22 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                             "hyperServices is null");
                     return;
                 }
-
-                hyperServices.process(activity, payload);
+                if (isPPMerchant(payload)) {
+                    Intent i = new Intent(activity, ProcessActivity.class);
+                    i.putExtra(PROCESS_PAYLOAD_ARG, payload.toString());
+                    activity.startActivity(i);
+                } else {
+                    hyperServices.process(activity, payload);
+                }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    // Alway returning false, as this feature is still in build phase
+    private boolean isPPMerchant(JSONObject payload) {
+        return false; //payload.optString("service").equals("in.juspay.hyperpay");
     }
 
     @ReactMethod
@@ -368,6 +383,30 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                     "onRequestPermissionsResult() called with: requestCode = [" + requestCode + "], permissions = [" + Arrays.toString(permissions) + "], grantResults = [" + Arrays.toString(grantResults) + "]");
 
             hyperServices.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+    }
+
+    public static void processWithActivity(FragmentActivity activity, JSONObject params, ProcessCallback processCallback) {
+        if (hyperServices == null) {
+            SdkTracker.trackBootLifecycle(
+                    LogConstants.SUBCATEGORY_HYPER_SDK,
+                    LogConstants.LEVEL_ERROR,
+                    LogConstants.SDK_TRACKER_LABEL,
+                    "process",
+                    "hyperServices is null");
+            return;
+        }
+        HyperSdkReactModule.processCallback = processCallback;
+
+        hyperServices.process(activity, params);
+    }
+
+    public interface ProcessCallback {
+        void onResult();
+    }
+    public static void resetActivity(FragmentActivity activity) {
+        if (hyperServices != null) {
+            hyperServices.resetActivity(activity);
         }
     }
 
