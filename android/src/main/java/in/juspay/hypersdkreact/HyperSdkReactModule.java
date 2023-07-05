@@ -231,7 +231,9 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                             if (processActivity != null) {
                                 processActivity.finish();
                             }
+                            ProcessActivity.setActivityCallback(null);
                             wasProcessWithActivity = false;
+                            processActivityRef = new WeakReference<>(null);
                         }
                         sendEventToJS(data);
                     }
@@ -311,7 +313,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                 }
 
                 Intent i = new Intent(activity, ProcessActivity.class);
-                i.putExtra(Constants.ACTIVITY_CALLBACK, new ActivityCallback() {
+                ProcessActivity.setActivityCallback(new ActivityCallback() {
                     @Override
                     public void onCreated(FragmentActivity fragmentActivity) {
                         if (hyperServices == null) {
