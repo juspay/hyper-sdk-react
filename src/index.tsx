@@ -30,12 +30,19 @@ if (Platform.OS === 'android') {
   HyperSdkReact.updateBaseViewController = () => {};
 }
 
+if (Platform.OS === 'ios') {
+  HyperSdkReact.processWithActivity = (data: string) => {
+    HyperSdkReact.process(data);
+  };
+}
+
 type HyperSdkReactType = {
   HyperEvent: string;
   preFetch(data: string): void;
   createHyperServices(): void;
   initiate(data: string): void;
   process(data: string): void;
+  processWithActivity(data: string): void;
   terminate(): void;
   onBackPressed(): boolean;
   isNull(): boolean;
