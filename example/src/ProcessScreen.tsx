@@ -285,7 +285,7 @@ class ProcessScreen extends React.Component {
                 title="Get Payment Methods"
                 onPress={() => {
                   var payload = HyperUtils.generatePaymentMethodsPayload();
-                  HyperSdkReact.process(JSON.stringify(payload));
+                  HyperSdkReact.processWithActivity(JSON.stringify(payload));
                 }}
               />
             ) : null}
