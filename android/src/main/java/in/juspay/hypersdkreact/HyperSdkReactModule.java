@@ -133,6 +133,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
      *
      * @return {@link Set set} of {@link Integer} requestCodes.
      */
+    @Keep
     public static Set<Integer> getIntentRequestCodes() {
         return ReactLaunchDelegate.getIntentRequestCodes();
     }
@@ -171,9 +172,9 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
             if (activity == null) {
                 SdkTracker.trackBootLifecycle(
-                        Constants.SUBCATEGORY_HYPER_SDK,
-                        Constants.LEVEL_ERROR,
-                        Constants.SDK_TRACKER_LABEL,
+                        LogConstants.SUBCATEGORY_HYPER_SDK,
+                        LogConstants.LEVEL_ERROR,
+                        LogConstants.SDK_TRACKER_LABEL,
                         "createHyperServices",
                         "activity is null");
                 return;
@@ -204,9 +205,9 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
                 if (activity == null) {
                     SdkTracker.trackBootLifecycle(
-                            Constants.SUBCATEGORY_HYPER_SDK,
-                            Constants.LEVEL_ERROR,
-                            Constants.SDK_TRACKER_LABEL,
+                            LogConstants.SUBCATEGORY_HYPER_SDK,
+                            LogConstants.LEVEL_ERROR,
+                            LogConstants.SDK_TRACKER_LABEL,
                             "initiate",
                             "activity is null");
                     return;
@@ -214,9 +215,9 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
                 if (hyperServices == null) {
                     SdkTracker.trackBootLifecycle(
-                            Constants.SUBCATEGORY_HYPER_SDK,
-                            Constants.LEVEL_ERROR,
-                            Constants.SDK_TRACKER_LABEL,
+                            LogConstants.SUBCATEGORY_HYPER_SDK,
+                            LogConstants.LEVEL_ERROR,
+                            LogConstants.SDK_TRACKER_LABEL,
                             "initiate",
                             "hyperServices is null");
                     return;
@@ -230,6 +231,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                             Activity processActivity = processActivityRef.get();
                             if (processActivity != null) {
                                 processActivity.finish();
+                                processActivity.overridePendingTransition(0, android.R.anim.fade_out);
                             }
                             ProcessActivity.setActivityCallback(null);
                             wasProcessWithActivity = false;
@@ -269,9 +271,9 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
                 if (activity == null) {
                     SdkTracker.trackBootLifecycle(
-                            Constants.SUBCATEGORY_HYPER_SDK,
-                            Constants.LEVEL_ERROR,
-                            Constants.SDK_TRACKER_LABEL,
+                            LogConstants.SUBCATEGORY_HYPER_SDK,
+                            LogConstants.LEVEL_ERROR,
+                            LogConstants.SDK_TRACKER_LABEL,
                             "initiate",
                             "activity is null");
                     return;
@@ -279,9 +281,9 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
                 if (hyperServices == null) {
                     SdkTracker.trackBootLifecycle(
-                            Constants.SUBCATEGORY_HYPER_SDK,
-                            Constants.LEVEL_ERROR,
-                            Constants.SDK_TRACKER_LABEL,
+                            LogConstants.SUBCATEGORY_HYPER_SDK,
+                            LogConstants.LEVEL_ERROR,
+                            LogConstants.SDK_TRACKER_LABEL,
                             "initiate",
                             "hyperServices is null");
                     return;
@@ -304,9 +306,9 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
                 if (activity == null) {
                     SdkTracker.trackBootLifecycle(
-                            Constants.SUBCATEGORY_HYPER_SDK,
-                            Constants.LEVEL_ERROR,
-                            Constants.SDK_TRACKER_LABEL,
+                            LogConstants.SUBCATEGORY_HYPER_SDK,
+                            LogConstants.LEVEL_ERROR,
+                            LogConstants.SDK_TRACKER_LABEL,
                             "initiate",
                             "activity is null");
                     return;
@@ -318,9 +320,9 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                     public void onCreated(FragmentActivity fragmentActivity) {
                         if (hyperServices == null) {
                             SdkTracker.trackBootLifecycle(
-                                    Constants.SUBCATEGORY_HYPER_SDK,
-                                    Constants.LEVEL_ERROR,
-                                    Constants.SDK_TRACKER_LABEL,
+                                    LogConstants.SUBCATEGORY_HYPER_SDK,
+                                    LogConstants.LEVEL_ERROR,
+                                    LogConstants.SDK_TRACKER_LABEL,
                                     "initiate",
                                     "hyperServices is null");
                             return;
@@ -389,9 +391,9 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
         synchronized (lock) {
             if (hyperServices == null) {
                 SdkTracker.trackBootLifecycle(
-                        Constants.SUBCATEGORY_HYPER_SDK,
-                        Constants.LEVEL_ERROR,
-                        Constants.SDK_TRACKER_LABEL,
+                        LogConstants.SUBCATEGORY_HYPER_SDK,
+                        LogConstants.LEVEL_ERROR,
+                        LogConstants.SDK_TRACKER_LABEL,
                         "onActivityResult",
                         "hyperServices is null");
                 return;
@@ -423,18 +425,18 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
             if (hyperServices == null) {
                 SdkTracker.trackBootLifecycle(
-                        Constants.SUBCATEGORY_HYPER_SDK,
-                        Constants.LEVEL_ERROR,
-                        Constants.SDK_TRACKER_LABEL,
+                        LogConstants.SUBCATEGORY_HYPER_SDK,
+                        LogConstants.LEVEL_ERROR,
+                        LogConstants.SDK_TRACKER_LABEL,
                         "onRequestPermissionsResult",
                         "hyperServices is null");
                 return;
             }
 
             SdkTracker.trackBootLifecycle(
-                    Constants.SUBCATEGORY_HYPER_SDK,
-                    Constants.LEVEL_INFO,
-                    Constants.SDK_TRACKER_LABEL,
+                    LogConstants.SUBCATEGORY_HYPER_SDK,
+                    LogConstants.LEVEL_INFO,
+                    LogConstants.SDK_TRACKER_LABEL,
                     "onRequestPermissionsResult",
                     "onRequestPermissionsResult() called with: requestCode = [" + requestCode + "], permissions = [" + Arrays.toString(permissions) + "], grantResults = [" + Arrays.toString(grantResults) + "]");
 
@@ -455,18 +457,18 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
             if (hyperServices == null) {
                 SdkTracker.trackBootLifecycle(
-                        Constants.SUBCATEGORY_HYPER_SDK,
-                        Constants.LEVEL_ERROR,
-                        Constants.SDK_TRACKER_LABEL,
+                        LogConstants.SUBCATEGORY_HYPER_SDK,
+                        LogConstants.LEVEL_ERROR,
+                        LogConstants.SDK_TRACKER_LABEL,
                         "onActivityResult",
                         "hyperServices is null");
                 return;
             }
 
             SdkTracker.trackBootLifecycle(
-                    Constants.SUBCATEGORY_HYPER_SDK,
-                    Constants.LEVEL_INFO,
-                    Constants.SDK_TRACKER_LABEL,
+                    LogConstants.SUBCATEGORY_HYPER_SDK,
+                    LogConstants.LEVEL_INFO,
+                    LogConstants.SDK_TRACKER_LABEL,
                     "onActivityResult",
                     "onActivityResult() called with: requestCode = [" + requestCode + "], resultCode = [" + resultCode + "], data = [" + data + "]"
             );

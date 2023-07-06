@@ -7,10 +7,9 @@
 
 package in.juspay.hypersdkreact;
 
-final class Constants {
+final class LogConstants {
     static final String SUBCATEGORY_HYPER_SDK = "hypersdk";
     static final String LEVEL_INFO = "info";
     static final String LEVEL_ERROR = "error";
     static final String SDK_TRACKER_LABEL = "hyper_sdk_react";
-    static final String ACTIVITY_CALLBACK = "activityCallback";
 }

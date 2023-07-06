@@ -285,7 +285,7 @@ class ProcessScreen extends React.Component {
                 title="Get Payment Methods"
                 onPress={() => {
                   var payload = HyperUtils.generatePaymentMethodsPayload();
-                  HyperSdkReact.processWithActivity(JSON.stringify(payload));
+                  HyperSdkReact.process(JSON.stringify(payload));
                 }}
               />
             ) : null}
@@ -725,6 +725,21 @@ class ProcessScreen extends React.Component {
                     );
 
                     HyperSdkReact.process(JSON.stringify(payload));
+                  }}
+                />
+                <CustomButton
+                  title="Process With New Activity"
+                  onPress={() => {
+                    var payload = HyperUtils.generateProcessPayloadPP(
+                      this.state.pickerSelected,
+                      this.clientId,
+                      this.merchantId,
+                      JSON.stringify(this.orderDetails),
+                      this.signature,
+                      this.merchantKeyId
+                    );
+
+                    HyperSdkReact.processWithActivity(JSON.stringify(payload));
                   }}
                 />
               </View>
