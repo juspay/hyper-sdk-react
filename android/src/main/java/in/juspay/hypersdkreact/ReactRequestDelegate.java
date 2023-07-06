@@ -33,9 +33,9 @@ final class ReactRequestDelegate implements RequestPermissionDelegate {
     @Override
     public void requestPermission(String[] permissions, int requestCode) {
         SdkTracker.trackBootLifecycle(
-                Constants.SUBCATEGORY_HYPER_SDK,
-                Constants.LEVEL_INFO,
-                Constants.SDK_TRACKER_LABEL,
+                LogConstants.SUBCATEGORY_HYPER_SDK,
+                LogConstants.LEVEL_INFO,
+                LogConstants.SDK_TRACKER_LABEL,
                 "requestPermission",
                 "requestPermission() called with: permissions = [" + Arrays.toString(permissions) + "], requestCode = [" + requestCode + "]");
         Activity activity = this.activity.get();

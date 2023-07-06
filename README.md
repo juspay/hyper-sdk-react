@@ -152,14 +152,17 @@ clientId = <clientId shared by Juspay Team>
 
 ```ts
 type HyperSdkReactType = {
+  HyperEvent: string;
   preFetch(data: string): void;
   createHyperServices(): void;
   initiate(data: string): void;
   process(data: string): void;
+  processWithActivity(data: string): void;
   terminate(): void;
   onBackPressed(): boolean;
   isNull(): boolean;
   isInitialised(): Promise<boolean>;
+  updateBaseViewController(): void;
 };
 
 const { HyperSdkReact } = NativeModules;
@@ -217,9 +220,15 @@ The result of the process call is provided in the `Hyper Event listener`, later 
 HyperSdkReact.process(JSON.stringify(processPayload));
 ```
 
+If any of the react-native library is impacting the UI/UX, please use `processWithActivity` instead, which starts a new Activity for opening the Payment Page, isolated of react native.
+
+```ts
+HyperSdkReact.processWithActivity(JSON.stringify(processPayload));
+```
+
 ### Step-4: Listen to events from HyperSDK
 
-`Hyper SDK` Native Module will be emitting all the relevant events to JS via `RCTDeviceEventEmitter` and JavaScript modules can then register to receive events by invoking `addListener` on the `NativeEventEmitter` class in the `componentDidMount()` method with the event name `'HyperEvent'`. The listener will return a `stringified JSON` response (`resp`).
+`Hyper SDK` Native Module will be emitting all the relevant events to JS via `RCTDeviceEventEmitter` and JavaScript modules can then register to receive events by invoking `addListener` on the `NativeEventEmitter` class in the `componentDidMount()` method with the event name `'HyperEvent'` (You can use the `HyperSdkReact.HyperEvent` as well). The listener will return a `stringified JSON` response (`resp`).
 
 The following events should be handled here:
 
@@ -234,7 +243,7 @@ The following events should be handled here:
  componentDidMount() {
    ...
    const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
-   this.eventListener = eventEmitter.addListener('HyperEvent', (resp) => {
+   this.eventListener = eventEmitter.addListener(HyperSdkReact.HyperEvent, (resp) => {
      var data = JSON.parse(resp);
      var event: string = data.event || '';
      switch (event) {
