@@ -11,5 +11,6 @@ final class LogConstants {
     static final String SUBCATEGORY_HYPER_SDK = "hypersdk";
     static final String LEVEL_INFO = "info";
     static final String LEVEL_ERROR = "error";
+    static final String LEVEL_WARN = "warn";
     static final String SDK_TRACKER_LABEL = "hyper_sdk_react";
 }

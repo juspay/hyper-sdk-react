@@ -180,6 +180,16 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                 return;
             }
 
+            if (hyperServices != null) {
+                SdkTracker.trackBootLifecycle(
+                        LogConstants.SUBCATEGORY_HYPER_SDK,
+                        LogConstants.LEVEL_WARN,
+                        LogConstants.SDK_TRACKER_LABEL,
+                        "createHyperServices",
+                        "hyperServices instance already exists");
+                return;
+            }
+
             hyperServices = new HyperServices(activity);
             hyperServices.setActivityLaunchDelegate(new ReactLaunchDelegate(context));
             hyperServices.setRequestPermissionDelegate(new ReactRequestDelegate(activity));
