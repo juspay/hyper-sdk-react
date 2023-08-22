@@ -191,8 +191,6 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
             }
 
             hyperServices = new HyperServices(activity);
-            hyperServices.setActivityLaunchDelegate(new ReactLaunchDelegate(context));
-            hyperServices.setRequestPermissionDelegate(new ReactRequestDelegate(activity));
 
             requestPermissionsResultDelegate.set(hyperServices);
             activityResultDelegate.set(hyperServices);
@@ -298,6 +296,8 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                             "hyperServices is null");
                     return;
                 }
+            hyperServices.setActivityLaunchDelegate(new ReactLaunchDelegate(context));
+            hyperServices.setRequestPermissionDelegate(new ReactRequestDelegate(activity));
 
                 hyperServices.process(activity, payload);
             } catch (JSONException e) {
