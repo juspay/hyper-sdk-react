@@ -46,7 +46,7 @@ const getClientAuthToken = (resp: string) => {
 };
 
 const services = {
-  ec: 'in.juspay.ec',
+  ec: 'in.juspay.hyperapi',
   pp: 'in.juspay.hyperpay',
 };
 
@@ -277,6 +277,18 @@ const generatePaymentMethodsPayload = () => {
   };
 };
 
+const generateJuspaySafePayload = (orderId: string) => {
+  return {
+    requestId: uuidv4(),
+    service: services.ec,
+    payload: {
+      action: 'startJuspaySafe',
+      url: 'https://www.airtel.in',
+      orderId: orderId,
+    },
+  };
+};
+
 const generateGetUPIAppsPayload = (orderId: string) => {
   return {
     requestId: uuidv4(),
@@ -407,7 +419,7 @@ const alertCallbackResponse = (screen: string, resp: any) => {
   var data = JSON.parse(resp);
   var event: string = data.event || '';
   var payload = JSON.stringify(data.payload) || '';
-  console.log('callback response' + payload);
+  console.log(screen + ': callback response' + payload);
   showCopyAlert(screen + ': ' + event, payload);
   // console.warn(screen, resp);
 };
@@ -470,6 +482,7 @@ type HyperUtils = {
     upiSdkPresent: boolean
   ): {};
   generatePaymentMethodsPayload(): {};
+  generateJuspaySafePayload(orderId: string): {};
   generateGetUPIAppsPayload(orderId: string): {};
   generateListWalletsPayload(clientAuthToken: string): {};
   generateListCardsPayload(clientAuthToken: string): {};
@@ -505,6 +518,7 @@ export default {
   generateWalletTxnPayload,
   generateUPIIntentTxnPayload,
   generatePaymentMethodsPayload,
+  generateJuspaySafePayload,
   generateGetUPIAppsPayload,
   generateListWalletsPayload,
   generateListCardsPayload,

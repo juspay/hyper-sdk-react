@@ -274,8 +274,8 @@ class ProcessScreen extends React.Component {
                     console.log(val, index);
                   }}
                 >
-                  <Picker.Item label="quickPay" value="quickPay" />
                   <Picker.Item label="paymentPage" value="paymentPage" />
+                  <Picker.Item label="quickPay" value="quickPay" />
                 </Picker>
               )}
             </View>
