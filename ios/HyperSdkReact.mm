@@ -67,7 +67,9 @@ RCT_EXPORT_METHOD(preFetch:(NSString *)data) {
 }
 
 RCT_EXPORT_METHOD(createHyperServices) {
-    self.hyperInstance = [HyperServices new];
+    if (self.hyperInstance == NULL) {
+        self.hyperInstance = [HyperServices new];
+    }
 }
 
 RCT_EXPORT_METHOD(initiate:(NSString *)data) {
