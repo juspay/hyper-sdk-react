@@ -46,7 +46,7 @@ const getClientAuthToken = (resp: string) => {
 };
 
 const services = {
-  ec: 'in.juspay.hyperapi',
+  ec: 'in.juspay.flyer',
   pp: 'in.juspay.hyperpay',
 };
 
@@ -143,6 +143,16 @@ const generateNBTxnPayload = (
         '.*sandbox.juspay.in\\/end.*',
         '.*api.juspay.in\\/end.*',
       ],
+    },
+  };
+};
+
+const generateFlyerPayload = () => {
+  return {
+    requestId: uuidv4(),
+    service: services.ec,
+    payload: {
+      action: 'process',
     },
   };
 };
@@ -419,7 +429,7 @@ const alertCallbackResponse = (screen: string, resp: any) => {
   var data = JSON.parse(resp);
   var event: string = data.event || '';
   var payload = JSON.stringify(data.payload) || '';
-  console.log(screen + ': callback response' + payload);
+  console.log(screen + ': callback response' + resp);
   showCopyAlert(screen + ': ' + event, payload);
   // console.warn(screen, resp);
 };
@@ -502,6 +512,7 @@ type HyperUtils = {
   generateDeviceReadyPayload(sdkPresent: string): {};
   showCopyAlert(title: string, body: any): void;
   alertCallbackResponse(screen: string, resp: any): void;
+  generateFlyerPayload(): {};
 };
 
 export default {
@@ -529,4 +540,5 @@ export default {
   generateDeviceReadyPayload,
   showCopyAlert,
   alertCallbackResponse,
+  generateFlyerPayload,
 } as HyperUtils;

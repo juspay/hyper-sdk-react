@@ -74,13 +74,13 @@ PODS:
   - hermes-engine (0.72.6):
     - hermes-engine/Pre-built (= 0.72.6)
   - hermes-engine/Pre-built (0.72.6)
-  - hyper-sdk-react (3.0.21):
-    - HyperSDK (= 2.1.37)
+  - hyper-sdk-react (3.0.33):
+    - HyperSDK (= 2.1.39)
     - React-Core
-  - HyperSDK (2.1.37):
-    - JuspaySafeBrowser (= 0.1.82)
+  - HyperSDK (2.1.39):
+    - JuspaySafeBrowser (= 0.1.83)
     - Salvator (= 1.0.6)
-  - JuspaySafeBrowser (0.1.82)
+  - JuspaySafeBrowser (0.1.83)
   - libevent (2.1.12)
   - OpenSSL-Universal (1.1.1100)
   - RCT-Folly (2021.07.22.00):
@@ -718,9 +718,9 @@ SPEC CHECKSUMS:
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
   hermes-engine: 8057e75cfc1437b178ac86c8654b24e7fead7f60
-  hyper-sdk-react: 4a70cd4ed0362b26dfcf6d2d4243c08da2220aa2
-  HyperSDK: 02b6b065c15f1012185588f2ea2a22f39e0dad74
-  JuspaySafeBrowser: a355cb93b027269d7ed4419fbbc17bab9179ed88
+  hyper-sdk-react: cfeedae743fe3dc213d62e2525499077eac56363
+  HyperSDK: e6c3d949ff7b52db591f25126143cf4c822d8470
+  JuspaySafeBrowser: 91be796164a40317d5a9153ac6d433a4928ef549
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   RCT-Folly: 424b8c9a7a0b9ab2886ffe9c3b041ef628fd4fb1
@@ -767,4 +767,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 9d75834eee1caf39c2287e0b86b419d59ce7fbd1
 
-COCOAPODS: 1.12.1
+COCOAPODS: 1.15.2
