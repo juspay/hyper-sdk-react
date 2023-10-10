@@ -74,6 +74,8 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
     @Nullable
     private HyperServices hyperServices;
 
+    private static WeakReference<HyperServices> hyperServicesReference = new WeakReference<>(null);
+
     private final ReactApplicationContext context;
 
     private boolean wasProcessWithActivity = false;
@@ -173,13 +175,25 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
         }};
     }
 
+    @Nullable
+    public static HyperServices getHyperServices() {
+        return hyperServicesReference.get();
+    }
+
     @ReactMethod
     public void preFetch(String data) {
         try {
             JSONObject payload = new JSONObject(data);
             HyperServices.preFetch(getReactApplicationContext(), payload);
         } catch (JSONException e) {
-            e.printStackTrace();
+            SdkTracker.trackAndLogBootException(
+                    NAME,
+                    LogConstants.CATEGORY_LIFECYCLE,
+                    LogConstants.SUBCATEGORY_HYPER_SDK,
+                    LogConstants.SDK_TRACKER_LABEL,
+                    "Exception in prefetch",
+                    e
+            );
         }
     }
 
@@ -212,6 +226,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
             }
 
             hyperServices = new HyperServices(activity);
+            hyperServicesReference = new WeakReference<>(hyperServices);
 
             requestPermissionsResultDelegate.set(hyperServices);
             activityResultDelegate.set(hyperServices);
@@ -300,7 +315,14 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                     }
                 });
             } catch (Exception e) {
-                e.printStackTrace();
+                SdkTracker.trackAndLogBootException(
+                        NAME,
+                        LogConstants.CATEGORY_LIFECYCLE,
+                        LogConstants.SUBCATEGORY_HYPER_SDK,
+                        LogConstants.SDK_TRACKER_LABEL,
+                        "Exception in initiate",
+                        e
+                );
             }
         }
     }
@@ -356,7 +378,14 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
                 hyperServices.process(activity, payload);
             } catch (JSONException e) {
-                e.printStackTrace();
+                SdkTracker.trackAndLogBootException(
+                        NAME,
+                        LogConstants.CATEGORY_LIFECYCLE,
+                        LogConstants.SUBCATEGORY_HYPER_SDK,
+                        LogConstants.SDK_TRACKER_LABEL,
+                        "Exception in process",
+                        e
+                );
             }
         }
     }
@@ -412,7 +441,14 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                 });
                 activity.startActivity(i);
             } catch (JSONException e) {
-                e.printStackTrace();
+                SdkTracker.trackAndLogBootException(
+                        NAME,
+                        LogConstants.CATEGORY_LIFECYCLE,
+                        LogConstants.SUBCATEGORY_HYPER_SDK,
+                        LogConstants.SDK_TRACKER_LABEL,
+                        "Exception in processWithActivity",
+                        e
+                );
             }
         }
 
@@ -478,6 +514,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
             }
 
             hyperServices = null;
+            hyperServicesReference = new WeakReference<>(null);
         }
     }
 
@@ -500,7 +537,14 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                 try {
                     isInitialized = hyperServices.isInitialised();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    SdkTracker.trackAndLogBootException(
+                            NAME,
+                            LogConstants.CATEGORY_LIFECYCLE,
+                            LogConstants.SUBCATEGORY_HYPER_SDK,
+                            LogConstants.SDK_TRACKER_LABEL,
+                            "Exception in isInitialised",
+                            e
+                    );
                 }
             }
         }

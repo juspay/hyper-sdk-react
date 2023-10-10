@@ -47,6 +47,9 @@
 		<string>devtools</string>
 		<string>myairtel</string>
 		<string>slice-upi</string>
+		<string>ppe</string>
+		<string>amazonpay</string>
+		<string>cugext</string>
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
