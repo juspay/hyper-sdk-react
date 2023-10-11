@@ -4,7 +4,8 @@ import {
     PixelRatio,
     UIManager,
     findNodeHandle,
-    requireNativeComponent
+    requireNativeComponent,
+    Platform
 } from 'react-native';
 
 export interface MyViewProps {
@@ -27,9 +28,11 @@ const createFragment = (viewId: number) => {
 const MyView: React.FC<MyViewProps> = ({ height, width }) => {
     const ref = React.useRef<View | null>(null);
     React.useEffect(() => {
-        const viewId = findNodeHandle(ref.current);
-        if (viewId) {
-            createFragment(viewId);
+        if (Platform.OS == 'android') {
+            const viewId = findNodeHandle(ref.current);
+            if (viewId) {
+                createFragment(viewId);
+            }
         }
     }, [height, width]);
 
