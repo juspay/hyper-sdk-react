@@ -21,7 +21,7 @@ import {
   ScrollView,
 } from 'react-native';
 import HyperAPIUtils from './API';
-import HyperSdkReact from 'hyper-sdk-react';
+import HyperSdkReact, { MyView } from 'hyper-sdk-react';
 import HyperUtils from './Utils';
 import merchantConfig from './merchant_config.json';
 import customerConfig from './customer_config.json';
@@ -389,6 +389,10 @@ class HomeScreen extends React.Component {
             </Animated.View>
           </View>
         </Animated.View>
+        <View style={{ backgroundColor: 'red', flexDirection: 'row' }}>
+          <Text>Amount: Rs.10 </Text>
+          <MyView height={40} /* width={80} */ />
+        </View>
       </>
     );
   }

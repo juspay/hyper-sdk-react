@@ -28,6 +28,8 @@ public class HyperSdkReactPackage implements ReactPackage {
     @Override
     @SuppressWarnings("rawtypes")
     public List<ViewManager> createViewManagers(@NonNull ReactApplicationContext reactContext) {
-        return Collections.emptyList();
+      return Collections.singletonList(
+        new MyViewManager(reactContext)
+      );
     }
 }

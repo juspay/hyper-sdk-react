@@ -7,6 +7,9 @@
 
 import { NativeModules, Platform } from 'react-native';
 
+// @ts-ignore
+export { default as MyView } from './MyView';
+
 const LINKING_ERROR =
   `The package 'hyper-sdk-react' doesn't seem to be linked. Make sure: \n\n` +
   Platform.select({ ios: "- You have run 'pod install'\n", default: '' }) +
