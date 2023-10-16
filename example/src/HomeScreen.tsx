@@ -31,7 +31,7 @@ import { useNavigation } from '@react-navigation/native';
 class HomeScreen extends React.Component {
   state = {
     animation: new Animated.Value(0),
-    pickerSelected: 'pp',
+    pickerSelected: 'ec',
   };
 
   navigation: any;

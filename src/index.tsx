@@ -24,7 +24,7 @@ const HyperSdkReact = NativeModules.HyperSdkReact
       }
     );
 
-console.log('HyperSDKReactVersion', HyperSdkReact);
+export { default as HyperView } from './HyperView';
 
 if (Platform.OS === 'android') {
   HyperSdkReact.updateBaseViewController = () => {};

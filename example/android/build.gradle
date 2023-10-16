@@ -26,5 +26,6 @@ buildscript {
 allprojects {
     repositories {
         maven { url "https://maven.juspay.in/jp-build-packages/hyper-sdk/" }
+        maven { url "https://sdk.getsimpl.com/" }
     }
 }

@@ -22,19 +22,21 @@ import {
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import CheckBox from '@react-native-community/checkbox';
-import HyperSdkReact from 'hyper-sdk-react';
+import HyperSdkReact, { HyperView } from 'hyper-sdk-react';
 import HyperAPIUtils from './API';
 import HyperUtils from './Utils';
 import { useNavigation } from '@react-navigation/native';
 
 class ProcessScreen extends React.Component {
   state = {
-    pickerSelected: 'getPM',
+    pickerSelected: 'flyer',
     upiSdkPresent: false,
     saveToLocker: false,
     shouldLink: false,
     resultText: '',
     animation: new Animated.Value(0),
+    isPayloadGenerated: false,
+    ppPayload: '',
   };
 
   navigation: any;
@@ -78,6 +80,7 @@ class ProcessScreen extends React.Component {
   directWalletToken: string;
   sdkPresent: string;
   walletMobile: string;
+  flyerPayload: string;
 
   constructor(props: { navigation: any; route: any }, context: any) {
     super(props, context);
@@ -117,9 +120,10 @@ class ProcessScreen extends React.Component {
     this.otp = '';
     this.sdkPresent = '';
     this.walletMobile = '';
+    this.flyerPayload = JSON.stringify(HyperUtils.generateFlyerPayload());
 
     if (this.service === 'pp') {
-      this.state.pickerSelected = 'quickPay';
+      this.state.pickerSelected = 'paymentPage';
     }
   }
 
@@ -264,6 +268,7 @@ class ProcessScreen extends React.Component {
                   <Picker.Item label="Wallet Txn" value="walletTxn" />
                   <Picker.Item label="Delete Saved Card" value="deleteCard" />
                   <Picker.Item label="DeLink Wallet" value="delinkWallet" />
+                  <Picker.Item label="Flyer" value="flyer" />
                 </Picker>
               ) : (
                 <Picker
@@ -310,6 +315,15 @@ class ProcessScreen extends React.Component {
                     this.orderId
                   );
                   HyperSdkReact.process(JSON.stringify(payload));
+                }}
+              />
+            ) : null}
+
+            {this.state.pickerSelected === 'flyer' ? (
+              <CustomButton
+                title="Generate Flyer Payload"
+                onPress={() => {
+                  this.setState({ isPayloadGenerated: true });
                 }}
               />
             ) : null}
@@ -712,7 +726,7 @@ class ProcessScreen extends React.Component {
                       });
                   }}
                 />
-                <CustomButton
+                {/* <CustomButton
                   title="Process"
                   onPress={() => {
                     var payload = HyperUtils.generateProcessPayloadPP(
@@ -741,6 +755,25 @@ class ProcessScreen extends React.Component {
 
                     HyperSdkReact.processWithActivity(JSON.stringify(payload));
                   }}
+                /> */}
+
+                <CustomButton
+                  title="Generate Process Payload"
+                  onPress={() => {
+                    this.setState({
+                      isPayloadGenerated: true,
+                      ppPayload: JSON.stringify(
+                        HyperUtils.generateProcessPayloadPP(
+                          this.state.pickerSelected,
+                          this.clientId,
+                          this.merchantId,
+                          JSON.stringify(this.orderDetails),
+                          this.signature,
+                          this.merchantKeyId
+                        )
+                      ),
+                    });
+                  }}
                 />
               </View>
             ) : null}
@@ -766,6 +799,19 @@ class ProcessScreen extends React.Component {
                 this.handleOpen();
               }}
             />
+            <View style={styles.containerSon}>
+              {this.state.isPayloadGenerated ? (
+                <HyperView
+                  height={250}
+                  namespace={'quickPay'}
+                  payload={
+                    this.service === 'pp'
+                      ? this.state.ppPayload
+                      : this.flyerPayload
+                  }
+                />
+              ) : null}
+            </View>
           </View>
         </ScrollView>
 
@@ -799,6 +845,11 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  containerSon: {
+    height: 250,
+    width: '100%',
+    backgroundColor: 'green',
   },
   horizontal: {
     flexDirection: 'row',

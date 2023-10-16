@@ -77,7 +77,7 @@ PODS:
   - hermes-engine (0.71.7):
     - hermes-engine/Pre-built (= 0.71.7)
   - hermes-engine/Pre-built (0.71.7)
-  - hyper-sdk-react (3.0.8):
+  - hyper-sdk-react (3.0.9):
     - HyperSDK (= 2.1.27)
     - React-Core
   - HyperSDK (2.1.27):
@@ -633,7 +633,7 @@ SPEC CHECKSUMS:
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
   hermes-engine: 4438d2b8bf8bebaba1b1ac0451160bab59e491f8
-  hyper-sdk-react: a4903f68e4dc23b774767f2496b2126b99c594e2
+  hyper-sdk-react: 1d449cbedf44fa732b04de1496ced6e8ab16f46e
   HyperSDK: 3d786d1f267ed0374bed463a9ca0cbb7e1a4ac7a
   JuspaySafeBrowser: 039d54b068d7ca314866fa8a2d111ad98f3daea2
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913

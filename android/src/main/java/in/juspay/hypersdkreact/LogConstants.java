@@ -8,6 +8,7 @@
 package in.juspay.hypersdkreact;
 
 final class LogConstants {
+    static final String CATEGORY_LIFECYCLE = "lifecycle";
     static final String SUBCATEGORY_HYPER_SDK = "hypersdk";
     static final String LEVEL_INFO = "info";
     static final String LEVEL_ERROR = "error";
