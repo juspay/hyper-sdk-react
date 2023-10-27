@@ -10,6 +10,7 @@ package in.juspay.hypersdkreact;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Handler;
+import android.os.Looper;
 
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
@@ -168,32 +169,34 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
     @ReactMethod
     public void createHyperServices() {
         synchronized (lock) {
-            FragmentActivity activity = (FragmentActivity) getCurrentActivity();
+            runOnMainThread(() -> {
+                FragmentActivity activity = (FragmentActivity) getCurrentActivity();
 
-            if (activity == null) {
-                SdkTracker.trackBootLifecycle(
+                if (activity == null) {
+                    SdkTracker.trackBootLifecycle(
                         LogConstants.SUBCATEGORY_HYPER_SDK,
                         LogConstants.LEVEL_ERROR,
                         LogConstants.SDK_TRACKER_LABEL,
                         "createHyperServices",
                         "activity is null");
-                return;
-            }
+                    return;
+                }
 
-            if (hyperServices != null) {
-                SdkTracker.trackBootLifecycle(
+                if (hyperServices != null) {
+                    SdkTracker.trackBootLifecycle(
                         LogConstants.SUBCATEGORY_HYPER_SDK,
                         LogConstants.LEVEL_WARN,
                         LogConstants.SDK_TRACKER_LABEL,
                         "createHyperServices",
                         "hyperServices instance already exists");
-                return;
-            }
+                    return;
+                }
 
-            hyperServices = new HyperServices(activity);
+                hyperServices = new HyperServices(activity);
 
-            requestPermissionsResultDelegate.set(hyperServices);
-            activityResultDelegate.set(hyperServices);
+                requestPermissionsResultDelegate.set(hyperServices);
+                activityResultDelegate.set(hyperServices);
+            });
         }
     }
 
@@ -483,6 +486,15 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                     "onActivityResult() called with: requestCode = [" + requestCode + "], resultCode = [" + resultCode + "], data = [" + data + "]"
             );
             hyperServices.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    private void runOnMainThread(Runnable task) {
+        if (Looper.myLooper() != Looper.getMainLooper()) {
+            Handler handler = new Handler(Looper.getMainLooper());
+            handler.post(task);
+        } else {
+            task.run();
         }
     }
 }
