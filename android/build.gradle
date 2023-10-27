@@ -82,7 +82,7 @@ static def mostRecentVersion(List<String> versions) {
 }
 
 static def getHyperSDKVersion(rootProject) {
-    def hyperSdkVersion = '2.1.19'
+    def hyperSdkVersion = '2.1.20-rc.02'
     if (!rootProject.hasProperty('hyperSDKVersion')) {
         return hyperSdkVersion
     }
