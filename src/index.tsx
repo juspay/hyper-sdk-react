@@ -48,6 +48,7 @@ type HyperSdkReactType = {
   isNull(): boolean;
   isInitialised(): Promise<boolean>;
   updateBaseViewController(): void;
+  openPaymentPage(data: string): void;
 };
 
 export default HyperSdkReact as HyperSdkReactType;

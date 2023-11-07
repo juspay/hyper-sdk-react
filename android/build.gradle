@@ -82,7 +82,7 @@ static def mostRecentVersion(List<String> versions) {
 }
 
 static def getHyperSDKVersion(rootProject) {
-    def hyperSdkVersion = '2.1.20-rc.02'
+    def hyperSdkVersion = '2.1.20-rc.06'
     if (!rootProject.hasProperty('hyperSDKVersion')) {
         return hyperSdkVersion
     }
@@ -106,6 +106,7 @@ dependencies {
     //noinspection GradleDynamicVersion
     implementation 'com.facebook.react:react-native:+'
     implementation 'androidx.appcompat:appcompat:1.0.0'
+    compileOnly 'in.juspay:hypercheckoutlite:2.1.20-rc.06'
 }
 
 hyperSdkPlugin {
