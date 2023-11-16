@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import in.juspay.hypercheckoutlite.HyperCheckoutLite;
 import in.juspay.hypersdk.core.SdkTracker;
 import in.juspay.hypersdk.data.JuspayResponseHandler;
 import in.juspay.hypersdk.ui.HyperPaymentsCallbackAdapter;
@@ -55,6 +56,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
      * concurrency issues.
      */
     private static final Object lock = new Object();
+    private boolean isHyperCheckoutLiteIntegration = false;
 
     private static final RequestPermissionsResultDelegate requestPermissionsResultDelegate = new RequestPermissionsResultDelegate();
     private static final ActivityResultDelegate activityResultDelegate = new ActivityResultDelegate();
@@ -200,7 +202,35 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
     @ReactMethod(isBlockingSynchronousMethod = true)
     public boolean onBackPressed() {
         synchronized (lock) {
-            return hyperServices != null && hyperServices.onBackPressed();
+            if (isHyperCheckoutLiteIntegration) {
+                return HyperCheckoutLite.onBackPressed();
+            } else {
+                return hyperServices != null && hyperServices.onBackPressed();
+            }
+        }
+    }
+
+    @ReactMethod
+    public void openPaymentPage(String data) {
+        synchronized (lock) {
+            try {
+                isHyperCheckoutLiteIntegration = true;
+                JSONObject sdkPayload = new JSONObject(data);
+                FragmentActivity activity = (FragmentActivity) getCurrentActivity();
+
+                HyperCheckoutLite.openPaymentPage(activity, sdkPayload, new HyperPaymentsCallbackAdapter() {
+                    @Override
+                    public void onEvent(JSONObject data, JuspayResponseHandler handler) {
+                        // Send out the event to the merchant on JS side
+                        if (data.optString("event").equals("process_result")) {
+                            isHyperCheckoutLiteIntegration = false;
+                        }
+                        sendEventToJS(data);
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -296,8 +326,8 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                             "hyperServices is null");
                     return;
                 }
-            hyperServices.setActivityLaunchDelegate(new ReactLaunchDelegate(context));
-            hyperServices.setRequestPermissionDelegate(new ReactRequestDelegate(activity));
+                hyperServices.setActivityLaunchDelegate(new ReactLaunchDelegate(context));
+                hyperServices.setRequestPermissionDelegate(new ReactRequestDelegate(activity));
 
                 hyperServices.process(activity, payload);
             } catch (JSONException e) {
