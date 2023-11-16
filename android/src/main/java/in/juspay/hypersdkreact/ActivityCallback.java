@@ -7,12 +7,13 @@
 
 package in.juspay.hypersdkreact;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
 
 public interface ActivityCallback {
-    void onCreated(FragmentActivity fragmentActivity);
+    void onCreated(@NonNull FragmentActivity fragmentActivity);
 
     boolean onBackPressed();
 
-    void resetActivity(FragmentActivity activity);
+    void resetActivity(@NonNull FragmentActivity activity);
 }
