@@ -56,7 +56,6 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
      * concurrency issues.
      */
     private static final Object lock = new Object();
-    private boolean isHyperCheckoutLiteIntegration = false;
 
     private static final RequestPermissionsResultDelegate requestPermissionsResultDelegate = new RequestPermissionsResultDelegate();
     private static final ActivityResultDelegate activityResultDelegate = new ActivityResultDelegate();
@@ -202,35 +201,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
     @ReactMethod(isBlockingSynchronousMethod = true)
     public boolean onBackPressed() {
         synchronized (lock) {
-            if (isHyperCheckoutLiteIntegration) {
-                return HyperCheckoutLite.onBackPressed();
-            } else {
-                return hyperServices != null && hyperServices.onBackPressed();
-            }
-        }
-    }
-
-    @ReactMethod
-    public void openPaymentPage(String data) {
-        synchronized (lock) {
-            try {
-                isHyperCheckoutLiteIntegration = true;
-                JSONObject sdkPayload = new JSONObject(data);
-                FragmentActivity activity = (FragmentActivity) getCurrentActivity();
-
-                HyperCheckoutLite.openPaymentPage(activity, sdkPayload, new HyperPaymentsCallbackAdapter() {
-                    @Override
-                    public void onEvent(JSONObject data, JuspayResponseHandler handler) {
-                        // Send out the event to the merchant on JS side
-                        if (data.optString("event").equals("process_result")) {
-                            isHyperCheckoutLiteIntegration = false;
-                        }
-                        sendEventToJS(data);
-                    }
-                });
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            return hyperServices != null && hyperServices.onBackPressed();
         }
     }
 
@@ -357,7 +328,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                 Intent i = new Intent(activity, ProcessActivity.class);
                 ProcessActivity.setActivityCallback(new ActivityCallback() {
                     @Override
-                    public void onCreated(FragmentActivity fragmentActivity) {
+                    public void onCreated(@NonNull FragmentActivity fragmentActivity) {
                         if (hyperServices == null) {
                             SdkTracker.trackBootLifecycle(
                                     LogConstants.SUBCATEGORY_HYPER_SDK,
@@ -379,7 +350,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                     }
 
                     @Override
-                    public void resetActivity(FragmentActivity activity) {
+                    public void resetActivity(@NonNull FragmentActivity activity) {
                         if (hyperServices != null) {
                             hyperServices.resetActivity(activity);
                         }
@@ -392,6 +363,58 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
         }
 
     }
+
+    @ReactMethod
+    public void openPaymentPage(String data) {
+        synchronized (lock) {
+            try {
+                JSONObject sdkPayload = new JSONObject(data);
+                FragmentActivity activity = (FragmentActivity) getCurrentActivity();
+
+                if (activity == null) {
+                    SdkTracker.trackBootLifecycle(
+                            LogConstants.SUBCATEGORY_HYPER_SDK,
+                            LogConstants.LEVEL_ERROR,
+                            LogConstants.SDK_TRACKER_LABEL,
+                            "initiate",
+                            "activity is null");
+                    return;
+                }
+
+                Intent i = new Intent(activity, ProcessActivity.class);
+                ProcessActivity.setActivityCallback(new ActivityCallback() {
+                    @Override
+                    public void onCreated(@NonNull FragmentActivity processActivity) {
+                        HyperCheckoutLite.openPaymentPage(processActivity, sdkPayload, new HyperPaymentsCallbackAdapter() {
+                            @Override
+                            public void onEvent(JSONObject data, JuspayResponseHandler handler) {
+                                if (data.optString("event").equals("process_result")) {
+                                    processActivity.finish();
+                                    processActivity.overridePendingTransition(0, android.R.anim.fade_out);
+                                    ProcessActivity.setActivityCallback(null);
+                                }
+                                sendEventToJS(data);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public boolean onBackPressed() {
+                        return HyperCheckoutLite.onBackPressed();
+                    }
+
+                    @Override
+                    public void resetActivity(@NonNull FragmentActivity activity) {
+                        // Ignored
+                    }
+                });
+                activity.startActivity(i);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 
     @ReactMethod
     public void terminate() {
