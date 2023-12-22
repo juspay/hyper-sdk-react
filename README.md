@@ -8,7 +8,7 @@ React native module for HyperSDK which enables payment orchestration via differe
 npm install hyper-sdk-react
 ```
 
-### Android (3.0.0 and above)
+### Android
 
 Add following maven url in the allProjects > repositories section of root(top) build.gradle:
 
@@ -24,7 +24,7 @@ buildscript {
     ext {
         ....
         clientId = "<clientId shared by Juspay team>"
-        hyperSDKVersion = "2.1.13"
+        hyperSDKVersion = "2.1.20"
         ....
     }
     ....
@@ -50,7 +50,7 @@ buildscript {
     ....
     ext {
         ....
-        hyperSDKVersion = "2.1.13"
+        hyperSDKVersion = "2.1.20"
         ....
     }
     ....
@@ -59,40 +59,13 @@ buildscript {
 
 Note: This version is just for explanatory purposes and may change in future. Contact Juspay support team for the latest SDK version.
 
-#### **Dynamic Assets Android** (Only applicable for version 2.1.x and below) [Deprecated]
-
-Add the following ext property in top `build.gradle` if you are using the Dynamic Assets Feature:
-
-```groovy
-buildscript {
-  ....
-   ext {
-       ....
-       hyperSDKVersion = "2.1.2"
-       useDynamicAssets = true
-       ....
-   }
-   ....
-}
-```
-
-Place the `MerchantConfig.txt` file alongside the root(top) `build.gradle` file. The contents of the file should be as follows.
-
-```txt
-clientId = <clientId shared by Juspay Team>
-```
-
-#### **Important Warning for Android**
-
-For `hyper-sdk-react` version >= `2.1.0`, minimum native android `HyperSDK` version supported is `2.0.4-rc.12`. Please upgrade to latest Hyper SDK as well if you are updating the `hyper-sdk-react` version in `package.json` of your react-native app. Contact Juspay support team for any queries.
-
 ### Migration Guide from 2.1.x to 3.y.x
 
-Step-1: Add the clientId ext property in root(top) `build.gradle`. Refer [here](#android-300-and-above) for more info. This is the same clientId present in the `MerchantConfig.txt` file.
+Step-1: Add the clientId ext property in root(top) `build.gradle`. Refer [here](#android) for more info. This is the same clientId present in the `MerchantConfig.txt` file.
 
 Step-2: Delete MerchantConfig.txt file.
 
-Step-3: Remove useDynamicAssets property defined in root(top) `build.gradle`. Refer [here](#dynamic-assets-android-only-applicable-for-version-21x-and-below-deprecated) for the exact property which needs to be removed.
+Step-3: Remove useDynamicAssets property defined in root(top) `build.gradle`.
 
 ### iOS
 
@@ -116,7 +89,7 @@ pod install
     "devDependencies": {
       ....
     },
-    "hyperSdkIOSVersion": "2.1.15"
+    "hyperSdkIOSVersion": "2.1.30"
     ....
   }
 ```
