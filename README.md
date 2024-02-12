@@ -31,41 +31,8 @@ buildscript {
 }
 ```
 
-This is the same clientId present earlier in the `MerchantConfig.txt` file.
-
 Optionally, you can also provide an override for base SDK version present in plugin (the newer version among both would be considered).
 
-### Android (2.1.x and below) [Deprecated]
-
-Add following maven url in the allProjects > repositories section of root(top) build.gradle:
-
-```groovy
-maven { url "https://maven.juspay.in/jp-build-packages/hyper-sdk/"}
-```
-
-**(Optional)** Add the following ext property in top `build.gradle` if you want to override the base SDK version present in plugin (the newer version among both would be considered):
-
-```groovy
-buildscript {
-    ....
-    ext {
-        ....
-        hyperSDKVersion = "2.1.23"
-        ....
-    }
-    ....
-}
-```
-
-Note: This version is just for explanatory purposes and may change in future. Contact Juspay support team for the latest SDK version.
-
-### Migration Guide from 2.1.x to 3.y.x
-
-Step-1: Add the clientId ext property in root(top) `build.gradle`. Refer [here](#android) for more info. This is the same clientId present in the `MerchantConfig.txt` file.
-
-Step-2: Delete MerchantConfig.txt file.
-
-Step-3: Remove useDynamicAssets property defined in root(top) `build.gradle`.
 
 ### iOS
 
