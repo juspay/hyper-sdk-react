@@ -10,15 +10,136 @@
 #import <Foundation/Foundation.h>
 
 #import <React/RCTLog.h>
-#import <React/RCTBridge.h>
 #import <React/RCTConvert.h>
 #import <React/RCTUIManager.h>
 #import <React/RCTUtils.h>
-#import <React/RCTBridgeModule.h>
 #import <React/RCTEventEmitter.h>
 #import <React/RCTModalHostViewController.h>
+#import <React/RCTRootView.h>
 
 #import <HyperSDK/HyperSDK.h>
+
+// Overriding the RCTRootView to add contraints to align with the views superview
+@implementation SDKRootView
+
+-(void)didMoveToSuperview {
+    // Remove old leading anchor
+    if (self.leading) {
+        self.leading.active = @NO;
+    }
+    // Remove old trailing anchor
+    if (self.trailing) {
+        self.trailing.active = @NO;
+    }
+
+    //Checking superview just to be sure that it is not nil
+    if(self.superview) {
+        // Create contraints to replicate wrapcontent
+        self.leading = [self.leadingAnchor constraintEqualToAnchor:self.superview.leadingAnchor];
+        self.trailing = [self.trailingAnchor constraintEqualToAnchor:self.superview.trailingAnchor];
+        // Save contraints so that it can be removed if there is superview is changed.
+        // This should not happen as per usecase
+        self.leading.active = @YES;
+        self.trailing.active = @YES;
+    }
+}
+
+@end
+
+
+@implementation SdkDelegate
+
+- (id)initWithBridge:(RCTBridge *)bridge {
+    // Hold references to all merchant views provided to the sdk
+    self.rootHolder = [[NSMutableDictionary alloc] init];
+    // Hold latest vaule of height provided by react
+    self.heightHolder = [[NSMutableDictionary alloc] init];
+    // Hold reference to latest constraints so that they can be replaced if height is modified
+    self.heightConstraintHolder = [[NSMutableDictionary alloc] init];
+    // Hold reference to bridge so that RCTRootViews can share JS VM
+    self.bridge = bridge;
+    return self;
+}
+
+/**
+ Create / replace height constraint given to set height of the view provided by the merchant
+ */
+- (void) setHeight: (NSNumber*)height forTag: (NSString * _Nonnull)tag {
+    // Update the latest value of the height holder for the given tag
+    // This will be used to set the height of view if view is created at a later point
+    [self.heightHolder setObject: height forKey:tag];
+
+    // Fetch previous height constraint so that it can be set to inactive
+    NSLayoutConstraint *heightConstraint = [self.heightConstraintHolder objectForKey:tag];
+    // Fetch rootview to update set constraints if view is already created
+    UIView *rootView = [self.rootHolder objectForKey:tag];
+
+    // Check if view is already present
+    if (rootView && [rootView isKindOfClass: [UIView class]]) {
+        // If present set earlier constraint to inactive
+        if (heightConstraint && [heightConstraint isKindOfClass:[NSLayoutConstraint class]]) {
+            heightConstraint.active = @NO;
+        }
+        // Set a new constraint with the latest height
+        NSLayoutConstraint *newHeightConstraint = [rootView.heightAnchor constraintEqualToConstant: [height doubleValue]];
+        newHeightConstraint.active = @YES;
+        // Save the constraint so that it can be made inactive if a new constraint is created
+        [self.heightConstraintHolder setObject:newHeightConstraint forKey:tag];
+    }
+}
+
+/**
+ Create a react root view
+ Set height if available
+ Use bridge to share the same JS VM
+ */
+- (UIView * _Nullable)merchantViewForViewType:(NSString * _Nonnull)viewType {
+
+    // Create a SDKRootView so that we can attach width constraints once it is attached to it's parent
+    RCTRootView *rrv = [SDKRootView alloc];
+    NSString *moduleName = @"JP_003";
+    if ([viewType isEqual:@"HEADER"]) {
+        moduleName = @"JuspayHeader";
+    } else if ([viewType isEqual:@"HEADER_ATTACHED"]) {
+        moduleName = @"JuspayHeaderAttached";
+    } else if ([viewType isEqual:@"FOOTER"]) {
+        moduleName = @"JuspayFooter";
+    } else if ([viewType isEqual:@"FOOTER_ATTACHED"]) {
+        moduleName = @"JuspayFooterAttached";
+    }
+
+    // Save a reference of the react root view
+    // This will be used to update height constraint if a newer value is sent by the merchant
+    [self.rootHolder setObject:rrv forKey:moduleName];
+
+
+    rrv = [rrv initWithBridge: self.bridge
+           moduleName:moduleName
+           initialProperties:nil
+          ];
+
+    // Remove background colour. Default colour white is getting applied to the merchant view
+    rrv.backgroundColor = UIColor.clearColor ;
+
+    // Remove height 0, width 0 constraints added by default.
+    rrv.translatesAutoresizingMaskIntoConstraints = false;
+
+    // If height is available set the height
+    NSNumber *height = [self.heightHolder objectForKey:moduleName];
+    if (height && [height isKindOfClass:[NSNumber class]]) {
+        NSLayoutConstraint *heightConstriant = [rrv.heightAnchor constraintEqualToConstant: [height doubleValue]];
+        heightConstriant.active = @YES;
+        [self.heightConstraintHolder setObject:heightConstriant forKey:moduleName];
+    }
+    // This is sent to hypersdk. Hyper sdk adds the view to it's heirarchy and set's superview's top and bottom to match rrv's top and bottom
+    return rrv;
+}
+
+- (void) onWebViewReady:(WKWebView *)webView {
+    //Ignored
+}
+
+@end
 
 @implementation HyperSdkReact
 RCT_EXPORT_MODULE()
@@ -81,6 +202,8 @@ RCT_EXPORT_METHOD(initiate:(NSString *)data) {
 
                 UIViewController *baseViewController = RCTPresentedViewController();
                 __weak HyperSdkReact *weakSelf = self;
+                self.delegate = [[SdkDelegate alloc] initWithBridge:self.bridge];
+                [_hyperInstance setHyperDelegate: _delegate];
                 [_hyperInstance initiate:baseViewController payload:jsonData callback:^(NSDictionary<NSString *,id> * _Nullable data) {
                     [weakSelf sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
                 }];
@@ -151,6 +274,12 @@ RCT_EXPORT_METHOD(isInitialised:(RCTPromiseResolveBlock)resolve  reject:(RCTProm
 RCT_EXPORT_METHOD(updateBaseViewController) {
     if (self.hyperInstance && [self.hyperInstance isInitialised]) {
         self.hyperInstance.baseViewController = RCTPresentedViewController();
+    }
+}
+
+RCT_EXPORT_METHOD(updateMerchantViewHeight: (NSString * _Nonnull) tag height: (NSNumber * _Nonnull) h) {
+    if (self.delegate) {
+        [((SdkDelegate *) self.delegate) setHeight:h forTag:tag];
     }
 }
 
