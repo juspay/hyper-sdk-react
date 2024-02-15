@@ -9,7 +9,7 @@
     "start": "react-native start",
     "pods": "pod-install --quiet",
     "bundle:clean": "del-cli android/app/src/main/assets ios/main.jsbundle && mkdir android/app/src/main/assets",
-    "bundle:android": "react-native bundle --dev false --platform android --entry-file index.js --bundle-output ./android/app/src/main/assets/index.android.bundle",
+    "bundle:android": "react-native bundle --dev false --platform android --entry-file index.js --bundle-output ./android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/",
     "bundle:ios": "react-native bundle --dev false --platform ios --entry-file index.js --bundle-output ios/main.jsbundle --assets-dest ios",
     "bundle": "yarn bundle:clean && yarn bundle:android && yarn bundle:ios"
   },
