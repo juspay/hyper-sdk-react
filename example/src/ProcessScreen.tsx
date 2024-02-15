@@ -26,6 +26,7 @@ import HyperSdkReact from 'hyper-sdk-react';
 import HyperAPIUtils from './API';
 import HyperUtils from './Utils';
 import { useNavigation } from '@react-navigation/native';
+import { setOrderDetails } from './DataStore';
 
 class ProcessScreen extends React.Component {
   state = {
@@ -687,7 +688,15 @@ class ProcessScreen extends React.Component {
                 <CustomButton
                   title="Sign Order Details"
                   onPress={() => {
-                    this.orderDetails = {
+                    let x: {
+                      merchant_id: String;
+                      customer_id: String;
+                      order_id: String;
+                      amount: String;
+                      mobile_number: String;
+                      customer_email: String;
+                      timestamp: String;
+                    } = {
                       merchant_id: this.merchantId,
                       customer_id: this.customerId,
                       order_id: this.orderId,
@@ -696,6 +705,8 @@ class ProcessScreen extends React.Component {
                       customer_email: this.email,
                       timestamp: HyperUtils.getTimestamp(),
                     };
+                    this.orderDetails = x;
+                    setOrderDetails(x);
                     HyperAPIUtils.generateSign(
                       this.privateKey,
                       JSON.stringify(this.orderDetails)

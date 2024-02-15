@@ -28,6 +28,9 @@ console.log('HyperSDKReactVersion', HyperSdkReact);
 
 if (Platform.OS === 'android') {
   HyperSdkReact.updateBaseViewController = () => {};
+  HyperSdkReact.updateMerchantViewHeight = () => {
+    console.log('UpdateMerchantViewHeight not available for android');
+  };
 }
 
 if (Platform.OS === 'ios') {
@@ -49,6 +52,7 @@ type HyperSdkReactType = {
   isInitialised(): Promise<boolean>;
   updateBaseViewController(): void;
   openPaymentPage(data: string): void;
+  updateMerchantViewHeight(tag: string, height: number): void;
 };
 
 export default HyperSdkReact as HyperSdkReactType;

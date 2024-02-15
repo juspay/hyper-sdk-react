@@ -8,14 +8,20 @@
 package in.juspay.hypersdkreact;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Intent;
 import android.os.Handler;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 
+import com.facebook.react.ReactApplication;
+import com.facebook.react.ReactInstanceManager;
+import com.facebook.react.ReactRootView;
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -34,6 +40,7 @@ import java.util.Map;
 import java.util.Set;
 
 import in.juspay.hypercheckoutlite.HyperCheckoutLite;
+import in.juspay.hypersdk.core.MerchantViewType;
 import in.juspay.hypersdk.core.SdkTracker;
 import in.juspay.hypersdk.data.JuspayResponseHandler;
 import in.juspay.hypersdk.ui.HyperPaymentsCallbackAdapter;
@@ -49,6 +56,9 @@ import in.juspay.services.HyperServices;
 public class HyperSdkReactModule extends ReactContextBaseJavaModule implements ActivityEventListener {
     static final String NAME = "HyperSdkReact";
     private static final String HYPER_EVENT = "HyperEvent";
+
+    @Nullable
+    private ReactInstanceManager rim;
 
     /**
      * All the React methods in here should be synchronized on this specific object because there
@@ -180,7 +190,10 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                         "activity is null");
                 return;
             }
-
+            Application app = activity.getApplication();
+            if (app instanceof ReactApplication) {
+                rim = ((ReactApplication) app).getReactNativeHost().getReactInstanceManager();
+            }
             if (hyperServices != null) {
                 SdkTracker.trackBootLifecycle(
                         LogConstants.SUBCATEGORY_HYPER_SDK,
@@ -247,6 +260,31 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                             processActivityRef = new WeakReference<>(null);
                         }
                         sendEventToJS(data);
+                    }
+
+                    @Nullable
+                    @Override
+                    public View getMerchantView(ViewGroup viewGroup, MerchantViewType merchantViewType) {
+                        if (rim == null) {
+                            return super.getMerchantView(viewGroup, merchantViewType);
+                        } else {
+                            ReactRootView rrv = new ReactRootView(getCurrentActivity());
+                            switch (merchantViewType) {
+                                case HEADER:
+                                    rrv.startReactApplication(rim, "JuspayHeader");
+                                    break;
+                                case FOOTER:
+                                    rrv.startReactApplication(rim, "JuspayFooter");
+                                    break;
+                                case FOOTER_ATTACHED:
+                                    rrv.startReactApplication(rim, "JuspayFooterAttached");
+                                    break;
+                                case HEADER_ATTACHED:
+                                    rrv.startReactApplication(rim, "JuspayHeaderAttached");
+                                    break;
+                            }
+                            return rrv;
+                        }
                     }
                 });
             } catch (Exception e) {
