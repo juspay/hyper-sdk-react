@@ -298,6 +298,39 @@ This is an optional method to update the base view controller in case if any new
 HyperSdkReact.updateBaseViewController();
 ```
 
+### Optional: Support for adding merchant views
+
+This sections helps to attach custom views inside designated sections in the payment page. You will need to register the component to be attached under one of the following names, based on where the component is attached.
+
+1. JuspayHeaderAttached
+1. JuspayHeader
+1. JuspayFooter
+1. JuspayFooterAttached
+
+You can follow the below syntax to attach the component. 
+```ts
+AppRegistry.registerComponent('JuspayHeaderAttached', () => CustomComponent);
+```
+
+Please note component must be registered before calling process call of the sdk.
+
+Note : In iOS we are not able to infer the height of the component being rendered. 
+Therefore the component must fire `HyperSdkReact.updateMerchantViewHeight(<section_name>, <height>);`
+
+For example
+```ts
+HyperSdkReact.updateMerchantViewHeight('JuspayHeader', 200);
+```
+
+If your view dynamically computes height. Height can be obtained by adding the following property to the root of component registered
+```ts
+  onLayout={(event) => {
+        const { height } = event.nativeEvent.layout;
+        HyperSdkReact.updateMerchantViewHeight('JuspayHeader', height);
+      }}
+
+```
+
 ## Payload Structure
 
 Please refer [here for Express Checkout SDK](https://developer.juspay.in/v2.0/docs/payload) and [here for Payment Page SDK](https://developer.juspay.in/v4.0/docs/payload), for all request and response payload structure.
