@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.0.22](https://github.com/juspay/hyper-sdk-react/compare/v3.0.21...v3.0.22) (2024-04-29)
+
+
+### Bug Fixes
+
+* added viewcontroller check before calling process ([185dc0a](https://github.com/juspay/hyper-sdk-react/commit/185dc0aa0722668725ecd6c8840aacfa6c8489c9))
+
 ### [3.0.21](https://github.com/juspay/hyper-sdk-react/compare/v3.0.20...v3.0.21) (2024-04-18)
 
 
