@@ -74,13 +74,13 @@ PODS:
   - hermes-engine (0.72.6):
     - hermes-engine/Pre-built (= 0.72.6)
   - hermes-engine/Pre-built (0.72.6)
-  - hyper-sdk-react (3.0.17):
-    - HyperSDK (= 2.1.34)
+  - hyper-sdk-react (3.0.21):
+    - HyperSDK (= 2.1.37)
     - React-Core
-  - HyperSDK (2.1.34):
-    - JuspaySafeBrowser (= 0.1.80)
-    - Salvator (= 1.0.5)
-  - JuspaySafeBrowser (0.1.80)
+  - HyperSDK (2.1.37):
+    - JuspaySafeBrowser (= 0.1.82)
+    - Salvator (= 1.0.6)
+  - JuspaySafeBrowser (0.1.82)
   - libevent (2.1.12)
   - OpenSSL-Universal (1.1.1100)
   - RCT-Folly (2021.07.22.00):
@@ -509,7 +509,7 @@ PODS:
   - RNScreens (3.20.0):
     - React-Core
     - React-RCTImage
-  - Salvator (1.0.5)
+  - Salvator (1.0.6)
   - SocketRocket (0.6.1)
   - Yoga (1.14.0)
   - YogaKit (1.18.1):
@@ -718,9 +718,9 @@ SPEC CHECKSUMS:
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
   hermes-engine: 8057e75cfc1437b178ac86c8654b24e7fead7f60
-  hyper-sdk-react: d666b0d56669bce74158e6009c2acb8636dd93c1
-  HyperSDK: 69875c51c54cf27f77be8493d615e3ad5ddad6e2
-  JuspaySafeBrowser: 7005eb12b612967cf9768d8370cf1ef9ae879880
+  hyper-sdk-react: 4a70cd4ed0362b26dfcf6d2d4243c08da2220aa2
+  HyperSDK: 02b6b065c15f1012185588f2ea2a22f39e0dad74
+  JuspaySafeBrowser: a355cb93b027269d7ed4419fbbc17bab9179ed88
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   RCT-Folly: 424b8c9a7a0b9ab2886ffe9c3b041ef628fd4fb1
@@ -760,7 +760,7 @@ SPEC CHECKSUMS:
   RNCPicker: 529d564911e93598cc399b56cc0769ce3675f8c8
   RNGestureHandler: 071d7a9ad81e8b83fe7663b303d132406a7d8f39
   RNScreens: 218801c16a2782546d30bd2026bb625c0302d70f
-  Salvator: 90f77a49b9a7e2b512088d0091ba540bdb5de0b1
+  Salvator: 1de69620ac17123ba3491e27a9a8b35bc5b97eaa
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   Yoga: b76f1acfda8212aa16b7e26bcce3983230c82603
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a

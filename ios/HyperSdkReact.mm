@@ -16,6 +16,7 @@
 #import <React/RCTUtils.h>
 #import <React/RCTBridgeModule.h>
 #import <React/RCTEventEmitter.h>
+#import <React/RCTModalHostViewController.h>
 
 #import <HyperSDK/HyperSDK.h>
 
@@ -101,6 +102,18 @@ RCT_EXPORT_METHOD(process:(NSString *)data) {
     if (data && data.length>0) {
         @try {
             NSDictionary *jsonData = [HyperSdkReact stringToDictionary:data];
+            // Update baseViewController if it's nil or not in the view hierarchy.
+            if (self.hyperInstance.baseViewController == nil || self.hyperInstance.baseViewController.view.window == nil) {
+                // Getting topViewController
+                id baseViewController = RCTPresentedViewController();
+
+                // Set the presenting ViewController as baseViewController if the topViewController is RCTModalHostViewController.
+                if ([baseViewController isMemberOfClass:RCTModalHostViewController.class] && [baseViewController presentingViewController]) {
+                    [self.hyperInstance setBaseViewController:[baseViewController presentingViewController]];
+                } else {
+                    [self.hyperInstance setBaseViewController:baseViewController];
+                }
+            }
             if (jsonData && [jsonData isKindOfClass:[NSDictionary class]] && jsonData.allKeys.count>0) {
                 [self.hyperInstance process:jsonData];
             } else {

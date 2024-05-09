@@ -56,7 +56,7 @@ pod install
     "devDependencies": {
       ....
     },
-    "hyperSdkIOSVersion": "2.1.34"
+    "hyperSdkIOSVersion": "2.1.37"
     ....
   }
 ```
@@ -65,7 +65,7 @@ Note: This version is just for explanatory purposes and may change in future. Co
 
 #### **Dynamic Assets iOS**
 
-Change the `hyperSdkIOSVersion` to `2.1.15` (This version is just for explanatory purposes and may change in future. Contact Juspay support team for the latest SDK version).
+Change the `hyperSdkIOSVersion` to `2.1.37` (This version is just for explanatory purposes and may change in future. Contact Juspay support team for the latest SDK version).
 
 Add below post_install script in the Podfile
 

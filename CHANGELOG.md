@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.0.23](https://github.com/juspay/hyper-sdk-react/compare/v3.0.22...v3.0.23) (2024-04-30)
+
+
+### Bug Fixes
+
+* updated android SDK version to 2.1.25 ([e34525e](https://github.com/juspay/hyper-sdk-react/commit/e34525e91db319f62e0dc940d20474aa3cb1c1b4))
+
+### [3.0.22](https://github.com/juspay/hyper-sdk-react/compare/v3.0.21...v3.0.22) (2024-04-29)
+
+
+### Bug Fixes
+
+* added viewcontroller check before calling process ([185dc0a](https://github.com/juspay/hyper-sdk-react/commit/185dc0aa0722668725ecd6c8840aacfa6c8489c9))
+
+### [3.0.21](https://github.com/juspay/hyper-sdk-react/compare/v3.0.20...v3.0.21) (2024-04-18)
+
+
+### Bug Fixes
+
+* generate changelog ([b609553](https://github.com/juspay/hyper-sdk-react/commit/b60955332ed09ec2fb30f439b1dfabcfa622c7df))
+
 ## [3.0.20](https://github.com/juspay/hyper-sdk-react/compare/v3.0.18...v3.0.20) (2024-03-21)
 
 
@@ -424,6 +445,3 @@ All notable changes to this project will be documented in this file. See [standa
 ### Features
 
 * **base-project:** adding base project for hypersdk react plugin ([8389604](https://github.com/juspay/hyper-sdk-react/commit/83896043288789afe2b1c2e0a4764a49493bb956))
-
-
-
