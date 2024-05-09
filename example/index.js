@@ -1,10 +1,17 @@
 import { AppRegistry } from 'react-native';
 import App from './src/App';
-import HelloWorld from './src/JuspayTopView';
-import TopViewAttached from './src/JuspayTopViewAttached';
+import JuspayTopView from './src/JuspayTopView';
+import JuspayTopViewAttached from './src/JuspayTopViewAttached';
 import { name as appName } from './app.json';
+import HyperSdkReact from 'hyper-sdk-react';
 
 AppRegistry.registerComponent(appName, () => App);
 
-AppRegistry.registerComponent('JuspayHeaderAttached', () => HelloWorld);
-AppRegistry.registerComponent('JuspayHeader', () => TopViewAttached);
+AppRegistry.registerComponent(
+  HyperSdkReact.JuspayHeaderAttached,
+  () => JuspayTopViewAttached
+);
+AppRegistry.registerComponent(
+  HyperSdkReact.JuspayHeader,
+  () => JuspayTopView
+);
