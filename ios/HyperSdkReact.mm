@@ -145,6 +145,10 @@
 RCT_EXPORT_MODULE()
 
 NSString *HYPER_EVENT = @"HyperEvent";
+NSString *JUSPAY_HEADER = @"JuspayHeader"
+NSString *JUSPAY_FOOTER = @"JuspayFooter"
+NSString *JUSPAY_HEADER_ATTACHED = @"JuspayHeaderAttached"
+NSString *JUSPAY_FOOTER_ATTACHED = @"JuspayFooterAttached"
 
 - (dispatch_queue_t)methodQueue{
     return dispatch_get_main_queue();
@@ -160,7 +164,12 @@ NSString *HYPER_EVENT = @"HyperEvent";
 
 - (NSDictionary *)constantsToExport
 {
- return @{ HYPER_EVENT: HYPER_EVENT };
+ return @{ HYPER_EVENT: HYPER_EVENT
+         , JUSPAY_HEADER : JUSPAY_HEADER
+         , JUSPAY_HEADER_ATTACHED : JUSPAY_HEADER_ATTACHED
+         , JUSPAY_FOOTER : JUSPAY_FOOTER
+         , JUSPAY_FOOTER_ATTACHED : JUSPAY_FOOTER_ATTACHED
+         };
 }
 
 // Will be called when this module's first listener is added.

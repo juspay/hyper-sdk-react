@@ -307,26 +307,26 @@ This sections helps to attach custom views inside designated sections in the pay
 1. JuspayFooter
 1. JuspayFooterAttached
 
-You can follow the below syntax to attach the component. 
+You can follow the below syntax to attach the component.
 ```ts
-AppRegistry.registerComponent('JuspayHeaderAttached', () => CustomComponent);
+AppRegistry.registerComponent(HyperSdkReact.JuspayHeaderAttached, () => CustomComponent);
 ```
 
 Please note component must be registered before calling process call of the sdk.
 
-Note : In iOS we are not able to infer the height of the component being rendered. 
+Note: In iOS we are not able to infer the height of the component being rendered.
 Therefore the component must fire `HyperSdkReact.updateMerchantViewHeight(<section_name>, <height>);`
 
 For example
 ```ts
-HyperSdkReact.updateMerchantViewHeight('JuspayHeader', 200);
+HyperSdkReact.updateMerchantViewHeight(HyperSdkReact.JuspayHeader, 200);
 ```
 
 If your view dynamically computes height. Height can be obtained by adding the following property to the root of component registered
 ```ts
   onLayout={(event) => {
         const { height } = event.nativeEvent.layout;
-        HyperSdkReact.updateMerchantViewHeight('JuspayHeader', height);
+        HyperSdkReact.updateMerchantViewHeight(HyperSdkReact.JuspayHeader, height);
       }}
 
 ```
