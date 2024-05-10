@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.0.24](https://github.com/juspay/hyper-sdk-react/compare/v3.0.23...v3.0.24) (2024-05-10)
+
+
+### Features
+
+* added support for merchant view android ([4767489](https://github.com/juspay/hyper-sdk-react/commit/4767489bcaf0e10790cad740abfc4427330f7002))
+* resolved comments ([fc1c870](https://github.com/juspay/hyper-sdk-react/commit/fc1c870fe099369738b4a95e0e00e8f396c355fd))
+
+
+### Bug Fixes
+
+* release new version ([9a56755](https://github.com/juspay/hyper-sdk-react/commit/9a56755c04a62233efd3470d972a1d087004d715))
+* set repository details in build ([0e91b77](https://github.com/juspay/hyper-sdk-react/commit/0e91b7749f5814c8897d622aafd0de2f62d00943))
+
 ### [3.0.23](https://github.com/juspay/hyper-sdk-react/compare/v3.0.22...v3.0.23) (2024-04-30)
 
 
