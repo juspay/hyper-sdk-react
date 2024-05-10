@@ -11,7 +11,4 @@ AppRegistry.registerComponent(
   HyperSdkReact.JuspayHeaderAttached,
   () => JuspayTopViewAttached
 );
-AppRegistry.registerComponent(
-  HyperSdkReact.JuspayHeader,
-  () => JuspayTopView
-);
+AppRegistry.registerComponent(HyperSdkReact.JuspayHeader, () => JuspayTopView);
