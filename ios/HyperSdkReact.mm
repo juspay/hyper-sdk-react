@@ -145,10 +145,10 @@
 RCT_EXPORT_MODULE()
 
 NSString *HYPER_EVENT = @"HyperEvent";
-NSString *JUSPAY_HEADER = @"JuspayHeader"
-NSString *JUSPAY_FOOTER = @"JuspayFooter"
-NSString *JUSPAY_HEADER_ATTACHED = @"JuspayHeaderAttached"
-NSString *JUSPAY_FOOTER_ATTACHED = @"JuspayFooterAttached"
+NSString *JUSPAY_HEADER = @"JuspayHeader";
+NSString *JUSPAY_FOOTER = @"JuspayFooter";
+NSString *JUSPAY_HEADER_ATTACHED = @"JuspayHeaderAttached";
+NSString *JUSPAY_FOOTER_ATTACHED = @"JuspayFooterAttached";
 
 - (dispatch_queue_t)methodQueue{
     return dispatch_get_main_queue();
