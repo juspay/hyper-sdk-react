@@ -11,8 +11,8 @@ buildscript {
         ndkVersion = "23.1.7779620"
 
         // Hyper SDK
-        clientId = 'geddit'
-        hyperSDKVersion = "2.1.15"
+        clientId = 'hypernative'
+        hyperSDKVersion = "2.1.30"
     }
     repositories {
         google()
