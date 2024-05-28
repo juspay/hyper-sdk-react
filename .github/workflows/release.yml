@@ -1,6 +1,6 @@
 name: Releases
 on:
-  pull_request:
+  pull_request_target:
     branches:
       - main
     types:
@@ -22,6 +22,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
           token: ${{ steps.generate_app_token.outputs.token }}
           fetch-depth: ${{ github.event.pull_request.commits }}
 
