@@ -7,7 +7,7 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:4.0.1'
-        classpath 'in.juspay:hypersdk.plugin:2.0.6'
+        classpath 'in.juspay:hypersdk.plugin:2.0.8-rc.01'
     }
 }
 
@@ -83,7 +83,7 @@ static def mostRecentVersion(List<String> versions) {
 }
 
 static def getHyperSDKVersion(rootProject) {
-    def hyperSdkVersion = '2.1.25'
+    def hyperSdkVersion = '2.1.30'
     if (!rootProject.hasProperty('hyperSDKVersion')) {
         return hyperSdkVersion
     }
@@ -102,6 +102,13 @@ static def getClientId(rootProject) {
     return rootProject.clientId
 }
 
+static def getExcludedMicroSdks(rootProject) {
+    if (!rootProject.hasProperty('excludedMicroSDKs')) {
+        return []
+    }
+    return rootProject.excludedMicroSDKs
+}
+
 dependencies {
     // For < 0.71, this will be from the local maven repo
     // For > 0.71, this will be replaced by `com.facebook.react:react-android:$version` by react gradle plugin
@@ -114,4 +121,5 @@ dependencies {
 hyperSdkPlugin {
     clientId = getClientId(rootProject)
     sdkVersion = getHyperSDKVersion(rootProject)
+    excludedMicroSDKs = getExcludedMicroSdks(rootProject)
 }

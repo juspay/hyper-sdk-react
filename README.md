@@ -17,6 +17,9 @@ maven { url "https://maven.juspay.in/jp-build-packages/hyper-sdk/" }
 ```
 
 Add the clientId ext property in root(top) `build.gradle`:
+- You can also provide an override for base SDK version present in plugin (the newer version among both would be considered) by adding hyperSDKVersion - `Optional`
+- Exclude microSDKs provided with HyperSDK for given clientId by adding excludedMicroSDKs - `Optional`
+
 
 ```groovy
 buildscript {
@@ -24,14 +27,13 @@ buildscript {
     ext {
         ....
         clientId = "<clientId shared by Juspay team>"
-        hyperSDKVersion = "2.1.25"
+        hyperSDKVersion = "2.1.30"
+        excludedMicroSDKs = []
         ....
     }
     ....
 }
 ```
-
-Optionally, you can also provide an override for base SDK version present in plugin (the newer version among both would be considered).
 
 
 ### iOS
@@ -56,7 +58,7 @@ pod install
     "devDependencies": {
       ....
     },
-    "hyperSdkIOSVersion": "2.1.37"
+    "hyperSdkIOSVersion": "2.1.41"
     ....
   }
 ```
