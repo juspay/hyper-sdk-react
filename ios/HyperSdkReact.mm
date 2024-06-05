@@ -24,11 +24,11 @@
 
 -(void)didMoveToSuperview {
     // Remove old leading anchor
-    if (self.leading) {
+    if (self.leading.isActive) {
         self.leading.active = @NO;
     }
     // Remove old trailing anchor
-    if (self.trailing) {
+    if (self.trailing.isActive) {
         self.trailing.active = @NO;
     }
 

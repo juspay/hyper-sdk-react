@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.0.26](https://github.com/juspay/hyper-sdk-react/compare/v3.0.25...v3.0.26) (2024-06-04)
+
+
+### Bug Fixes
+
+* update constrint for merchant view only if the constraint is active ([c2e9681](https://github.com/juspay/hyper-sdk-react/commit/c2e9681bb8b57b2bc4c624449533f519eb39f0bc))
+* updated ios SDK version to 2.1.39 ([fce1020](https://github.com/juspay/hyper-sdk-react/commit/fce10203911d7a12c991bb7663a29888885e5d41))
+
 ### [3.0.25](https://github.com/juspay/hyper-sdk-react/compare/v3.0.24...v3.0.25) (2024-05-21)
 
 
