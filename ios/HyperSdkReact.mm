@@ -49,6 +49,8 @@
 
 @implementation SdkDelegate
 
+NSMutableSet<NSString *> *registeredComponents = [[NSMutableSet alloc] init];
+
 - (id)initWithBridge:(RCTBridge *)bridge {
     // Hold references to all merchant views provided to the sdk
     self.rootHolder = [[NSMutableDictionary alloc] init];
@@ -98,13 +100,13 @@
     // Create a SDKRootView so that we can attach width constraints once it is attached to it's parent
     RCTRootView *rrv = [SDKRootView alloc];
     NSString *moduleName = @"JP_003";
-    if ([viewType isEqual:@"HEADER"]) {
+    if ([viewType isEqual:@"HEADER"] && [registeredComponents containsObject:@"JuspayHeader"]) {
         moduleName = @"JuspayHeader";
-    } else if ([viewType isEqual:@"HEADER_ATTACHED"]) {
+    } else if ([viewType isEqual:@"HEADER_ATTACHED"] && [registeredComponents containsObject:@"JuspayHeaderAttached"]) {
         moduleName = @"JuspayHeaderAttached";
-    } else if ([viewType isEqual:@"FOOTER"]) {
+    } else if ([viewType isEqual:@"FOOTER"] && [registeredComponents containsObject:@"JuspayFooter"]) {
         moduleName = @"JuspayFooter";
-    } else if ([viewType isEqual:@"FOOTER_ATTACHED"]) {
+    } else if ([viewType isEqual:@"FOOTER_ATTACHED"] && [registeredComponents containsObject:@"JuspayFooterAttached"]) {
         moduleName = @"JuspayFooterAttached";
     }
 
@@ -270,6 +272,10 @@ RCT_EXPORT_METHOD(terminate) {
     if (_hyperInstance) {
         [_hyperInstance terminate];
     }
+}
+
+RCT_EXPORT_METHOD(notifyAboutRegisterComponent:(NSString *)viewType) {
+    [registeredComponents addObject:viewType];
 }
 
 RCT_EXPORT_METHOD(isInitialised:(RCTPromiseResolveBlock)resolve  reject:(RCTPromiseRejectBlock)reject) {

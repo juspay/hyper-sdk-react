@@ -7,8 +7,10 @@ import HyperSdkReact from 'hyper-sdk-react';
 
 AppRegistry.registerComponent(appName, () => App);
 
+HyperSdkReact.notifyAboutRegisterComponent(HyperSdkReact.JuspayHeaderAttached)
 AppRegistry.registerComponent(
   HyperSdkReact.JuspayHeaderAttached,
   () => JuspayTopViewAttached
 );
+HyperSdkReact.notifyAboutRegisterComponent(HyperSdkReact.JuspayHeader)
 AppRegistry.registerComponent(HyperSdkReact.JuspayHeader, () => JuspayTopView);

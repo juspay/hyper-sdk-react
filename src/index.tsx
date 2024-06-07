@@ -53,6 +53,7 @@ type HyperSdkReactType = {
   updateBaseViewController(): void;
   openPaymentPage(data: string): void;
   updateMerchantViewHeight(tag: string, height: number): void;
+  notifyAboutRegisterComponent(tag: string): void;
   JuspayHeader: string;
   JuspayHeaderAttached: string;
   JuspayFooter: string;
