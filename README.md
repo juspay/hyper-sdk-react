@@ -309,6 +309,7 @@ This sections helps to attach custom views inside designated sections in the pay
 
 You can follow the below syntax to attach the component.
 ```ts
+HyperSdkReact.notifyAboutRegisterComponent(HyperSdkReact.JuspayHeaderAttached)
 AppRegistry.registerComponent(HyperSdkReact.JuspayHeaderAttached, () => CustomComponent);
 ```
 

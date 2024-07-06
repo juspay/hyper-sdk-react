@@ -36,6 +36,7 @@ import org.json.JSONObject;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -76,6 +77,8 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
     private final ReactApplicationContext context;
 
     private boolean wasProcessWithActivity = false;
+
+    private Set<String> registeredComponents = new HashSet<>();
 
     @NonNull
     private WeakReference<Activity> processActivityRef = new WeakReference<>(null);
@@ -276,16 +279,20 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                             ReactRootView reactRootView = new ReactRootView(activity);
                             switch (merchantViewType) {
                                 case HEADER:
-                                    reactRootView.startReactApplication(reactInstanceManager, MerchantViewConstants.JUSPAY_HEADER);
+                                    if (isViewRegistered(MerchantViewConstants.JUSPAY_HEADER))
+                                        reactRootView.startReactApplication(reactInstanceManager, MerchantViewConstants.JUSPAY_HEADER);
                                     break;
                                 case FOOTER:
-                                    reactRootView.startReactApplication(reactInstanceManager, MerchantViewConstants.JUSPAY_FOOTER);
+                                    if (isViewRegistered(MerchantViewConstants.JUSPAY_FOOTER))
+                                        reactRootView.startReactApplication(reactInstanceManager, MerchantViewConstants.JUSPAY_FOOTER);
                                     break;
                                 case FOOTER_ATTACHED:
-                                    reactRootView.startReactApplication(reactInstanceManager, MerchantViewConstants.JUSPAY_FOOTER_ATTACHED);
+                                    if (isViewRegistered(MerchantViewConstants.JUSPAY_FOOTER_ATTACHED))
+                                        reactRootView.startReactApplication(reactInstanceManager, MerchantViewConstants.JUSPAY_FOOTER_ATTACHED);
                                     break;
                                 case HEADER_ATTACHED:
-                                    reactRootView.startReactApplication(reactInstanceManager, MerchantViewConstants.JUSPAY_HEADER_ATTACHED);
+                                    if (isViewRegistered(MerchantViewConstants.JUSPAY_HEADER_ATTACHED))
+                                        reactRootView.startReactApplication(reactInstanceManager, MerchantViewConstants.JUSPAY_HEADER_ATTACHED);
                                     break;
                             }
                             return reactRootView;
@@ -296,6 +303,10 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                 e.printStackTrace();
             }
         }
+    }
+
+    private boolean isViewRegistered(String tag) {
+        return registeredComponents.contains(tag);
     }
 
     private void sendEventToJS(JSONObject data) {
@@ -468,6 +479,11 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
             hyperServices = null;
         }
+    }
+
+    @ReactMethod
+    public void notifyAboutRegisterComponent(String tag) {
+        registeredComponents.add(tag);
     }
 
     @ReactMethod(isBlockingSynchronousMethod = true)
