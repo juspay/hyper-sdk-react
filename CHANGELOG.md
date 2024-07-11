@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.0.31](https://github.com/juspay/hyper-sdk-react/compare/v3.0.30...v3.0.31) (2024-07-11)
+
 ### [3.0.30](https://github.com/juspay/hyper-sdk-react/compare/v3.0.29...v3.0.30) (2024-07-11)
 
 ### [3.0.29](https://github.com/juspay/hyper-sdk-react/compare/v3.0.28...v3.0.29) (2024-07-11)
