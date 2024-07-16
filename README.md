@@ -30,9 +30,8 @@ buildscript {
     ....
 }
 ```
-
-Optionally, you can also provide an override for base SDK version present in plugin (the newer version among both would be considered).
-
+- You can also provide an override for base SDK version present in plugin (the newer version among both would be considered). - Optional
+- Exclude microSDKs provided with HyperSDK for given clientId by adding excludedMicroSDKs - Optional
 
 ### iOS
 
