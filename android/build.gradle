@@ -123,3 +123,7 @@ hyperSdkPlugin {
     sdkVersion = getHyperSDKVersion(rootProject)
     excludedMicroSDKs = getExcludedMicroSdks(rootProject)
 }
+
+if(rootProject.hasProperty('hyperAssetVersion')) {
+    hyperSdkPlugin.assetVersion = rootProject.hyperAssetVersion
+}
