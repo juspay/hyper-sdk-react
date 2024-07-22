@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">HyperSdkReact Example</string>
+    <bool name="use_local_assets">false</bool>
 </resources>

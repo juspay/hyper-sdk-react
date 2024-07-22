@@ -13,7 +13,7 @@ buildscript {
         // Hyper SDK
         clientId = 'geddit'
         hyperSDKVersion = "2.1.25"
-        excludedMicroSDKs = []
+        excludedMicroSDKs = ["hyperapay"]
     }
     repositories {
         google()
