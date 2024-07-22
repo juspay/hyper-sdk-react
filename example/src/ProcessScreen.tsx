@@ -20,7 +20,7 @@ import {
   Dimensions,
   ScrollView,
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+// import { Picker } from '@react-native-picker/picker';
 import CheckBox from '@react-native-community/checkbox';
 import HyperSdkReact, { HyperView } from 'hyper-sdk-react';
 import HyperAPIUtils from './API';
@@ -37,6 +37,7 @@ class ProcessScreen extends React.Component {
     resultText: '',
     animation: new Animated.Value(0),
     isPayloadGenerated: false,
+    hideWidget: false,
     ppPayload: '',
   };
 
@@ -147,6 +148,86 @@ class ProcessScreen extends React.Component {
     });
   }
 
+  UpdateOrderData = () => {
+    const [text, onChangeText] = React.useState('');
+    const [number, onChangeNumber] = React.useState(this.amount);
+    return (
+      <View style={styles.containerNew}>
+        <View style={styles.horizontal}>
+          <TextInput
+            style={styles.input2}
+            onChangeText={onChangeText}
+            value={text}
+            placeholder="Coupon Code"
+          />
+          <TextInput
+            style={styles.input2}
+            onChangeText={onChangeNumber}
+            value={number}
+            placeholder="Amount"
+            keyboardType="numeric"
+          />
+        </View>
+        <CustomButton2
+          title="Update Order"
+          onPress={() => {
+            let orderDetailsNew = {};
+            if (text !== '') {
+              orderDetailsNew = {
+                merchant_id: this.merchantId,
+                customer_id: this.customerId,
+                order_id: this.orderId,
+                amount: number,
+                mobile_number: this.mobile,
+                customer_email: this.email,
+                timestamp: HyperUtils.getTimestamp(),
+                offer_details: {
+                  offer_applied: String(text !== ''),
+                  offer_code: text,
+                  amount: number,
+                },
+              };
+            } else {
+              orderDetailsNew = {
+                merchant_id: this.merchantId,
+                customer_id: this.customerId,
+                order_id: this.orderId,
+                amount: number,
+                mobile_number: this.mobile,
+                customer_email: this.email,
+                timestamp: HyperUtils.getTimestamp(),
+              };
+            }
+            let signNew = '';
+            HyperAPIUtils.generateSign(
+              this.privateKey,
+              JSON.stringify(orderDetailsNew)
+            )
+              .then((resp) => {
+                signNew = resp;
+                // HyperUtils.showCopyAlert(
+                //   'Payload signed',
+                //   this.signature
+                // );
+              })
+              .catch((err) => {
+                console.warn(err);
+              });
+            var payload = HyperUtils.generateProcessPayloadPP(
+              'updateOrder',
+              this.clientId,
+              this.merchantId,
+              JSON.stringify(orderDetailsNew),
+              signNew,
+              this.merchantKeyId
+            );
+            HyperSdkReact.process(JSON.stringify(payload));
+          }}
+        />
+      </View>
+    );
+  };
+
   componentWillUnmount() {
     this.eventListener.remove();
     BackHandler.removeEventListener('hardwareBackPress', () => null);
@@ -171,7 +252,9 @@ class ProcessScreen extends React.Component {
 
     this.isPopupVisible = false;
   };
-
+  toggleVisibility = () => {
+    this.setState({ hideWidget: !this.state.hideWidget });
+  };
   render() {
     const screenHeight = Dimensions.get('window').height;
 
@@ -205,9 +288,11 @@ class ProcessScreen extends React.Component {
     };
 
     return (
-      <View>
+      <View style={{ flex: 1 }}>
         <ScrollView>
           <View style={styles.container}>
+            <this.UpdateOrderData />
+
             <CustomButton
               title={
                 this.service === 'ec' ? 'Create Order' : 'Generate Order ID'
@@ -240,7 +325,7 @@ class ProcessScreen extends React.Component {
                 }
               }}
             />
-            <View style={styles.pickerContainer}>
+            {/* <View style={styles.pickerContainer}>
               {this.service === 'ec' ? (
                 <Picker
                   style={styles.picker}
@@ -284,7 +369,7 @@ class ProcessScreen extends React.Component {
                   <Picker.Item label="quickPay" value="quickPay" />
                 </Picker>
               )}
-            </View>
+            </View> */}
 
             {this.state.pickerSelected === 'getPM' ? (
               <CustomButton
@@ -710,6 +795,7 @@ class ProcessScreen extends React.Component {
                       mobile_number: String;
                       customer_email: String;
                       timestamp: String;
+                      features: any;
                     } = {
                       merchant_id: this.merchantId,
                       customer_id: this.customerId,
@@ -718,6 +804,7 @@ class ProcessScreen extends React.Component {
                       mobile_number: this.mobile,
                       customer_email: this.email,
                       timestamp: HyperUtils.getTimestamp(),
+                      features: { paymentWidget: { enable: true } },
                     };
                     this.orderDetails = x;
                     setOrderDetails(x);
@@ -789,7 +876,7 @@ class ProcessScreen extends React.Component {
               </View>
             ) : null}
 
-            <CustomButton
+            {/* <CustomButton
               title="Is Initialised?"
               onPress={() => {
                 HyperSdkReact.isInitialised().then((init: boolean) => {
@@ -797,14 +884,14 @@ class ProcessScreen extends React.Component {
                   HyperUtils.showCopyAlert('isInitialised', init + '');
                 });
               }}
-            />
+            /> */}
             <CustomButton
               title="Terminate"
               onPress={() => {
                 HyperSdkReact.terminate();
               }}
             />
-            <CustomButton
+            {/* <CustomButton
               title="Check Result"
               onPress={() => {
                 this.handleOpen();
@@ -822,6 +909,20 @@ class ProcessScreen extends React.Component {
                   }
                 />
               ) : null}
+            /> */}
+            <View style={styles.horizontal}>
+              <CustomButton
+                title="Hide Widget"
+                onPress={() => {
+                  this.toggleVisibility();
+                }}
+              />
+              <CustomButton
+                title="Check Offers"
+                onPress={() => {
+                  this.navigation.navigate('OfferScreen');
+                }}
+              />
             </View>
           </View>
         </ScrollView>
@@ -846,6 +947,47 @@ class ProcessScreen extends React.Component {
             </Animated.View>
           </View>
         </Animated.View>
+        <View
+          style={[
+            styles.horizontal2,
+            this.state.hideWidget ? styles.horizontal2Gone : styles.horizontal2,
+          ]}
+        >
+          <View
+            style={[
+              styles.newWala,
+              // this.state.isPayloadGenerated ? styles.newWala : null,
+            ]}
+          >
+            {this.state.isPayloadGenerated ? (
+              <HyperView
+                height={103}
+                payload={
+                  this.service === 'pp'
+                    ? this.state.ppPayload
+                    : this.flyerPayload
+                }
+                namespace={'paymentWidget'}
+              />
+            ) : null}
+          </View>
+          {/* <View style={styles.containerSon2}>
+            <CustomButton3
+              title="Proceed To Pay"
+              onPress={() => {
+                const data = {
+                  requestId: 'testid',
+                  service: 'in.juspay.hyperpay',
+                  payload: {
+                    action: 'updateDetails',
+                    hidePaymentWidget: false,
+                  },
+                };
+                HyperSdkReact.process(JSON.stringify(data));
+              }}
+            />
+          </View> */}
+        </View>
       </View>
     );
   }
@@ -857,13 +999,59 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  containerSon: {
-    height: 250,
+  containerNew: {
+    height: 50,
     width: '100%',
-    backgroundColor: 'green',
+    // backgroundColor: 'yellow',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  containerSon: {
+    height: 'auto',
+    // width: 'auto',
+    flex: 0,
+    backgroundColor: 'white',
+  },
+  newWala: {
+    height: 'auto',
+    // width: 'auto',
+    flex: 1,
+    backgroundColor: 'white',
+  },
+  containerSon2: {
+    height: 'auto',
+    // width: '100%',
+    flex: 1,
+    backgroundColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   horizontal: {
     flexDirection: 'row',
+  },
+  horizontal2: {
+    flexDirection: 'row',
+    height: 103,
+    width: '100%',
+    position: 'absolute',
+    bottom: 0,
+  },
+  horizontal2Gone: {
+    display: 'none',
+    visibility: 'none',
+  },
+  input: {
+    borderColor: 'black',
+    borderWidth: 1,
+    margin: 2,
+  },
+  input2: {
+    borderColor: 'black',
+    color: 'black',
+    borderWidth: 1,
+    margin: 2,
+    // placeholderTextColor: 'black',
   },
   button: {
     backgroundColor: 'blue',
@@ -871,6 +1059,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25,
     borderRadius: 25,
     marginVertical: 12,
+  },
+  button2: {
+    backgroundColor: 'blue',
+    borderRadius: 25,
+    width: 200,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  button3: {
+    backgroundColor: '#FF3269',
+    borderRadius: 25,
+    width: 200,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   buttonText: {
     color: 'white',
@@ -950,6 +1154,22 @@ const CustomButton = (props: any) => {
     </TouchableOpacity>
   );
 };
+
+const CustomButton2 = (props: any) => {
+  return (
+    <TouchableOpacity onPress={props.onPress} style={styles.button2}>
+      <Text style={styles.buttonText}>{props.title}</Text>
+    </TouchableOpacity>
+  );
+};
+
+// const CustomButton3 = (props: any) => {
+//   return (
+//     <TouchableOpacity onPress={props.onPress} style={styles.button3}>
+//       <Text style={styles.buttonText}>{props.title}</Text>
+//     </TouchableOpacity>
+//   );
+// };
 
 const CustomCheckBox = (props: any) => {
   return (

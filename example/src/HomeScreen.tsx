@@ -31,7 +31,7 @@ import { useNavigation } from '@react-navigation/native';
 class HomeScreen extends React.Component {
   state = {
     animation: new Animated.Value(0),
-    pickerSelected: 'ec',
+    pickerSelected: 'pp',
   };
 
   navigation: any;
@@ -170,8 +170,8 @@ class HomeScreen extends React.Component {
                   console.log(val, index);
                 }}
               >
-                <Picker.Item label="Express Checkout" value="ec" />
                 <Picker.Item label="Payment Page" value="pp" />
+                <Picker.Item label="Express Checkout" value="ec" />
               </Picker>
             </View>
 
