@@ -29,14 +29,14 @@ import java.util.Map;
 import in.juspay.hypersdk.core.SdkTracker;
 import in.juspay.services.HyperServices;
 
-public class HyperViewManager extends ViewGroupManager<FrameLayout> {
+public class HyperFragmentViewManager extends ViewGroupManager<FrameLayout> {
 
-    private static final String NAME = "HyperViewManager";
+    private static final String NAME = "HyperFragmentViewManager";
     private static final int COMMAND_PROCESS = 175;
 
     private final ReactApplicationContext reactContext;
 
-    public HyperViewManager(ReactApplicationContext reactContext) {
+    public HyperFragmentViewManager(ReactApplicationContext reactContext) {
         this.reactContext = reactContext;
     }
 
@@ -111,7 +111,7 @@ public class HyperViewManager extends ViewGroupManager<FrameLayout> {
                     LogConstants.CATEGORY_LIFECYCLE,
                     LogConstants.SUBCATEGORY_HYPER_SDK,
                     LogConstants.SDK_TRACKER_LABEL,
-                    "Exception in HyperViewManager.createCommand",
+                    "Exception in HyperFragmentViewManager.createCommand",
                     e
             );
         }
@@ -131,7 +131,7 @@ public class HyperViewManager extends ViewGroupManager<FrameLayout> {
                             LogConstants.CATEGORY_LIFECYCLE,
                             LogConstants.SUBCATEGORY_HYPER_SDK,
                             LogConstants.SDK_TRACKER_LABEL,
-                            "Exception in HyperViewManager.doFrame",
+                            "Exception in HyperFragmentViewManager.doFrame",
                             e
                     );
                 }

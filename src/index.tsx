@@ -24,7 +24,7 @@ const HyperSdkReact = NativeModules.HyperSdkReact
       }
     );
 
-export { default as HyperView } from './HyperView';
+export { default as HyperFragmentView } from './HyperFragmentView';
 
 if (Platform.OS === 'android') {
   HyperSdkReact.updateBaseViewController = () => {};

@@ -10,7 +10,6 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
 import HomeScreen from './HomeScreen';
 import ProcessScreen from './ProcessScreen';
-import OfferScreen from './OfferScreen';
 
 const AppNavigator = createStackNavigator();
 
@@ -26,11 +25,6 @@ const App = () => (
         name="ProcessScreen"
         component={ProcessScreen}
         options={{ title: 'Process Screen' }}
-      />
-      <AppNavigator.Screen
-        name="OfferScreen"
-        component={OfferScreen}
-        options={{ title: 'Offer Screen' }}
       />
     </AppNavigator.Navigator>
   </NavigationContainer>
