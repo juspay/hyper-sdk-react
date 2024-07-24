@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.0.34](https://github.com/juspay/hyper-sdk-react/compare/v3.0.33...v3.0.34) (2024-07-24)
+
+
+### Features
+
+* fragment viewgroup support in android ([5d6f8a2](https://github.com/juspay/hyper-sdk-react/commit/5d6f8a2939b5f5b5924997180c108841435a8863))
+
+
+### Bug Fixes
+
+* add check for ios platform for using fragment view ([209908e](https://github.com/juspay/hyper-sdk-react/commit/209908ee52af9779dbcf44e70af30515613e034f))
+
 ### [3.0.33](https://github.com/juspay/hyper-sdk-react/compare/v3.0.32...v3.0.33) (2024-07-16)
 
 
