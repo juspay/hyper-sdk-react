@@ -11,27 +11,31 @@ import {
   UIManager,
   findNodeHandle,
   requireNativeComponent,
+  Platform,
 } from 'react-native';
 
-export interface HyperViewProps {
+export interface HyperFragmentViewProps {
   height?: number;
   width?: number;
   namespace: string;
   payload: string;
 }
+var HyperFragmentViewManager: any;
 
-const HyperViewManager = requireNativeComponent('HyperViewManager');
+if (Platform.OS === 'android') {
+  HyperFragmentViewManager = requireNativeComponent('HyperFragmentViewManager');
+}
 
 const createFragment = (viewId: number, namespace: string, payload: string) => {
   UIManager.dispatchViewManagerCommand(
     viewId,
     //@ts-ignore
-    UIManager.HyperViewManager.Commands.process.toString(),
+    UIManager.HyperFragmentViewManager.Commands.process.toString(),
     [viewId, namespace, payload]
   );
 };
 
-const HyperView: React.FC<HyperViewProps> = ({
+const HyperFragmentView: React.FC<HyperFragmentViewProps> = ({
   height,
   width,
   namespace,
@@ -39,17 +43,23 @@ const HyperView: React.FC<HyperViewProps> = ({
 }) => {
   const ref = React.useRef<View | null>(null);
   React.useEffect(() => {
-    const viewId = findNodeHandle(ref.current);
-    if (viewId) {
-      createFragment(viewId, namespace, payload);
+    if (Platform.OS == 'android') {
+      const viewId = findNodeHandle(ref.current);
+      if (viewId) {
+        createFragment(viewId, namespace, payload);
+      }
     }
   }, [namespace, payload]);
 
+  if (!HyperFragmentViewManager) {
+    return null;
+  }
+
   return (
     <View style={{ height: height, width: width }}>
-      <HyperViewManager ref={ref} />
+      <HyperFragmentViewManager ref={ref} />
     </View>
   );
 };
 
-export default HyperView;
+export default HyperFragmentView;

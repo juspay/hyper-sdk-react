@@ -22,7 +22,7 @@ import {
 } from 'react-native';
 // import { Picker } from '@react-native-picker/picker';
 import CheckBox from '@react-native-community/checkbox';
-import HyperSdkReact, { HyperView } from 'hyper-sdk-react';
+import HyperSdkReact, { HyperFragmentView } from 'hyper-sdk-react';
 import HyperAPIUtils from './API';
 import HyperUtils from './Utils';
 import { useNavigation } from '@react-navigation/native';
@@ -122,7 +122,7 @@ class ProcessScreen extends React.Component {
     this.otp = '';
     this.sdkPresent = '';
     this.walletMobile = '';
-    this.flyerPayload = JSON.stringify(HyperUtils.generateFlyerPayload());
+    this.flyerPayload = JSON.stringify({});
 
     if (this.service === 'pp') {
       this.state.pickerSelected = 'paymentPage';
@@ -899,7 +899,7 @@ class ProcessScreen extends React.Component {
             />
             <View style={styles.containerSon}>
               {this.state.isPayloadGenerated ? (
-                <HyperView
+                <HyperFragmentView
                   height={250}
                   namespace={'quickPay'}
                   payload={
@@ -960,7 +960,7 @@ class ProcessScreen extends React.Component {
             ]}
           >
             {this.state.isPayloadGenerated ? (
-              <HyperView
+              <HyperFragmentView
                 height={103}
                 payload={
                   this.service === 'pp'
