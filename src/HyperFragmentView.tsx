@@ -43,7 +43,7 @@ const HyperFragmentView: React.FC<HyperFragmentViewProps> = ({
 }) => {
   const ref = React.useRef<View | null>(null);
   React.useEffect(() => {
-    if (Platform.OS == 'android') {
+    if (Platform.OS === 'android') {
       const viewId = findNodeHandle(ref.current);
       if (viewId) {
         createFragment(viewId, namespace, payload);

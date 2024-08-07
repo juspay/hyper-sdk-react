@@ -288,7 +288,7 @@ class ProcessScreen extends React.Component {
     };
 
     return (
-      <View style={{ flex: 1 }}>
+      <View style={styles.root}>
         <ScrollView>
           <View style={styles.container}>
             <this.UpdateOrderData />
@@ -994,6 +994,9 @@ class ProcessScreen extends React.Component {
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
   container: {
     flex: 1,
     alignItems: 'center',
