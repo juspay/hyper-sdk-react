@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.0.36](https://github.com/juspay/hyper-sdk-react/compare/v3.0.35...v3.0.36) (2024-08-07)
+
+
+### Bug Fixes
+
+* regenerated yarn.lock to remove flagged dependencies ([ad14959](https://github.com/juspay/hyper-sdk-react/commit/ad1495912b060878bd34db320b68f61ff1db4cc0))
+
 ### [3.0.35](https://github.com/juspay/hyper-sdk-react/compare/v3.0.34...v3.0.35) (2024-07-30)
 
 ### [3.0.34](https://github.com/juspay/hyper-sdk-react/compare/v3.0.33...v3.0.34) (2024-07-24)
