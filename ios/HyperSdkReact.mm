@@ -202,7 +202,16 @@ RCT_EXPORT_METHOD(preFetch:(NSString *)data) {
 RCT_EXPORT_METHOD(createHyperServices) {
     if (self.hyperInstance == NULL) {
         self.hyperInstance = [HyperServices new];
+        [HyperSdkReact setHyperServicesReference:self.hyperInstance];
     }
+}
+
++ ( HyperServices *)getHyperServices {
+    return _hyperServicesReference;
+}
+
++ (void)setHyperServicesReference:(HyperServices *)hyperServicesReference {
+    _hyperServicesReference = hyperServicesReference;
 }
 
 RCT_EXPORT_METHOD(initiate:(NSString *)data) {
@@ -315,6 +324,70 @@ RCT_EXPORT_METHOD(updateMerchantViewHeight: (NSString * _Nonnull) tag height: (N
     }
     NSString *data = [[NSString alloc] initWithData:[NSJSONSerialization dataWithJSONObject:dict options:0 error:nil] encoding:NSUTF8StringEncoding];
     return data;
+}
+
+@end
+
+@implementation HyperFragmentViewManagerIOS
+RCT_EXPORT_MODULE()
+
+- (dispatch_queue_t)methodQueue{
+    return dispatch_get_main_queue();
+}
+
++ (BOOL)requiresMainQueueSetup{
+    return YES;
+}
+
+- (UIView *)view
+{
+    return [[UIView alloc] init];
+}
+
+RCT_EXPORT_METHOD(receiveCommand:(nonnull NSNumber *)node params1:(NSString *)params1 params2:(NSString *)params2 params3:(NSString *)params3) {
+  HyperServices *hyperServicesInstance = [HyperSdkReact getHyperServices];
+  if (params3 && params3.length>0) {
+      @try {
+          NSDictionary *jsonData = [HyperSdkReact stringToDictionary:params3];
+          if (jsonData && [jsonData isKindOfClass:[NSDictionary class]] && jsonData.allKeys.count>0) {
+              [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, UIView *> *viewRegistry) {
+                  if (hyperServicesInstance.baseViewController == nil || hyperServicesInstance.baseViewController.view.window == nil) {
+                      id baseViewController = RCTPresentedViewController();
+                      if ([baseViewController isMemberOfClass:RCTModalHostViewController.class] && [baseViewController presentingViewController]) {
+                          [hyperServicesInstance setBaseViewController:[baseViewController presentingViewController]];
+                      } else {
+                          [hyperServicesInstance setBaseViewController:baseViewController];
+                      }
+                  }
+                  UIView *view = viewRegistry[node];
+                    [self manuallyLayoutChildren:view];
+                  if (!view || ![view isKindOfClass:[UIView class]]) {
+                      RCTLogError(@"Cannot find NativeViewManager with tag #%@", node);
+                      return;
+                  }
+                  NSMutableDictionary *nestedPayload = [jsonData[@"payload"] mutableCopy];
+                  NSDictionary *fragmentViewGroup = @{@"paymentWidget": view};
+                  nestedPayload[@"fragmentViewGroups"] = fragmentViewGroup;
+                  NSMutableDictionary *updatedJsonData = [jsonData mutableCopy];
+                  updatedJsonData[@"payload"] = nestedPayload;
+                  [hyperServicesInstance process:[updatedJsonData copy]];
+              }];
+          } else {}
+      } @catch (NSException *exception) {}
+  } else {}
+}
+
+- (void)manuallyLayoutChildren:(UIView *)view {
+    UIView *parent = view.superview;
+    if (!parent) return;
+
+    CGRect parentBounds = parent.bounds;
+    CGFloat width = CGRectGetWidth(parentBounds);
+    CGFloat height = CGRectGetHeight(parentBounds);
+
+    view.frame = CGRectMake(0, 0, width, height);
+    [view setNeedsLayout];
+    [view layoutIfNeeded];
 }
 
 @end

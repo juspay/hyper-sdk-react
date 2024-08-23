@@ -24,15 +24,31 @@ var HyperFragmentViewManager: any;
 
 if (Platform.OS === 'android') {
   HyperFragmentViewManager = requireNativeComponent('HyperFragmentViewManager');
+} else {
+  HyperFragmentViewManager = requireNativeComponent('HyperFragmentViewManagerIOS');
 }
 
 const createFragment = (viewId: number, namespace: string, payload: string) => {
-  UIManager.dispatchViewManagerCommand(
-    viewId,
-    //@ts-ignore
-    UIManager.HyperFragmentViewManager.Commands.process.toString(),
-    [viewId, namespace, payload]
-  );
+  if (Platform.OS == 'android') {
+    UIManager.dispatchViewManagerCommand(
+      viewId,
+      //@ts-ignore
+      UIManager.HyperFragmentViewManager.Commands.process.toString(),
+      [viewId, namespace, payload]
+    );
+  }
+  else {
+    const commandId = UIManager.getViewManagerConfig(
+      'HyperFragmentViewManagerIOS'
+    ).Commands.receiveCommand;
+    if (typeof commandId !== "undefined") {
+      UIManager.dispatchViewManagerCommand(
+        viewId,
+        commandId,
+        [viewId, namespace, payload]
+      );
+    }
+  }
 };
 
 const HyperFragmentView: React.FC<HyperFragmentViewProps> = ({
@@ -43,11 +59,9 @@ const HyperFragmentView: React.FC<HyperFragmentViewProps> = ({
 }) => {
   const ref = React.useRef<View | null>(null);
   React.useEffect(() => {
-    if (Platform.OS === 'android') {
-      const viewId = findNodeHandle(ref.current);
-      if (viewId) {
-        createFragment(viewId, namespace, payload);
-      }
+    const viewId = findNodeHandle(ref.current);
+    if (viewId) {
+      createFragment(viewId, namespace, payload);
     }
   }, [namespace, payload]);
 
