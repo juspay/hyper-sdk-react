@@ -37,7 +37,7 @@ def getExtOrIntegerDefault(name) {
 
 android {
     def agpVersion = Version.ANDROID_GRADLE_PLUGIN_VERSION
-    // Check AGP version for backward compatibility w/react-native versions still on gradle plugin 6    
+    // Check AGP version for backward compatibility w/react-native versions still on gradle plugin 6
     if (agpVersion.tokenize('.')[0].toInteger() >= 7) {
         namespace = "in.juspay.hypersdkreact"
     }
@@ -91,7 +91,7 @@ static def mostRecentVersion(List<String> versions) {
 }
 
 static def getHyperSDKVersion(rootProject) {
-    def hyperSdkVersion = '2.1.25'
+    def hyperSdkVersion = '2.1.33'
     if (!rootProject.hasProperty('hyperSDKVersion')) {
         return hyperSdkVersion
     }
