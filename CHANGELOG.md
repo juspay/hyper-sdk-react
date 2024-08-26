@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.0.37](https://github.com/juspay/hyper-sdk-react/compare/v3.0.36...v3.0.37) (2024-08-26)
+
+
+### Bug Fixes
+
+* **android:** android gradle plugin 8 compatibility ([747cb7e](https://github.com/juspay/hyper-sdk-react/commit/747cb7e12d5010c47552f0186b04da43d0fde0d0))
+* removing packageManager to avoid build error for conflicting version ([b4c103d](https://github.com/juspay/hyper-sdk-react/commit/b4c103dbf0807c539af1c3e66176a63bec2612a5))
+
 ### [3.0.36](https://github.com/juspay/hyper-sdk-react/compare/v3.0.35...v3.0.36) (2024-08-07)
 
 
