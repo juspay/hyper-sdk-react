@@ -46,7 +46,7 @@ const createFragment = (viewId: number, namespace: string, payload: string) => {
       UIManager.dispatchViewManagerCommand(
         viewId,
         commandId,
-        [viewId, namespace, payload]
+        [namespace, payload]
       );
     }
   }
