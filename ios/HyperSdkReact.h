@@ -11,6 +11,7 @@
 #import <React/RCTEventEmitter.h>
 #import <HyperSDK/HyperSDK.h>
 #import <React/RCTRootView.h>
+#import <React/RCTViewManager.h>
 
 @interface HyperSdkReact : RCTEventEmitter <RCTBridgeModule>
 
@@ -33,4 +34,7 @@
 @property (nonatomic, strong) NSLayoutConstraint *leading;
 @property (nonatomic, strong) NSLayoutConstraint *trailing;
 
+@end
+
+@interface HyperFragmentViewManagerIOS : RCTViewManager
 @end

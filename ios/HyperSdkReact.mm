@@ -19,6 +19,8 @@
 
 #import <HyperSDK/HyperSDK.h>
 
+__weak static HyperServices *_hyperServicesReference;
+
 // Overriding the RCTRootView to add contraints to align with the views superview
 @implementation SDKRootView
 
@@ -31,7 +33,7 @@
     if (self.trailing.isActive) {
         self.trailing.active = @NO;
     }
-
+    
     //Checking superview just to be sure that it is not nil
     if(self.superview) {
         // Create contraints to replicate wrapcontent
@@ -70,12 +72,12 @@ NSMutableSet<NSString *> *registeredComponents = [[NSMutableSet alloc] init];
     // Update the latest value of the height holder for the given tag
     // This will be used to set the height of view if view is created at a later point
     [self.heightHolder setObject: height forKey:tag];
-
+    
     // Fetch previous height constraint so that it can be set to inactive
     NSLayoutConstraint *heightConstraint = [self.heightConstraintHolder objectForKey:tag];
     // Fetch rootview to update set constraints if view is already created
     UIView *rootView = [self.rootHolder objectForKey:tag];
-
+    
     // Check if view is already present
     if (rootView && [rootView isKindOfClass: [UIView class]]) {
         // If present set earlier constraint to inactive
@@ -96,7 +98,7 @@ NSMutableSet<NSString *> *registeredComponents = [[NSMutableSet alloc] init];
  Use bridge to share the same JS VM
  */
 - (UIView * _Nullable)merchantViewForViewType:(NSString * _Nonnull)viewType {
-
+    
     // Create a SDKRootView so that we can attach width constraints once it is attached to it's parent
     RCTRootView *rrv = [SDKRootView alloc];
     NSString *moduleName = @"JP_003";
@@ -109,23 +111,23 @@ NSMutableSet<NSString *> *registeredComponents = [[NSMutableSet alloc] init];
     } else if ([viewType isEqual:@"FOOTER_ATTACHED"] && [registeredComponents containsObject:@"JuspayFooterAttached"]) {
         moduleName = @"JuspayFooterAttached";
     }
-
+    
     // Save a reference of the react root view
     // This will be used to update height constraint if a newer value is sent by the merchant
     [self.rootHolder setObject:rrv forKey:moduleName];
-
-
+    
+    
     rrv = [rrv initWithBridge: self.bridge
-           moduleName:moduleName
-           initialProperties:nil
-          ];
-
+                   moduleName:moduleName
+            initialProperties:nil
+    ];
+    
     // Remove background colour. Default colour white is getting applied to the merchant view
     rrv.backgroundColor = UIColor.clearColor ;
-
+    
     // Remove height 0, width 0 constraints added by default.
     rrv.translatesAutoresizingMaskIntoConstraints = false;
-
+    
     // If height is available set the height
     NSNumber *height = [self.heightHolder objectForKey:moduleName];
     if (height && [height isKindOfClass:[NSNumber class]]) {
@@ -166,12 +168,12 @@ NSString *JUSPAY_FOOTER_ATTACHED = @"JuspayFooterAttached";
 
 - (NSDictionary *)constantsToExport
 {
- return @{ HYPER_EVENT: HYPER_EVENT
-         , JUSPAY_HEADER : JUSPAY_HEADER
-         , JUSPAY_HEADER_ATTACHED : JUSPAY_HEADER_ATTACHED
-         , JUSPAY_FOOTER : JUSPAY_FOOTER
-         , JUSPAY_FOOTER_ATTACHED : JUSPAY_FOOTER_ATTACHED
-         };
+    return @{ HYPER_EVENT: HYPER_EVENT
+              , JUSPAY_HEADER : JUSPAY_HEADER
+              , JUSPAY_HEADER_ATTACHED : JUSPAY_HEADER_ATTACHED
+              , JUSPAY_FOOTER : JUSPAY_FOOTER
+              , JUSPAY_FOOTER_ATTACHED : JUSPAY_FOOTER_ATTACHED
+    };
 }
 
 // Will be called when this module's first listener is added.
@@ -191,7 +193,7 @@ RCT_EXPORT_METHOD(preFetch:(NSString *)data) {
             if (jsonData && [jsonData isKindOfClass:[NSDictionary class]] && jsonData.allKeys.count>0) {
                 [HyperServices preFetch:jsonData];
             } else {
-
+                
             }
         } @catch (NSException *exception) {
             //Parsing failure.
@@ -202,6 +204,7 @@ RCT_EXPORT_METHOD(preFetch:(NSString *)data) {
 RCT_EXPORT_METHOD(createHyperServices) {
     if (self.hyperInstance == NULL) {
         self.hyperInstance = [HyperServices new];
+        _hyperServicesReference = self.hyperInstance;
     }
 }
 
@@ -210,7 +213,7 @@ RCT_EXPORT_METHOD(initiate:(NSString *)data) {
         @try {
             NSDictionary *jsonData = [HyperSdkReact stringToDictionary:data];
             if (jsonData && [jsonData isKindOfClass:[NSDictionary class]] && jsonData.allKeys.count>0) {
-
+                
                 UIViewController *baseViewController = RCTPresentedViewController();
                 __weak HyperSdkReact *weakSelf = self;
                 self.delegate = [[SdkDelegate alloc] initWithBridge:self.bridge];
@@ -240,7 +243,7 @@ RCT_EXPORT_METHOD(process:(NSString *)data) {
             if (self.hyperInstance.baseViewController == nil || self.hyperInstance.baseViewController.view.window == nil) {
                 // Getting topViewController
                 id baseViewController = RCTPresentedViewController();
-
+                
                 // Set the presenting ViewController as baseViewController if the topViewController is RCTModalHostViewController.
                 if ([baseViewController isMemberOfClass:RCTModalHostViewController.class] && [baseViewController presentingViewController]) {
                     [self.hyperInstance setBaseViewController:[baseViewController presentingViewController]];
@@ -315,6 +318,65 @@ RCT_EXPORT_METHOD(updateMerchantViewHeight: (NSString * _Nonnull) tag height: (N
     }
     NSString *data = [[NSString alloc] initWithData:[NSJSONSerialization dataWithJSONObject:dict options:0 error:nil] encoding:NSUTF8StringEncoding];
     return data;
+}
+
+@end
+
+@implementation HyperFragmentViewManagerIOS
+RCT_EXPORT_MODULE()
+
+- (dispatch_queue_t)methodQueue{
+    return dispatch_get_main_queue();
+}
+
++ (BOOL)requiresMainQueueSetup{
+    return YES;
+}
+
+- (UIView *)view
+{
+    return [[UIView alloc] init];
+}
+
+RCT_EXPORT_METHOD(process:(nonnull NSNumber *)viewTag nameSpace:(NSString *)nameSpace payload:(NSString *)payload)
+{
+    HyperServices *hyperServicesInstance = _hyperServicesReference;
+    if (payload && payload.length>0) {
+        @try {
+            NSDictionary *jsonData = [HyperSdkReact stringToDictionary:payload];
+            if (jsonData && [jsonData isKindOfClass:[NSDictionary class]] && jsonData.allKeys.count>0) {
+                [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, UIView *> *viewRegistry) {
+                    if (hyperServicesInstance.baseViewController == nil || hyperServicesInstance.baseViewController.view.window == nil) {
+                        id baseViewController = RCTPresentedViewController();
+                        if ([baseViewController isMemberOfClass:RCTModalHostViewController.class] && [baseViewController presentingViewController]) {
+                            [hyperServicesInstance setBaseViewController:[baseViewController presentingViewController]];
+                        } else {
+                            [hyperServicesInstance setBaseViewController:baseViewController];
+                        }
+                    }
+                    UIView *view = viewRegistry[viewTag];
+                    [self manuallyLayoutChildren:view];
+                    if (!view || ![view isKindOfClass:[UIView class]]) {
+                        RCTLogError(@"Cannot find NativeViewManager with tag #%@", viewTag);
+                        return;
+                    }
+                    NSMutableDictionary *nestedPayload = [jsonData[@"payload"] mutableCopy];
+                    NSDictionary *fragmentViewGroup = @{nameSpace: view};
+                    nestedPayload[@"fragmentViewGroups"] = fragmentViewGroup;
+                    NSMutableDictionary *updatedJsonData = [jsonData mutableCopy];
+                    updatedJsonData[@"payload"] = nestedPayload;
+                    [hyperServicesInstance process:[updatedJsonData copy]];
+                }];
+            } else {}
+        } @catch (NSException *exception) {}
+    } else {}
+}
+
+- (void)manuallyLayoutChildren:(UIView *)view {
+    UIView *parent = view.superview;
+    if (!parent) return;
+    
+    view.frame = parent.bounds;
 }
 
 @end
