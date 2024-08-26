@@ -11,12 +11,15 @@
 #import <React/RCTEventEmitter.h>
 #import <HyperSDK/HyperSDK.h>
 #import <React/RCTRootView.h>
+#import <React/RCTViewManager.h>
 
+static HyperServices *_hyperServicesReference;
 @interface HyperSdkReact : RCTEventEmitter <RCTBridgeModule>
 
 #import <HyperSDK/HyperSDK.h>
 @property HyperServices *hyperInstance;
 @property id <HyperDelegate> delegate;
++ (HyperServices *)getHyperServices;
 
 @end
 
@@ -33,4 +36,7 @@
 @property (nonatomic, strong) NSLayoutConstraint *leading;
 @property (nonatomic, strong) NSLayoutConstraint *trailing;
 
+@end
+
+@interface HyperFragmentViewManagerIOS : RCTViewManager
 @end
