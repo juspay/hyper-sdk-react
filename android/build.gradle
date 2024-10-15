@@ -9,7 +9,6 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:4.0.1'
-        classpath 'in.juspay:hypersdk.plugin:2.0.8'
     }
 }
 
@@ -18,7 +17,6 @@ def isNewArchitectureEnabled() {
 }
 
 apply plugin: 'com.android.library'
-apply plugin: 'hypersdk.plugin'
 
 
 def appProject = rootProject.allprojects.find { it.plugins.hasPlugin('com.android.application') }
@@ -90,32 +88,7 @@ static def mostRecentVersion(List<String> versions) {
     }[-1]
 }
 
-static def getHyperSDKVersion(rootProject) {
-    def hyperSdkVersion = '2.1.33'
-    if (!rootProject.hasProperty('hyperSDKVersion')) {
-        return hyperSdkVersion
-    }
-    def rootVersion = rootProject.hyperSDKVersion
-    hyperSdkVersion = mostRecentVersion([rootVersion, hyperSdkVersion])
-    if (hyperSdkVersion != rootVersion) {
-        System.out.println("Ignoring the overriden SDK version present in root build.gradle ($rootVersion), as there is a newer version present in the SDK ($hyperSdkVersion).")
-    }
-    return hyperSdkVersion
-}
 
-static def getExcludedMicroSdks(rootProject) {
-    if (!rootProject.hasProperty('excludedMicroSDKs')) {
-        return []
-    }
-    return rootProject.excludedMicroSDKs
-}
-
-static def getClientId(rootProject) {
-    if (!rootProject.hasProperty('clientId')) {
-        throw new GradleException("clientId parameter is required in ext block of root build.gradle")
-    }
-    return rootProject.clientId
-}
 
 dependencies {
     // For < 0.71, this will be from the local maven repo
@@ -123,15 +96,8 @@ dependencies {
     //noinspection GradleDynamicVersion
     implementation 'com.facebook.react:react-native:+'
     implementation 'androidx.appcompat:appcompat:1.0.0'
-    compileOnly "in.juspay:hypercheckoutlite:${getHyperSDKVersion(rootProject)}"
+    implementation 'in.juspay:mobilitycustomer:2.1.33-nammayatri.10'
+    implementation 'in.juspay:hypersdk:2.1.33-nammayatri.10'
+    compileOnly "in.juspay:hypercheckoutlite:2.1.33-nammayatri.10"
 }
 
-hyperSdkPlugin {
-    clientId = getClientId(rootProject)
-    sdkVersion = getHyperSDKVersion(rootProject)
-    excludedMicroSDKs = getExcludedMicroSdks(rootProject)
-}
-
-if(rootProject.hasProperty('hyperAssetVersion')) {
-    hyperSdkPlugin.assetVersion = rootProject.hyperAssetVersion
-}

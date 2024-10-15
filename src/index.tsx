@@ -25,6 +25,7 @@ const HyperSdkReact = NativeModules.HyperSdkReact
     );
 
 export { default as HyperFragmentView } from './HyperFragmentView';
+export { default as PrestoView } from './PrestoView';
 
 if (Platform.OS === 'android') {
   HyperSdkReact.updateBaseViewController = () => {};
