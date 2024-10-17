@@ -1,11 +1,18 @@
 import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 import codegenNativeCommands from 'react-native/Libraries/Utilities/codegenNativeCommands';
 import type { HostComponent, ViewProps } from 'react-native';
+import { DirectEventHandler } from 'react-native/Libraries/Types/CodegenTypes';
 
 export interface NativeProps extends ViewProps {
   _namespace: string;
   payload: string;
+  onHyperEvent?: DirectEventHandler<HyperEvent>;
 }
+
+export type HyperEvent = Readonly<{
+  event: Readonly<string>;
+  data: Readonly<string>;
+}>;
 
 export default codegenNativeComponent<NativeProps>(
   'HyperSDKView'

@@ -2,7 +2,7 @@
 #import "Utils.h"
 #import <UIKit/UIKit.h>
 #include <stdio.h>
-#include <string.h>
+#include <string>
 
 @implementation Utils
 
@@ -36,4 +36,16 @@
     return json;
 }
 
++ (NSString*)dictionaryToString:(id)dict{
+    if (!dict || ![NSJSONSerialization isValidJSONObject:dict]) {
+        return @"";
+    }
+    NSString *data = [[NSString alloc] initWithData:[NSJSONSerialization dataWithJSONObject:dict options:0 error:nil] encoding:NSUTF8StringEncoding];
+    return data;
+}
+
+std::string nsStringToStdString(NSString *nsString) {
+    const char *cString = [nsString UTF8String];
+    return std::string(cString);
+}
 @end

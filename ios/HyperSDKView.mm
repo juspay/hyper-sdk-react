@@ -58,6 +58,17 @@ using namespace facebook::react;
     [super updateProps:props oldProps:oldProps];
 }
 
+
+- (std::shared_ptr<const HyperSDKViewEventEmitter>)getEventEmitter
+    {
+    if (!self->_eventEmitter) {
+      return nullptr;
+    }
+
+        assert(std::dynamic_pointer_cast<HyperSDKViewEventEmitter const>(self->_eventEmitter));
+    return std::static_pointer_cast<HyperSDKViewEventEmitter const>(self->_eventEmitter);
+    }
+
 - (void)handleCommand:(nonnull const NSString *)commandName args:(nonnull const NSArray *)args { 
     NSLog(@"handleCommand");
     [self process:args[0] payload:args[1]];
@@ -75,14 +86,18 @@ Class<RCTComponentViewProtocol> HyperSDKViewCls(void)
             if (jsonData && [jsonData isKindOfClass:[NSDictionary class]] && jsonData.allKeys.count>0) {
                 
                 UIViewController *baseViewController = RCTPresentedViewController();
-//                [_hyperInstance setHyperDelegate: _delegate];
                 [_hyperInstance initiate:baseViewController payload:jsonData callback:^(NSDictionary<NSString *,id> * _Nullable data) {
-//                    if ([data objectForKey:@"event"])
                     NSString* event  = data[@"event"];
                     if ([event isEqualToString:@"initiate_result"]) {
                         [self process:_namespace payload:payload];
                     }
-//                    [weakSelf sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
+                    const auto eventEmitter = [self getEventEmitter];
+                    if (eventEmitter) {
+                      eventEmitter->onHyperEvent(HyperSDKViewEventEmitter::OnHyperEvent{
+                          .event = nsStringToStdString(event),
+                          .data =  nsStringToStdString([Utils dictionaryToString:data])
+                      });
+                    }
                 }];
             } else {
                 // Define proper error code and return proper error

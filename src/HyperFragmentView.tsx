@@ -12,14 +12,25 @@ import {
   findNodeHandle,
   requireNativeComponent,
   Platform,
+  DimensionValue,
 } from 'react-native';
 
-export interface HyperFragmentViewProps {
-  height?: number;
-  width?: number;
+export interface HyperFragmentViewPropsPub {
+  height: DimensionValue;
+  width?: DimensionValue;
   namespace: string;
   payload: string;
+  onEvent?: (data: HyperEvent) => void;
 }
+
+export type HyperEvent = { event: string; data: [string: any] };
+
+export type HyperFragmentViewProps = HyperFragmentViewPropsPub & {
+  onHyperEvent?: (event: {
+    nativeEvent: { event: string; data: [string: any] };
+  }) => void;
+};
+
 var HyperFragmentViewManager: any;
 
 if (Platform.OS === 'android') {
@@ -51,27 +62,34 @@ const createFragment = (viewId: number, namespace: string, payload: string) => {
   }
 };
 
-const HyperFragmentView: React.FC<HyperFragmentViewProps> = ({
-  height,
-  width,
-  namespace,
-  payload,
-}) => {
+const HyperFragmentView: React.FC<HyperFragmentViewProps> = (
+  props: HyperFragmentViewProps
+) => {
   const ref = React.useRef<View | null>(null);
   React.useEffect(() => {
     const viewId = findNodeHandle(ref.current);
     if (viewId) {
-      createFragment(viewId, namespace, payload);
+      createFragment(viewId, props.namespace, props.payload);
     }
-  }, [namespace, payload]);
+  }, [props.namespace, props.payload]);
 
   if (!HyperFragmentViewManager) {
     return null;
   }
-
+  const onHyperEvent = (event: {
+    nativeEvent: { event: string; data: [string: any] };
+  }) => {
+    if (props.onEvent) props.onEvent(event.nativeEvent);
+  };
   return (
-    <View style={{ height: height, width: width }}>
-      <HyperFragmentViewManager ref={ref} />
+    <View style={{ height: props.height, width: props.width }}>
+      <HyperFragmentViewManager
+        style={{ height: props.height, width: props.width }}
+        ref={ref}
+        payload={props.payload}
+        namespace={props.namespace}
+        onHyperEvent={onHyperEvent}
+      />
     </View>
   );
 };

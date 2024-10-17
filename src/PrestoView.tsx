@@ -1,12 +1,16 @@
 import * as React from 'react';
-import HyperSDKView, { NativeProps } from './HyperSDKViewNativeComponent';
-import { View } from 'react-native';
+import HyperSDKView, {
+  HyperEvent,
+  NativeProps,
+} from './HyperSDKViewNativeComponent';
+import { DimensionValue, NativeSyntheticEvent, View } from 'react-native';
 
 type ComponentRef = InstanceType<typeof HyperSDKView>;
 
 type Props = NativeProps & {
-  height: number;
-  width: number;
+  height: DimensionValue;
+  width: DimensionValue;
+  onEvent: (data: HyperEvent) => void;
 };
 
 const PrestoView: React.FC<Props> = (props: Props) => {
@@ -21,6 +25,15 @@ const PrestoView: React.FC<Props> = (props: Props) => {
         ref={ref}
         _namespace={props._namespace}
         payload={props.payload}
+        onHyperEvent={function (
+          event: NativeSyntheticEvent<HyperEvent>
+        ): void | Promise<void> {
+          const eventData = {
+            event: event.nativeEvent.event,
+            data: JSON.parse(event.nativeEvent.data),
+          };
+          props.onEvent(eventData);
+        }}
       />
     </View>
   );
