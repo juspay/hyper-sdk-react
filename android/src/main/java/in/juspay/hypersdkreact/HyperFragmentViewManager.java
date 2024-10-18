@@ -12,23 +12,19 @@ import android.view.Choreographer;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebViewClient;
-import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 
-import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReadableArray;
-import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.uimanager.ThemedReactContext;
-import com.facebook.react.uimanager.UIManagerHelper;
 import com.facebook.react.uimanager.ViewGroupManager;
-import com.facebook.react.uimanager.events.EventDispatcher;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -38,7 +34,7 @@ import in.juspay.hypersdk.core.MerchantViewType;
 import in.juspay.hypersdk.core.SdkTracker;
 import in.juspay.hypersdk.data.JuspayResponseHandler;
 import in.juspay.hypersdk.ui.HyperPaymentsCallback;
-import in.juspay.services.HyperServices;
+import in.juspay.mobility.app.InAppNotification;
 
 public class HyperFragmentViewManager extends ViewGroupManager<HyperSDKView> {
 
@@ -117,6 +113,13 @@ public class HyperFragmentViewManager extends ViewGroupManager<HyperSDKView> {
                         switch (event) {
                             case "initiate_result": {
                                 process(root,args != null ? args.getInt(0) : 0,args != null ? args.getString(1) : "",args != null ? args.getString(2) : "{}");
+                            }
+                            case "in_app_notification": {
+                                try {
+                                    InAppNotification.getInstance(reactContext.getCurrentActivity(), root).generateNotification(jsonObject);
+                                } catch (JSONException e) {
+                                    System.out.println("InAppNotification failed" + e);
+                                }
                             }
                         }
                         reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(reactTag,HyperOnEvent.EVENT_NAME,new HyperOnEvent(event,jsonObject).getEventData());

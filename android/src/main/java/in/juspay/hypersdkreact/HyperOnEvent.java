@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.uimanager.events.Event;
 
@@ -37,7 +36,7 @@ public class HyperOnEvent extends Event<HyperOnEvent> {
     protected WritableMap getEventData() {
         WritableMap map = Arguments.createMap();
         try {
-            map.putMap("data", Arguments.makeNativeMap(jsonToMap(data)));
+            map.putMap("data", JsonConvert.jsonToReact(data));
         } catch (JSONException e) {
             System.out.println("JSON EXCEPTION" + e);
         }
