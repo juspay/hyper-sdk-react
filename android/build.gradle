@@ -98,13 +98,13 @@ dependencies {
     //noinspection GradleDynamicVersion
     implementation 'com.facebook.react:react-native:+'
     implementation 'androidx.appcompat:appcompat:1.0.0'
-    implementation 'in.juspay:mobilitycustomer:2.1.33-nammayatri.12'
-    implementation 'in.juspay:hypersdk:2.1.33-nammayatri.12'
-    implementation 'in.juspay:hypersmshandler:2.1.33-nammayatri.12'
-    implementation ('in.juspay:mobilityapp:2.1.33-nammayatri.12') {
+    implementation 'in.juspay:mobilitycustomer:2.1.33-nammayatri.13'
+    implementation 'in.juspay:hypersdk:2.1.33-nammayatri.13'
+    implementation 'in.juspay:hypersmshandler:2.1.33-nammayatri.13'
+    implementation ('in.juspay:mobilityapp:2.1.33-nammayatri.13') {
       exclude module: 'unspecified'
     }
-    compileOnly "in.juspay:hypercheckoutlite:2.1.33-nammayatri.12"
+    compileOnly "in.juspay:hypercheckoutlite:2.1.33-nammayatri.13"
     implementation "androidx.work:work-runtime:2.7.1"
   implementation 'androidx.appcompat:appcompat:1.6.1'
   implementation 'com.google.android.material:material:1.6.0'
