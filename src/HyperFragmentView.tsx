@@ -52,7 +52,7 @@ const createFragment = (viewId: number, namespace: string, payload: string) => {
   } else {
     const commandId = UIManager.getViewManagerConfig(
       'HyperFragmentViewManagerIOS'
-    ).Commands.process;
+    ).Commands["process"];
     if (typeof commandId !== 'undefined') {
       UIManager.dispatchViewManagerCommand(viewId, commandId, [
         namespace,
