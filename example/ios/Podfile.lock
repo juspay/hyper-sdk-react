@@ -74,10 +74,10 @@ PODS:
   - hermes-engine (0.72.15):
     - hermes-engine/Pre-built (= 0.72.15)
   - hermes-engine/Pre-built (0.72.15)
-  - hyper-sdk-react (3.0.39):
-    - HyperSDK (= 2.2.1.4)
+  - hyper-sdk-react (3.0.41):
+    - HyperSDK (= 2.2.2)
     - React-Core
-  - HyperSDK (2.2.1.4):
+  - HyperSDK (2.2.2):
     - JuspaySafeBrowser (= 0.1.84)
     - Salvator (= 1.0.6)
   - JuspaySafeBrowser (0.1.84)
@@ -715,8 +715,8 @@ SPEC CHECKSUMS:
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
   hermes-engine: 5b340c6a5affbf3aba22185be41563bbb2426654
-  hyper-sdk-react: 600f3fe60c3010e5218ec28405796a5abaa02a49
-  HyperSDK: 5ea42ab6795ea239d449d1803e72968521cce198
+  hyper-sdk-react: 50ca138c0003e944a47e4f12f1f8a42566f4f640
+  HyperSDK: 653f618de09696305b9b705555019ecbbacc10b0
   JuspaySafeBrowser: caa2c1a54405f30210ba9d324cf79224e719134d
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
@@ -764,4 +764,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 9d75834eee1caf39c2287e0b86b419d59ce7fbd1
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2

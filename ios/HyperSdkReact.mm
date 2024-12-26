@@ -33,7 +33,7 @@ __weak static HyperServices *_hyperServicesReference;
     if (self.trailing.isActive) {
         self.trailing.active = @NO;
     }
-    
+
     //Checking superview just to be sure that it is not nil
     if(self.superview) {
         // Create contraints to replicate wrapcontent
@@ -72,12 +72,12 @@ NSMutableSet<NSString *> *registeredComponents = [[NSMutableSet alloc] init];
     // Update the latest value of the height holder for the given tag
     // This will be used to set the height of view if view is created at a later point
     [self.heightHolder setObject: height forKey:tag];
-    
+
     // Fetch previous height constraint so that it can be set to inactive
     NSLayoutConstraint *heightConstraint = [self.heightConstraintHolder objectForKey:tag];
     // Fetch rootview to update set constraints if view is already created
     UIView *rootView = [self.rootHolder objectForKey:tag];
-    
+
     // Check if view is already present
     if (rootView && [rootView isKindOfClass: [UIView class]]) {
         // If present set earlier constraint to inactive
@@ -98,7 +98,7 @@ NSMutableSet<NSString *> *registeredComponents = [[NSMutableSet alloc] init];
  Use bridge to share the same JS VM
  */
 - (UIView * _Nullable)merchantViewForViewType:(NSString * _Nonnull)viewType {
-    
+
     // Create a SDKRootView so that we can attach width constraints once it is attached to it's parent
     RCTRootView *rrv = [SDKRootView alloc];
     NSString *moduleName = @"JP_003";
@@ -111,23 +111,23 @@ NSMutableSet<NSString *> *registeredComponents = [[NSMutableSet alloc] init];
     } else if ([viewType isEqual:@"FOOTER_ATTACHED"] && [registeredComponents containsObject:@"JuspayFooterAttached"]) {
         moduleName = @"JuspayFooterAttached";
     }
-    
+
     // Save a reference of the react root view
     // This will be used to update height constraint if a newer value is sent by the merchant
     [self.rootHolder setObject:rrv forKey:moduleName];
-    
-    
+
+
     rrv = [rrv initWithBridge: self.bridge
                    moduleName:moduleName
             initialProperties:nil
     ];
-    
+
     // Remove background colour. Default colour white is getting applied to the merchant view
     rrv.backgroundColor = UIColor.clearColor ;
-    
+
     // Remove height 0, width 0 constraints added by default.
     rrv.translatesAutoresizingMaskIntoConstraints = false;
-    
+
     // If height is available set the height
     NSNumber *height = [self.heightHolder objectForKey:moduleName];
     if (height && [height isKindOfClass:[NSNumber class]]) {
@@ -193,7 +193,7 @@ RCT_EXPORT_METHOD(preFetch:(NSString *)data) {
             if (jsonData && [jsonData isKindOfClass:[NSDictionary class]] && jsonData.allKeys.count>0) {
                 [HyperServices preFetch:jsonData];
             } else {
-                
+
             }
         } @catch (NSException *exception) {
             //Parsing failure.
@@ -213,7 +213,7 @@ RCT_EXPORT_METHOD(initiate:(NSString *)data) {
         @try {
             NSDictionary *jsonData = [HyperSdkReact stringToDictionary:data];
             if (jsonData && [jsonData isKindOfClass:[NSDictionary class]] && jsonData.allKeys.count>0) {
-                
+
                 UIViewController *baseViewController = RCTPresentedViewController();
                 __weak HyperSdkReact *weakSelf = self;
                 self.delegate = [[SdkDelegate alloc] initWithBridge:self.bridge];
@@ -256,6 +256,35 @@ RCT_EXPORT_METHOD(process:(NSString *)data) {
             } else {
                 // Define proper error code and return proper error
                 // [self sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
+            }
+        } @catch (NSException *exception) {
+            // Define proper error code and return proper error
+            // [self sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
+        }
+    } else {
+        // Define proper error code and return proper error
+        // [self sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
+    }
+}
+
+RCT_EXPORT_METHOD(openPaymentPage:(NSString *)data) {
+    if (data && data.length>0) {
+        @try {
+            NSDictionary *sdkPayload = [HyperSdkReact stringToDictionary:data];
+            // Update baseViewController if it's nil or not in the view hierarchy.
+            if (sdkPayload && [sdkPayload isKindOfClass:[NSDictionary class]] && sdkPayload.allKeys.count>0) {
+
+                id baseViewController = RCTPresentedViewController();
+                              
+                __weak HyperSdkReact *weakSelf = self;
+                self.delegate = [[SdkDelegate alloc] initWithBridge:self.bridge];
+                [_hyperInstance setHyperDelegate: _delegate];
+                [HyperCheckoutLite openPaymentPage:baseViewController payload:sdkPayload callback:^(NSDictionary<NSString *,id> * _Nullable data) {
+                    [weakSelf sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
+                }];
+            } else {
+//                 Define proper error code and return proper error
+//                 [self sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
             }
         } @catch (NSException *exception) {
             // Define proper error code and return proper error
@@ -375,7 +404,7 @@ RCT_EXPORT_METHOD(process:(nonnull NSNumber *)viewTag nameSpace:(NSString *)name
 - (void)manuallyLayoutChildren:(UIView *)view {
     UIView *parent = view.superview;
     if (!parent) return;
-    
+
     view.frame = parent.bounds;
 }
 
