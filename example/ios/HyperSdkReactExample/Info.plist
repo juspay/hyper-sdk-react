@@ -50,6 +50,10 @@
 		<string>ppe</string>
 		<string>amazonpay</string>
 		<string>cugext</string>
+		<string>kiwi</string>
+		<string>navipay</string>
+		<string>mobikwik</string>
+		<string>tatadigital</string>
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
