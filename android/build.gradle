@@ -98,13 +98,13 @@ dependencies {
     //noinspection GradleDynamicVersion
     implementation 'com.facebook.react:react-native:+'
     implementation 'androidx.appcompat:appcompat:1.0.0'
-    implementation 'in.juspay:mobilitycustomer:2.1.33-nammayatri.13'
-    implementation 'in.juspay:hypersdk:2.1.33-nammayatri.13'
-    implementation 'in.juspay:hypersmshandler:2.1.33-nammayatri.13'
-    implementation ('in.juspay:mobilityapp:2.1.33-nammayatri.13') {
+    implementation 'in.juspay:mobilitycustomer:2.1.33-nammayatri.14'
+    implementation 'in.juspay:hypersdk:2.1.33-nammayatri.14'
+    implementation 'in.juspay:hypersmshandler:2.1.33-nammayatri.14'
+    implementation ('in.juspay:mobilityapp:2.1.33-nammayatri.14') {
       exclude module: 'unspecified'
     }
-    compileOnly "in.juspay:hypercheckoutlite:2.1.33-nammayatri.13"
+    compileOnly "in.juspay:hypercheckoutlite:2.1.33-nammayatri.14"
     implementation "androidx.work:work-runtime:2.7.1"
   implementation 'androidx.appcompat:appcompat:1.6.1'
   implementation 'com.google.android.material:material:1.6.0'
@@ -133,7 +133,6 @@ dependencies {
   implementation 'com.clevertap.android:clevertap-android-sdk:5.0.0'
   implementation 'com.android.installreferrer:installreferrer:2.2'
   implementation 'com.google.maps.android:android-maps-utils:2.4.0'
-  implementation 'com.google.mlkit:translate:17.0.1'
   implementation("com.google.firebase:firebase-crashlytics-ndk")
   implementation 'com.google.firebase:firebase-perf'
   implementation "androidx.media3:media3-exoplayer:1.1.1"
