@@ -12,7 +12,7 @@ buildscript {
 
         // Hyper SDK
         clientId = 'geddit'
-        hyperSDKVersion = "2.2.1"
+        hyperSDKVersion = "2.2.2-rc.02"
         excludedMicroSDKs = []
     }
     repositories {
@@ -27,7 +27,7 @@ buildscript {
 
 allprojects {
     repositories {
-        maven { url "https://maven.juspay.in/jp-build-packages/hyper-sdk/" }
+        maven { url "https://maven.juspay.in/hyper-sdk/" }
         maven { url "https://maven.getsimpl.com" }
     }
 }

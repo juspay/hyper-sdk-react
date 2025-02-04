@@ -43,6 +43,7 @@ class HomeScreen extends React.Component {
 
   merchantId: string;
   clientId: string;
+  tenantId: string;
   merchantKeyId: string;
   signature: string;
   customerId: string;
@@ -59,6 +60,7 @@ class HomeScreen extends React.Component {
 
     this.merchantId = merchantConfig.merchantId;
     this.clientId = merchantConfig.clientId;
+    this.tenantId = '';
     this.merchantKeyId = merchantConfig.merchantKeyId;
     this.signature = '';
     this.customerId = customerConfig.customerId;
@@ -189,7 +191,14 @@ class HomeScreen extends React.Component {
             <CustomButton
               title="Create HyperService Object"
               onPress={() => {
-                HyperSdkReact.createHyperServices();
+                if (this.tenantId !== '') {
+                  HyperSdkReact.createHyperServicesWithTenantId(
+                    this.tenantId,
+                    this.clientId
+                  );
+                } else {
+                  HyperSdkReact.createHyperServices();
+                }
               }}
             />
 
@@ -237,7 +246,6 @@ class HomeScreen extends React.Component {
                           this.signature,
                           this.merchantKeyId
                         );
-                  // console.warn('initiatePayload:', this.initiatePayload);
                   HyperSdkReact.initiate(JSON.stringify(this.initiatePayload));
                 }}
               />
@@ -282,6 +290,17 @@ class HomeScreen extends React.Component {
           <View style={[styles.sheet]}>
             <Animated.View style={[styles.popup, slideUp]}>
               <View>
+                <View style={[styles.horizontal]}>
+                  <Text>TenantId : </Text>
+                  <TextInput
+                    style={styles.editText}
+                    placeholder="tenantId"
+                    onChangeText={(text) => {
+                      this.tenantId = text;
+                    }}
+                    defaultValue={this.tenantId}
+                  />
+                </View>
                 <View style={styles.horizontal}>
                   <TextInput
                     style={styles.editText}
@@ -439,6 +458,7 @@ const styles = StyleSheet.create({
   horizontal: {
     flexDirection: 'row',
     marginHorizontal: 30,
+    alignItems: 'center',
   },
   editText: {
     height: 40,

@@ -43,6 +43,7 @@ type HyperSdkReactType = {
   HyperEvent: string;
   preFetch(data: string): void;
   createHyperServices(): void;
+  createHyperServicesWithTenantId(tenantId: string, clientId: string): void;
   initiate(data: string): void;
   process(data: string): void;
   processWithActivity(data: string): void;
