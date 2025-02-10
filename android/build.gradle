@@ -1,15 +1,16 @@
 import com.android.Version
+import in.juspay.payments.core.ClientConfig
 
 buildscript {
     repositories {
         google()
         mavenCentral()
-        maven { url "https://maven.juspay.in/jp-build-packages/hyper-sdk/" }
+        maven { url "https://maven.juspay.in/hyper-sdk/" }
     }
 
     dependencies {
         classpath 'com.android.tools.build:gradle:4.0.1'
-        classpath 'in.juspay:hypersdk.plugin:2.0.8'
+        classpath 'in.juspay:hypersdk.plugin:2.2.8'
     }
 }
 
@@ -85,13 +86,13 @@ static def mostRecentVersion(List<String> versions) {
         [a, b]*.tokenize('-rc')*.join('')*.tokenize('.')*.collect {
             it as int
         }.with { u, v ->
-            [u, v].transpose().findResult { x, y -> x <=> y ?: null } ?: u.size() <=> v.size()
+            [u, v].transpose().findResult { x, y -> x <=> y ?: null } ?: v.size() <=> u.size()
         }
     }[-1]
 }
 
 static def getHyperSDKVersion(rootProject) {
-    def hyperSdkVersion = '2.2.1'
+    def hyperSdkVersion = '2.2.2-rc.02'
     if (!rootProject.hasProperty('hyperSDKVersion')) {
         return hyperSdkVersion
     }
@@ -111,11 +112,48 @@ static def getExcludedMicroSdks(rootProject) {
 }
 
 static def getClientId(rootProject) {
-    if (!rootProject.hasProperty('clientId')) {
-        throw new GradleException("clientId parameter is required in ext block of root build.gradle")
-    }
     return rootProject.clientId
 }
+
+static def getClientConfigs(rootProject, Project project) {
+    def clientConfigs = rootProject.clientConfigs
+
+    def namedDomainObjectContainer = project.container(ClientConfig) { name ->
+        def clientConfig = new ClientConfig(name)
+
+        // Find the configuration closure for the given name
+        def configClosure = clientConfigs.get(name)
+
+        if (configClosure instanceof Closure) {
+            def configMap = configClosure.call() // Execute the closure
+
+            if (configMap instanceof Map) {
+                if (configMap.containsKey("tenantName")) {
+                    clientConfig.tenantName = configMap.tenantName
+                }
+                if (configMap.containsKey("assetVersion")) {
+                    clientConfig.assetVersion = configMap.assetVersion
+                }
+            }
+        }
+
+        return clientConfig
+    }
+
+    // Iterate and create configs
+    clientConfigs.each { key, configClosure ->
+        if (configClosure instanceof Closure) {
+            def configMap = configClosure.call() // Execute closure
+            if (configMap instanceof Map) {
+                namedDomainObjectContainer.create(key)
+            }
+        }
+    }
+
+    return namedDomainObjectContainer
+}
+
+
 
 dependencies {
     // For < 0.71, this will be from the local maven repo
@@ -127,9 +165,14 @@ dependencies {
 }
 
 hyperSdkPlugin {
-    clientId = getClientId(rootProject)
     sdkVersion = getHyperSDKVersion(rootProject)
     excludedMicroSDKs = getExcludedMicroSdks(rootProject)
+}
+if (rootProject.hasProperty("clientId")) {
+    hyperSdkPlugin.clientId = getClientId(rootProject)
+}
+if (!rootProject.hasProperty("clientId") && rootProject.hasProperty("clientConfigs")) {
+    hyperSdkPlugin.clientConfigs = getClientConfigs(rootProject, project)
 }
 
 if(rootProject.hasProperty('hyperAssetVersion')) {

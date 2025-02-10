@@ -200,21 +200,6 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
     @ReactMethod
     public void createHyperServices() {
         synchronized (lock) {
-            FragmentActivity activity = (FragmentActivity) getCurrentActivity();
-
-            if (activity == null) {
-                SdkTracker.trackBootLifecycle(
-                        LogConstants.SUBCATEGORY_HYPER_SDK,
-                        LogConstants.LEVEL_ERROR,
-                        LogConstants.SDK_TRACKER_LABEL,
-                        "createHyperServices",
-                        "activity is null");
-                return;
-            }
-            Application app = activity.getApplication();
-            if (app instanceof ReactApplication) {
-                reactInstanceManager = ((ReactApplication) app).getReactNativeHost().getReactInstanceManager();
-            }
             if (hyperServices != null) {
                 SdkTracker.trackBootLifecycle(
                         LogConstants.SUBCATEGORY_HYPER_SDK,
@@ -224,12 +209,23 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                         "hyperServices instance already exists");
                 return;
             }
+            createHyperService(null, null);
+        }
+    }
 
-            hyperServices = new HyperServices(activity);
-            hyperServicesReference = new WeakReference<>(hyperServices);
-
-            requestPermissionsResultDelegate.set(hyperServices);
-            activityResultDelegate.set(hyperServices);
+    @ReactMethod
+    public void createHyperServicesWithTenantId(String tenantId, String clientId) {
+        synchronized (lock) {
+            if (hyperServices != null) {
+                SdkTracker.trackBootLifecycle(
+                        LogConstants.SUBCATEGORY_HYPER_SDK,
+                        LogConstants.LEVEL_WARN,
+                        LogConstants.SDK_TRACKER_LABEL,
+                        "createHyperServicesWithTenantId",
+                        "hyperServices instance already exists");
+                return;
+            }
+            createHyperService(tenantId, clientId);
         }
     }
 
@@ -325,6 +321,32 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                 );
             }
         }
+    }
+
+    private void createHyperService(@Nullable String tenantId, @Nullable String clientId) {
+        FragmentActivity activity = (FragmentActivity) getCurrentActivity();
+        if (activity == null) {
+            SdkTracker.trackBootLifecycle(
+                    LogConstants.SUBCATEGORY_HYPER_SDK,
+                    LogConstants.LEVEL_ERROR,
+                    LogConstants.SDK_TRACKER_LABEL,
+                    "createHyperServices",
+                    "activity is null");
+            return;
+        }
+        Application app = activity.getApplication();
+        if (app instanceof ReactApplication) {
+            reactInstanceManager = ((ReactApplication) app).getReactNativeHost().getReactInstanceManager();
+        }
+        if (tenantId != null && clientId != null) {
+            hyperServices = new HyperServices(activity, tenantId, clientId);
+        } else {
+            hyperServices = new HyperServices(activity);
+        }
+        hyperServicesReference = new WeakReference<>(hyperServices);
+
+        requestPermissionsResultDelegate.set(hyperServices);
+        activityResultDelegate.set(hyperServices);
     }
 
     private boolean isViewRegistered(String tag) {

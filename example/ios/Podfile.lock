@@ -74,13 +74,14 @@ PODS:
   - hermes-engine (0.72.15):
     - hermes-engine/Pre-built (= 0.72.15)
   - hermes-engine/Pre-built (0.72.15)
-  - hyper-sdk-react (3.0.41):
-    - HyperSDK (= 2.2.2)
+  - hyper-sdk-react (3.0.43):
+    - HyperSDK (= 2.2.2.5)
     - React-Core
-  - HyperSDK (2.2.2):
-    - JuspaySafeBrowser (= 0.1.84)
-    - Salvator (= 1.0.6)
-  - JuspaySafeBrowser (0.1.84)
+  - HyperCore (0.0.3)
+  - HyperSDK (2.2.2.5):
+    - HyperCore (= 0.0.3)
+    - JuspaySafeBrowser (= 0.1.85)
+  - JuspaySafeBrowser (0.1.85)
   - libevent (2.1.12)
   - OpenSSL-Universal (1.1.1100)
   - RCT-Folly (2021.07.22.00):
@@ -507,7 +508,6 @@ PODS:
     - RCT-Folly (= 2021.07.22.00)
     - React-Core
     - React-RCTImage
-  - Salvator (1.0.6)
   - SocketRocket (0.6.1)
   - Yoga (1.14.0)
   - YogaKit (1.18.1):
@@ -597,11 +597,11 @@ SPEC REPOS:
     - Flipper-PeerTalk
     - FlipperKit
     - fmt
+    - HyperCore
     - HyperSDK
     - JuspaySafeBrowser
     - libevent
     - OpenSSL-Universal
-    - Salvator
     - SocketRocket
     - YogaKit
 
@@ -715,9 +715,10 @@ SPEC CHECKSUMS:
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
   hermes-engine: 5b340c6a5affbf3aba22185be41563bbb2426654
-  hyper-sdk-react: 50ca138c0003e944a47e4f12f1f8a42566f4f640
-  HyperSDK: 653f618de09696305b9b705555019ecbbacc10b0
-  JuspaySafeBrowser: caa2c1a54405f30210ba9d324cf79224e719134d
+  hyper-sdk-react: b4cfc6fdeee69a1c8a177f70ee0db6c523dd9a5f
+  HyperCore: 627252e74399927872fa0fb5ad4d727ef16c4b55
+  HyperSDK: b7449cff5fd3336509c1de7b5eb33d7350bba29b
+  JuspaySafeBrowser: 2c766095ab9c04a544f7fca7dd4f6ef38fca63ca
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   RCT-Folly: 424b8c9a7a0b9ab2886ffe9c3b041ef628fd4fb1
@@ -757,7 +758,6 @@ SPEC CHECKSUMS:
   RNCPicker: b7873ba797dc586bfaf3307d737cbdc620a9ff3e
   RNGestureHandler: 9e0d0a46b7af6d21fbe3343912502afa8baf755e
   RNScreens: 284fcee9d8d4648851fdb85dd0e200daebedcc14
-  Salvator: 1de69620ac17123ba3491e27a9a8b35bc5b97eaa
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   Yoga: 6f5ab94cd8b1ecd04b6e973d0bc583ede2a598cc
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a

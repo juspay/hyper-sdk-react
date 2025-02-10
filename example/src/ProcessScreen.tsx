@@ -27,6 +27,7 @@ import HyperAPIUtils from './API';
 import HyperUtils from './Utils';
 import { useNavigation } from '@react-navigation/native';
 import { setOrderDetails } from './DataStore';
+import { Picker } from '@react-native-picker/picker';
 
 class ProcessScreen extends React.Component {
   state = {
@@ -325,7 +326,7 @@ class ProcessScreen extends React.Component {
                 }
               }}
             />
-            {/* <View style={styles.pickerContainer}>
+            <View style={styles.pickerContainer}>
               {this.service === 'ec' ? (
                 <Picker
                   style={styles.picker}
@@ -369,7 +370,7 @@ class ProcessScreen extends React.Component {
                   <Picker.Item label="quickPay" value="quickPay" />
                 </Picker>
               )}
-            </View> */}
+            </View>
 
             {this.state.pickerSelected === 'getPM' ? (
               <CustomButton
@@ -824,7 +825,7 @@ class ProcessScreen extends React.Component {
                       });
                   }}
                 />
-                {/* <CustomButton
+                <CustomButton
                   title="Process"
                   onPress={() => {
                     var payload = HyperUtils.generateProcessPayloadPP(
@@ -853,7 +854,7 @@ class ProcessScreen extends React.Component {
 
                     HyperSdkReact.processWithActivity(JSON.stringify(payload));
                   }}
-                /> */}
+                />
 
                 <CustomButton
                   title="Generate Process Payload"

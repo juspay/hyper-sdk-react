@@ -208,6 +208,13 @@ RCT_EXPORT_METHOD(createHyperServices) {
     }
 }
 
+RCT_EXPORT_METHOD(createHyperServicesWithTenantId:(NSString *)tenantId clientId:(NSString *)clientId) {
+    if (self.hyperInstance == NULL) {
+      self.hyperInstance = [[HyperServices new] initWithTenantId:tenantId clientId:clientId];
+        _hyperServicesReference = self.hyperInstance;
+    }
+}
+
 RCT_EXPORT_METHOD(initiate:(NSString *)data) {
     if (data && data.length>0) {
         @try {
