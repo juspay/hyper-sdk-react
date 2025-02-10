@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.0.44](https://github.com/juspay/hyper-sdk-react/compare/v3.0.43...v3.0.44) (2025-02-10)
+
+
+### Bug Fixes
+
+* added tenant support in plugin ([#88](https://github.com/juspay/hyper-sdk-react/issues/88)) ([0919d34](https://github.com/juspay/hyper-sdk-react/commit/0919d34d3a6c68b0fe70b26c599af4983c5d7e44))
+
 ### [3.0.43](https://github.com/juspay/hyper-sdk-react/compare/v3.0.42...v3.0.43) (2024-12-30)
 
 ### [3.0.42](https://github.com/juspay/hyper-sdk-react/compare/v3.0.41...v3.0.42) (2024-12-27)
