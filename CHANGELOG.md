@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.0.46](https://github.com/juspay/hyper-sdk-react/compare/v3.0.45...v3.0.46) (2025-04-04)
+
+
+### Bug Fixes
+
+* hyper-sdk-ios version upgrade ([8e5f004](https://github.com/juspay/hyper-sdk-react/commit/8e5f004c9ef35a6e012d0fbb173c4faba71e072d))
+
 ### [3.0.45](https://github.com/juspay/hyper-sdk-react/compare/v3.0.44...v3.0.45) (2025-04-02)
 
 
