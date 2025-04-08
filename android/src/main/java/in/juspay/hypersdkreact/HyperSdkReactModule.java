@@ -27,6 +27,7 @@ import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.module.annotations.ReactModule;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 
@@ -34,11 +35,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.ref.WeakReference;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import in.juspay.hypercheckoutlite.HyperCheckoutLite;
 import in.juspay.hypersdk.core.MerchantViewType;
@@ -73,6 +76,8 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
     @Nullable
     private HyperServices hyperServices;
+
+    private final Map<String, WeakReference<HyperServices>> hyperServicesMap = new HashMap<>();
 
     private static WeakReference<HyperServices> hyperServicesReference = new WeakReference<>(null);
 
@@ -209,7 +214,18 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                         "hyperServices instance already exists");
                 return;
             }
-            createHyperService(null, null);
+            createNewHyperServices("" , "");
+        }
+    }
+
+    @ReactMethod
+    public String createNewHyperServices(string tenantId, string clientId) {
+        synchronized (lock) {
+            if (tenantId== "" && clientId == ""){
+                return createHyperService(null, null);
+            }else{
+                return createHyperService(tenantId, clientId);
+            }
         }
     }
 
@@ -225,12 +241,26 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                         "hyperServices instance already exists");
                 return;
             }
-            createHyperService(tenantId, clientId);
+            createNewHyperServices(tenantId, clientId);
         }
     }
 
     @ReactMethod(isBlockingSynchronousMethod = true)
     public boolean onBackPressed() {
+        return onBackPressed(hyperServicesReference.get());
+    }
+
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    public boolean onBackPressed(String key) {
+        if (key == null) return false;
+
+        WeakReference<HyperServices> hyperServiceRef = hyperServicesMap.get(key);
+        if (hyperServiceRef == null) return false;
+
+        return onBackPressed(hyperServiceRef.get());
+    }
+
+    private boolean onBackPressed(HyperServices hyperServices) {
         synchronized (lock) {
             return hyperServices != null && hyperServices.onBackPressed();
         }
@@ -238,6 +268,19 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
     @ReactMethod
     public void initiate(String data) {
+        initiate(HYPER_EVENT, hyperServicesReference.get(), data);
+    }
+    @ReactMethod
+    public void initiate(String key, String data) {
+        if (key == null) {
+            return;
+        }
+        WeakReference<HyperServices> hyperServiceRef = hyperServicesMap.get(key);
+        HyperServices hyperServices = hyperServiceRef.get();
+        initiate(key, hyperServices, data);
+    }
+
+    public void initiate(String key, HyperService hyperServices, String data) {
         synchronized (lock) {
             try {
                 JSONObject payload = new JSONObject(data);
@@ -277,7 +320,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                             wasProcessWithActivity = false;
                             processActivityRef = new WeakReference<>(null);
                         }
-                        sendEventToJS(data);
+                        sendEventToJS(key, data);
                     }
 
                     @Nullable
@@ -323,7 +366,8 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
         }
     }
 
-    private void createHyperService(@Nullable String tenantId, @Nullable String clientId) {
+    private String createHyperService(@Nullable String tenantId, @Nullable String clientId) {
+        String key = UUID.randomUUID().toString();
         FragmentActivity activity = (FragmentActivity) getCurrentActivity();
         if (activity == null) {
             SdkTracker.trackBootLifecycle(
@@ -335,6 +379,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
             return;
         }
         Application app = activity.getApplication();
+        HyperServices hyperServices;
         if (app instanceof ReactApplication) {
             reactInstanceManager = ((ReactApplication) app).getReactNativeHost().getReactInstanceManager();
         }
@@ -347,21 +392,24 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
         requestPermissionsResultDelegate.set(hyperServices);
         activityResultDelegate.set(hyperServices);
+
+        hyperServicesMap.put(key, new WeakReference<>(hyperServices));
+        return key;
     }
 
     private boolean isViewRegistered(String tag) {
         return registeredComponents.contains(tag);
     }
 
-    private void sendEventToJS(JSONObject data) {
+    private void sendEventToJS(Sring key, JSONObject data) {
         DeviceEventManagerModule.RCTDeviceEventEmitter jsModule = getJSModule();
         if (jsModule == null) {
             Handler handler = new Handler();
-            handler.postDelayed(() -> sendEventToJS(data), 200);
+            handler.postDelayed(() -> sendEventToJS(key, data), 200);
             return;
         }
 
-        jsModule.emit(HYPER_EVENT, data.toString());
+        jsModule.emit(key, data.toString());
     }
 
     private DeviceEventManagerModule.RCTDeviceEventEmitter getJSModule() {
@@ -371,6 +419,19 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
     @ReactMethod
     public void process(String data) {
+        process(hyperServicesReference.get(), data);
+    }
+    @ReactMethod
+    public void process(String key, String data) {
+        if (key == null) {
+            return;
+        }
+        WeakReference<HyperServices> hyperServiceRef = hyperServicesMap.get(key);
+        HyperServices hyperServices = hyperServiceRef.get();
+        process(hyperServices, data);
+    }
+
+    public void process(HyperService hyperServices, String data) {
         synchronized (lock) {
             try {
                 JSONObject payload = new JSONObject(data);
@@ -415,6 +476,20 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
     @ReactMethod
     public void processWithActivity(String data) {
+        processWithActivity(hyperServicesReference.get(), data);
+    }
+    @ReactMethod
+    public void processWithActivity(String key, String data) {
+        if (key == null) {
+            return;
+        }
+        WeakReference<HyperServices> hyperServiceRef = hyperServicesMap.get(key);
+        HyperServices hyperServices = hyperServiceRef.get();
+        processWithActivity(hyperServices, data);
+    }
+
+
+    public void processWithActivity(HyperService hyperServices, String data) {
         synchronized (lock) {
             try {
                 JSONObject payload = new JSONObject(data);
@@ -505,7 +580,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                                     processActivity.overridePendingTransition(0, android.R.anim.fade_out);
                                     ProcessActivity.setActivityCallback(null);
                                 }
-                                sendEventToJS(data);
+                                sendEventToJS(HYPER_EVENT, data);
                             }
                         });
                     }
@@ -530,6 +605,21 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
     @ReactMethod
     public void terminate() {
+        terminate(hyperServicesReference.get());
+    }
+
+    @ReactMethod
+    public void terminate(String key) {
+        if (key == null) {
+            return;
+        }
+        WeakReference<HyperServices> hyperServiceRef = hyperServicesMap.get(key);
+        HyperServices hyperServices = hyperServiceRef.get();
+        terminate(hyperServices);
+        hyperServicesMap.remove(key);
+    }
+
+    public void terminate(HyperServices hyperServices) {
         synchronized (lock) {
             if (hyperServices != null) {
                 hyperServices.terminate();
@@ -547,11 +637,45 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
     @ReactMethod(isBlockingSynchronousMethod = true)
     public boolean isNull() {
+        return isNull(hyperServicesReference.get());
+    }
+
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    public boolean isNull(String key) {
+        if (key == null) return true;
+
+        WeakReference<HyperServices> hyperServiceRef = hyperServicesMap.get(key);
+        if (hyperServiceRef == null) return true;
+
+        return isNull(hyperServiceRef.get());
+    }
+
+    private boolean isNull(HyperServices hyperServices) {
         return hyperServices == null;
     }
 
     @ReactMethod
     public void isInitialised(Promise promise) {
+        isInitialised(hyperServicesReference.get(), promise);
+    }
+
+    @ReactMethod
+    public void isInitialised(String key, Promise promise) {
+        if (key == null) {
+            promise.resolve(false);
+            return;
+        }
+
+        WeakReference<HyperServices> hyperServiceRef = hyperServicesMap.get(key);
+        if (hyperServiceRef != null) {
+            HyperServices hyperServices = hyperServiceRef.get();
+            isInitialised(hyperServices, promise);
+        } else {
+            promise.resolve(false);
+        }
+    }
+
+    public void isInitialised(HyperServices hyperServices, Promise promise) {
         boolean isInitialized = false;
 
         synchronized (lock) {
