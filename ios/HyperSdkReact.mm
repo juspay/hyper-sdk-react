@@ -154,6 +154,14 @@ NSString *JUSPAY_FOOTER = @"JuspayFooter";
 NSString *JUSPAY_HEADER_ATTACHED = @"JuspayHeaderAttached";
 NSString *JUSPAY_FOOTER_ATTACHED = @"JuspayFooterAttached";
 
+- (instancetype)init {
+  if (self = [super init]) {
+    _hyperServicesDict = [NSMutableDictionary new];
+    _keyCounter = 0;
+  }
+  return self;
+}
+
 - (dispatch_queue_t)methodQueue{
     return dispatch_get_main_queue();
 }
@@ -208,11 +216,21 @@ RCT_EXPORT_METHOD(createHyperServices) {
     }
 }
 
+RCT_EXPORT_METHOD(createHyperServicesWithKey:(NSString *) key) {
+    HyperServices *hyperServices = [HyperServices new];
+    [self.hyperServicesDict setObject:hyperServices forKey:key];
+}
+
 RCT_EXPORT_METHOD(createHyperServicesWithTenantId:(NSString *)tenantId clientId:(NSString *)clientId) {
     if (self.hyperInstance == NULL) {
       self.hyperInstance = [[HyperServices new] initWithTenantId:tenantId clientId:clientId];
         _hyperServicesReference = self.hyperInstance;
     }
+}
+
+RCT_EXPORT_METHOD(createHyperServicesWithTenantIdWithKey:(NSString *)tenantId clientId:(NSString *)clientId key:(NSString *)key) {
+    HyperServices *hyperServices = [HyperServices new] initWithTenantId:tenantId clientId:clientId];
+    [self.hyperServicesDict setObject:hyperServices forKey:key];
 }
 
 RCT_EXPORT_METHOD(initiate:(NSString *)data) {
@@ -227,6 +245,34 @@ RCT_EXPORT_METHOD(initiate:(NSString *)data) {
                 [_hyperInstance setHyperDelegate: _delegate];
                 [_hyperInstance initiate:baseViewController payload:jsonData callback:^(NSDictionary<NSString *,id> * _Nullable data) {
                     [weakSelf sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
+                }];
+            } else {
+                // Define proper error code and return proper error
+                // [self sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
+            }
+        } @catch (NSException *exception) {
+            // Define proper error code and return proper error
+            // [self sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
+        }
+    } else {
+        // Define proper error code and return proper error
+        // [self sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
+    }
+}
+
+RCT_EXPORT_METHOD(initiateWithKey:(NSString *)data key:(NSString *)key) {
+    if (data && data.length>0) {
+        @try {
+            HyperServices *hyperServices = self.hyperServicesDict[key];
+            NSDictionary *jsonData = [HyperSdkReact stringToDictionary:data];
+            if (jsonData && [jsonData isKindOfClass:[NSDictionary class]] && jsonData.allKeys.count>0) {
+
+                UIViewController *baseViewController = RCTPresentedViewController();
+                __weak HyperSdkReact *weakSelf = self;
+                self.delegate = [[SdkDelegate alloc] initWithBridge:self.bridge];
+                [hyperServices setHyperDelegate: _delegate];
+                [hyperServices initiate:baseViewController payload:jsonData callback:^(NSDictionary<NSString *,id> * _Nullable data) {
+                    [weakSelf sendEventWithName:key body:[[self class] dictionaryToString:data]];
                 }];
             } else {
                 // Define proper error code and return proper error
@@ -274,6 +320,39 @@ RCT_EXPORT_METHOD(process:(NSString *)data) {
     }
 }
 
+RCT_EXPORT_METHOD(processWithKey:(NSString *)data key:(NSString *)key) {
+    if (data && data.length>0) {
+        @try {
+            HyperServices *hyperServices = self.hyperServicesDict[key];
+            NSDictionary *jsonData = [HyperSdkReact stringToDictionary:data];
+            // Update baseViewController if it's nil or not in the view hierarchy.
+            if (hyperServices.baseViewController == nil || hyperServices.baseViewController.view.window == nil) {
+                // Getting topViewController
+                id baseViewController = RCTPresentedViewController();
+                
+                // Set the presenting ViewController as baseViewController if the topViewController is RCTModalHostViewController.
+                if ([baseViewController isMemberOfClass:RCTModalHostViewController.class] && [baseViewController presentingViewController]) {
+                    [hyperServices setBaseViewController:[baseViewController presentingViewController]];
+                } else {
+                    [hyperServices setBaseViewController:baseViewController];
+                }
+            }
+            if (jsonData && [jsonData isKindOfClass:[NSDictionary class]] && jsonData.allKeys.count>0) {
+                [hyperServices process:jsonData];
+            } else {
+                // Define proper error code and return proper error
+                // [self sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
+            }
+        } @catch (NSException *exception) {
+            // Define proper error code and return proper error
+            // [self sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
+        }
+    } else {
+        // Define proper error code and return proper error
+        // [self sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
+    }
+}
+
 RCT_EXPORT_METHOD(openPaymentPage:(NSString *)data) {
     if (data && data.length>0) {
         @try {
@@ -303,8 +382,50 @@ RCT_EXPORT_METHOD(openPaymentPage:(NSString *)data) {
     }
 }
 
+RCT_EXPORT_METHOD(openPaymentPageWithKey:(NSString *)data key:(NSString *)key) {
+    if (data && data.length>0) {
+        @try {
+            HyperServices *hyperServices = self.hyperServicesDict[key];
+            NSDictionary *sdkPayload = [HyperSdkReact stringToDictionary:data];
+            // Update baseViewController if it's nil or not in the view hierarchy.
+            if (sdkPayload && [sdkPayload isKindOfClass:[NSDictionary class]] && sdkPayload.allKeys.count>0) {
+
+                id baseViewController = RCTPresentedViewController();
+                              
+                __weak HyperSdkReact *weakSelf = self;
+                self.delegate = [[SdkDelegate alloc] initWithBridge:self.bridge];
+                [hyperServices setHyperDelegate: _delegate];
+                [HyperCheckoutLite openPaymentPage:baseViewController payload:sdkPayload callback:^(NSDictionary<NSString *,id> * _Nullable data) {
+                    [weakSelf sendEventWithName:key body:[[self class] dictionaryToString:data]];
+                }];
+            } else {
+//                 Define proper error code and return proper error
+//                 [self sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
+            }
+        } @catch (NSException *exception) {
+            // Define proper error code and return proper error
+            // [self sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
+        }
+    } else {
+        // Define proper error code and return proper error
+        // [self sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
+    }
+}
+
 RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(isNull) {
     return self.hyperInstance == NULL? @true : @false;
+}
+
+RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(isNullWithKey:(NSString *)key) {
+    HyperServices *hyperServices = self.hyperServicesDict[key];
+    return hyperServices == NULL? @true : @false;
+}
+
+RCT_EXPORT_METHOD(terminateWithKey:(NSString *)key) {
+    HyperServices *hyperServices = self.hyperServicesDict[key];
+    if (hyperServices) {
+        [hyperServices terminate];
+    }
 }
 
 RCT_EXPORT_METHOD(terminate) {
@@ -320,6 +441,15 @@ RCT_EXPORT_METHOD(notifyAboutRegisterComponent:(NSString *)viewType) {
 RCT_EXPORT_METHOD(isInitialised:(RCTPromiseResolveBlock)resolve  reject:(RCTPromiseRejectBlock)reject) {
     if (self.hyperInstance) {
         resolve(self.hyperInstance.isInitialised? @true : @false);
+    } else {
+        resolve(@false);
+    }
+}
+
+RCT_EXPORT_METHOD(isInitialisedWithKey:(NSString *)key resolve(RCTPromiseResolveBlock)resolve  reject:(RCTPromiseRejectBlock)reject) {
+    HyperServices *hyperServices = self.hyperServicesDict[key];
+    if (hyperServices) {
+        resolve(hyperServices.isInitialised? @true : @false);
     } else {
         resolve(@false);
     }

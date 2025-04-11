@@ -19,19 +19,24 @@ import {
   Dimensions,
   BackHandler,
   ScrollView,
+  Alert,
 } from 'react-native';
 import HyperAPIUtils from './API';
 import HyperSdkReact from 'hyper-sdk-react';
+import { HyperServiceInstance } from 'hyper-sdk-react';
 import HyperUtils from './Utils';
 import merchantConfig from './merchant_config.json';
 import customerConfig from './customer_config.json';
 import { Picker } from '@react-native-picker/picker';
 import { useNavigation } from '@react-navigation/native';
+// import HyperServiceInstance from 'src/HyperServiceManager';
 
 class HomeScreen extends React.Component {
   state = {
     animation: new Animated.Value(0),
     pickerSelected: 'pp',
+    hyperInstances: new Map<string, HyperServiceInstance>(),
+    currentlySelectedInstance: '',
   };
 
   navigation: any;
@@ -202,6 +207,96 @@ class HomeScreen extends React.Component {
               }}
             />
 
+            <CustomButton
+              title="Create HyperService Object (Multiple)"
+              onPress={() => {
+                if (this.tenantId !== '') {
+                  let hyperserviceInstance = new HyperServiceInstance(
+                    this.tenantId,
+                    this.clientId
+                  );
+                  let hypInsMap = this.state.hyperInstances;
+                  hypInsMap.set(
+                    hyperserviceInstance.getHyperEventString(),
+                    hyperserviceInstance
+                  );
+                  this.setState({
+                    hyperInstances: hypInsMap,
+                  });
+                  const eventEmitter = new NativeEventEmitter(
+                    NativeModules.HyperSdkReact
+                  );
+                  eventEmitter.addListener(
+                    hyperserviceInstance.getHyperEventString(),
+                    (resp) => {
+                      HyperUtils.alertCallbackResponse(
+                        'Custom HomeScreen',
+                        resp
+                      );
+                    }
+                  );
+                  // Alert.alert("hyperInstances", JSON.stringify(Object.fromEntries(hypInsMap)))
+                } else {
+                  let hyperserviceInstance = new HyperServiceInstance(
+                    undefined,
+                    undefined
+                  );
+                  let hypInsMap = this.state.hyperInstances;
+                  hypInsMap.set(
+                    hyperserviceInstance.getHyperEventString(),
+                    hyperserviceInstance
+                  );
+                  this.setState({
+                    hyperInstances: hypInsMap,
+                  });
+                  const eventEmitter = new NativeEventEmitter(
+                    NativeModules.HyperSdkReact
+                  );
+                  eventEmitter.addListener(
+                    hyperserviceInstance.getHyperEventString(),
+                    (resp) => {
+                      HyperUtils.alertCallbackResponse(
+                        'Custom HomeScreen',
+                        resp
+                      );
+                    }
+                  );
+                  //Alert.alert("hyperInstances", JSON.stringify(Object.fromEntries(hypInsMap)))
+                }
+              }}
+            />
+
+            <CustomButton
+              title="Get hyperinstances"
+              onPress={() => {
+                Alert.alert(
+                  'hyperInstances',
+                  JSON.stringify(Object.fromEntries(this.state.hyperInstances))
+                );
+              }}
+            />
+
+            <View style={styles.pickerContainer}>
+              <Text>Select HyperService Instance:</Text>
+              <Picker
+                style={styles.picker}
+                selectedValue={this.state.currentlySelectedInstance}
+                onValueChange={(val, index) => {
+                  this.setState({ currentlySelectedInstance: val });
+                  console.log(val, index);
+                }}
+              >
+                {this.state.hyperInstances &&
+                  Array.from(this.state.hyperInstances.entries()).map(
+                    (val, key) => {
+                      return (
+                        <Picker.Item label={val[0]} value={val[0]} key={key} />
+                      );
+                    }
+                  )}
+              </Picker>
+            </View>
+
             <View style={styles.horizontal}>
               {this.state.pickerSelected === 'pp' ? (
                 <CustomButton
@@ -249,6 +344,31 @@ class HomeScreen extends React.Component {
                   HyperSdkReact.initiate(JSON.stringify(this.initiatePayload));
                 }}
               />
+              {this.state.currentlySelectedInstance != '' && (
+                <CustomButton
+                  title="Initiate with instance"
+                  onPress={() => {
+                    let hypInstance = this.state.hyperInstances.get(
+                      this.state.currentlySelectedInstance
+                    )!;
+                    this.initiatePayload =
+                      this.state.pickerSelected === 'ec'
+                        ? HyperUtils.generateECInitiatePayload(
+                            this.merchantId,
+                            this.clientId,
+                            this.customerId
+                          )
+                        : HyperUtils.generatePPInitiatePayload(
+                            this.clientId,
+                            this.merchantId,
+                            JSON.stringify(this.signaturePayload),
+                            this.signature,
+                            this.merchantKeyId
+                          );
+                    hypInstance.initiate(JSON.stringify(this.initiatePayload));
+                  }}
+                />
+              )}
             </View>
             <CustomButton
               title="Process"
@@ -267,6 +387,28 @@ class HomeScreen extends React.Component {
                 });
               }}
             />
+            {this.state.currentlySelectedInstance != '' && (
+              <CustomButton
+                title="Process with instance"
+                onPress={() => {
+                  this.navigation.navigate('ProcessScreen', {
+                    merchantId: this.merchantId,
+                    clientId: this.clientId,
+                    customerId: this.customerId,
+                    mobile: this.mobile,
+                    email: this.email,
+                    amount: this.amount,
+                    apiKey: this.apiKey,
+                    merchantKeyId: this.merchantKeyId,
+                    privateKey: this.privateKey,
+                    service: this.state.pickerSelected,
+                    instance: this.state.hyperInstances.get(
+                      this.state.currentlySelectedInstance
+                    )!,
+                  });
+                }}
+              />
+            )}
             <CustomButton
               title="Is Initialised?"
               onPress={() => {
@@ -276,12 +418,37 @@ class HomeScreen extends React.Component {
                 });
               }}
             />
+            {this.state.currentlySelectedInstance != '' && (
+              <CustomButton
+                title="Is Initialised? with instance"
+                onPress={() => {
+                  let hypInstance = this.state.hyperInstances.get(
+                    this.state.currentlySelectedInstance
+                  )!;
+                  hypInstance.isInitialised().then((init: boolean) => {
+                    // console.warn('isInitialised:', init);
+                    HyperUtils.showCopyAlert('isInitialised', init + '');
+                  });
+                }}
+              />
+            )}
             <CustomButton
               title="Terminate"
               onPress={() => {
                 HyperSdkReact.terminate();
               }}
             />
+            {this.state.currentlySelectedInstance != '' && (
+              <CustomButton
+                title="Terminate instance"
+                onPress={() => {
+                  let hypInstance = this.state.hyperInstances.get(
+                    this.state.currentlySelectedInstance
+                  )!;
+                  hypInstance.terminate();
+                }}
+              />
+            )}
           </View>
         </ScrollView>
         <Animated.View
