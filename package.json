@@ -146,5 +146,8 @@
         }
       ]
     ]
+  },
+  "dependencies": {
+    "react-native-uuid": "^2.0.3"
   }
 }

@@ -1,12 +1,14 @@
-import { NativeModules } from 'react-native';
+import uuid from 'react-native-uuid';
 
-const { HyperSdkReactModule } = NativeModules;
+import { NativeModules, Platform } from 'react-native';
+
+const HyperSdkReactModule = NativeModules.HyperSdkReact;
 
 if (!HyperSdkReactModule) {
   throw new Error('HyperSdkReactModule is not linked.');
 }
 
-class HyperServiceInstance {
+export default class HyperServiceInstance {
   key: string;
 
   // constructor() {
@@ -16,51 +18,56 @@ class HyperServiceInstance {
     if (!HyperSdkReactModule) {
       throw new Error('HyperSdkReactModule is not linked.');
     }
-
+    this.key = uuid.v4();
     if (tenantId || clientId) {
       if (tenantId == undefined) tenantId = '';
       if (clientId == undefined) clientId = '';
-      this.key = HyperSdkReactModule.createNewHyperServices(tenantId, clientId);
+      HyperSdkReactModule.createHyperServicesWithKey(
+        this.key,
+        tenantId,
+        clientId
+      );
     } else {
-      this.key = HyperSdkReactModule.createNewHyperServices('', '');
+      HyperSdkReactModule.createHyperServicesWithKey(this.key, '', '');
     }
   }
 
   initiate(data: string) {
-    return HyperSdkReactModule.initiate(this.key, data);
+    return HyperSdkReactModule.initiateWithKey(data, this.key);
   }
 
   process(data: string) {
-    return HyperSdkReactModule.process(this.key, data);
+    return HyperSdkReactModule.processWithKey(data, this.key);
   }
 
   terminate() {
-    return HyperSdkReactModule.terminate(this.key);
-  }
-
-  prefetch(data: string) {
-    return HyperSdkReactModule.preFetch(this.key, data);
+    return HyperSdkReactModule.terminateWithKey(this.key);
   }
 
   processWithActivity(data: string) {
-    return HyperSdkReactModule.processWithActivity(this.key, data);
+    if (Platform.OS === 'ios') {
+      HyperSdkReactModule.processWithKey(data, this.key);
+    }
+    return HyperSdkReactModule.processWithActivityWithKey(data, this.key);
+  }
+
+  openPaymentPage(data: string) {
+    return HyperSdkReactModule.openPaymentPageWithKey(data, this.key);
   }
 
   isInitialised(): Promise<boolean> {
-    return HyperSdkReactModule.isInitialised(this.key);
+    return HyperSdkReactModule.isInitialisedWithKey(this.key);
   }
 
   isNull(): boolean {
-    return HyperSdkReactModule.isNull(this.key);
+    return HyperSdkReactModule.isNullWithKey(this.key);
   }
 
   onBackPressed(): boolean {
-    return HyperSdkReactModule.onBackPressed(this.key);
+    return HyperSdkReactModule.onBackPressedWithKey(this.key);
   }
 
   getHyperEventString(): string {
     return this.key;
   }
 }
-
-export default HyperServiceInstance;
