@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.0.48](https://github.com/juspay/hyper-sdk-react/compare/v3.0.47...v3.0.48) (2025-04-17)
+
+
+### Bug Fixes
+
+* updating hyper-sdk asset plugin version to 2.2.10 ([ea77e90](https://github.com/juspay/hyper-sdk-react/commit/ea77e902e916c19383c50d7ef622e797eb62c05f))
+
 ### [3.0.47](https://github.com/juspay/hyper-sdk-react/compare/v3.0.46...v3.0.47) (2025-04-04)
 
 ### [3.0.46](https://github.com/juspay/hyper-sdk-react/compare/v3.0.45...v3.0.46) (2025-04-04)
