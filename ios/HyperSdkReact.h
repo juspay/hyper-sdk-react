@@ -18,6 +18,7 @@
 #import <HyperSDK/HyperSDK.h>
 @property HyperServices *hyperInstance;
 @property id <HyperDelegate> delegate;
+@property (nonatomic, strong) NSMutableDictionary *hyperServicesDict;
 
 @end
 
