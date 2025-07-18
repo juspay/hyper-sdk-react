@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.0.49](https://github.com/juspay/hyper-sdk-react/compare/v3.0.48...v3.0.49) (2025-07-18)
+
+
+### Bug Fixes
+
+* upgraded android hyper sdk version ([d5a1a39](https://github.com/juspay/hyper-sdk-react/commit/d5a1a39dd87cfad26b3ee6d6c27b728907d2374d))
+
 ### [3.0.48](https://github.com/juspay/hyper-sdk-react/compare/v3.0.47...v3.0.48) (2025-04-17)
 
 
