@@ -20,7 +20,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 
 import com.facebook.react.ReactApplication;
-import com.facebook.react.ReactHost;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactRootView;
 import com.facebook.react.bridge.ActivityEventListener;
@@ -28,8 +27,6 @@ import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.interfaces.fabric.ReactSurface;
-import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags;
 import com.facebook.react.module.annotations.ReactModule;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 
@@ -63,9 +60,6 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
     @Nullable
     private ReactInstanceManager reactInstanceManager;
-
-    @Nullable
-    private ReactHost host;
 
     /**
      * All the React methods in here should be synchronized on this specific object because there
@@ -286,22 +280,6 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                         sendEventToJS(data);
                     }
 
-
-                    private View createMerchantView(String viewName) {
-                        if (ReactNativeFeatureFlags.enableBridgelessArchitecture()) {
-                            if (host == null) {
-                                return null;
-                            }
-                            ReactSurface surface = host.createSurface(activity, viewName, null);
-                            surface.start();
-                            return surface.getView();
-                        } else {
-                            ReactRootView reactRootView = new ReactRootView(activity);
-                            reactRootView.startReactApplication(reactInstanceManager, viewName);
-                            return reactRootView;
-                        }
-                    }
-
                     @Nullable
                     @Override
                     public View getMerchantView(ViewGroup viewGroup, MerchantViewType merchantViewType) {
@@ -309,26 +287,26 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                         if (reactInstanceManager == null || activity == null) {
                             return super.getMerchantView(viewGroup, merchantViewType);
                         } else {
-                            View merchantView = null;
+                            ReactRootView reactRootView = new ReactRootView(activity);
                             switch (merchantViewType) {
                                 case HEADER:
                                     if (isViewRegistered(MerchantViewConstants.JUSPAY_HEADER))
-                                        merchantView = createMerchantView(MerchantViewConstants.JUSPAY_HEADER);
+                                        reactRootView.startReactApplication(reactInstanceManager, MerchantViewConstants.JUSPAY_HEADER);
                                     break;
                                 case FOOTER:
                                     if (isViewRegistered(MerchantViewConstants.JUSPAY_FOOTER))
-                                        merchantView = createMerchantView(MerchantViewConstants.JUSPAY_FOOTER);
+                                        reactRootView.startReactApplication(reactInstanceManager, MerchantViewConstants.JUSPAY_FOOTER);
                                     break;
                                 case FOOTER_ATTACHED:
                                     if (isViewRegistered(MerchantViewConstants.JUSPAY_FOOTER_ATTACHED))
-                                        merchantView = createMerchantView(MerchantViewConstants.JUSPAY_FOOTER_ATTACHED);
+                                        reactRootView.startReactApplication(reactInstanceManager, MerchantViewConstants.JUSPAY_FOOTER_ATTACHED);
                                     break;
                                 case HEADER_ATTACHED:
                                     if (isViewRegistered(MerchantViewConstants.JUSPAY_HEADER_ATTACHED))
-                                        merchantView = createMerchantView(MerchantViewConstants.JUSPAY_HEADER_ATTACHED);
+                                        reactRootView.startReactApplication(reactInstanceManager, MerchantViewConstants.JUSPAY_HEADER_ATTACHED);
                                     break;
                             }
-                            return merchantView;
+                            return reactRootView;
                         }
                     }
                 });
@@ -358,7 +336,6 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
         }
         Application app = activity.getApplication();
         if (app instanceof ReactApplication) {
-            host = ((ReactApplication) app).getReactHost();
             reactInstanceManager = ((ReactApplication) app).getReactNativeHost().getReactInstanceManager();
         }
         if (tenantId != null && clientId != null) {
