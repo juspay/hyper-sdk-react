@@ -39,10 +39,12 @@ jobs:
         id: determine-release
         run: |
           shopt -s nocasematch
+          
+          PR_TITLE='${{ github.event.pull_request.title }}'
 
-          if [[ "${{ github.event.pull_request.title }}" =~ (\[breaking\]|\[major\]) ]]; then
+          if [[ "$PR_TITLE" =~ (\[breaking\]|\[major\]) ]]; then
             echo "release_type=major" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.event.pull_request.title }}" =~ \[minor\] ]]; then
+          elif [[ "$PR_TITLE" =~ \[minor\] ]]; then
             echo "release_type=minor" >> $GITHUB_OUTPUT
           else
             echo "release_type=patch" >> $GITHUB_OUTPUT
