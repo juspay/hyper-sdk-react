@@ -10,6 +10,7 @@ package in.juspay.hypersdkreact;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +35,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -60,6 +63,11 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
     @Nullable
     private ReactInstanceManager reactInstanceManager;
+
+    @Nullable
+    private ReactApplication app;
+
+    private Boolean newArchEnabled = false;
 
     /**
      * All the React methods in here should be synchronized on this specific object because there
@@ -236,6 +244,16 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
         }
     }
 
+    private boolean isFabricEnabled() {
+        try {
+            Class<?> buildConfigClass = Class.forName("com.facebook.react.BuildConfig");
+            Field field = buildConfigClass.getField("IS_NEW_ARCHITECTURE_ENABLED");
+            return field.getBoolean(null);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     @ReactMethod
     public void initiate(String data) {
         synchronized (lock) {
@@ -280,6 +298,45 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                         sendEventToJS(data);
                     }
 
+                    private Object getReactHostOrInstanceManager() {
+                        try {
+                            Object reactNativeHost = app.getReactNativeHost();
+                            Method getReactHostMethod = reactNativeHost.getClass().getMethod("getReactHost");
+                            return getReactHostMethod.invoke(reactNativeHost);
+
+                        } catch (Exception e) {
+                            return null;
+                        }
+                    }
+
+                    public View createReactSurfaceView(Activity activity, String viewName) {
+                        try {
+                            Class<?> reactSurfaceClass = Class.forName("com.facebook.react.interfaces.fabric.ReactSurface");
+                            Object host = getReactHostOrInstanceManager();
+                            if (host == null) {
+                                return null;
+                            }
+                            Object surface = host.getClass().getMethod("createSurface", Activity.class, String.class, Bundle.class).invoke(host, activity, viewName, null);
+
+                            reactSurfaceClass.getMethod("start").invoke(surface);
+
+                            return (View) reactSurfaceClass.getMethod("getView").invoke(surface);
+
+                        } catch (Exception e) {
+                            return null;
+                        }
+                    }
+
+                    private View createMerchantView(String viewName) {
+                        if (newArchEnabled) {
+                            return createReactSurfaceView(activity, viewName);
+                        } else {
+                            ReactRootView reactRootView = new ReactRootView(activity);
+                            reactRootView.startReactApplication(reactInstanceManager, viewName);
+                            return reactRootView;
+                        }
+                    }
+
                     @Nullable
                     @Override
                     public View getMerchantView(ViewGroup viewGroup, MerchantViewType merchantViewType) {
@@ -287,26 +344,26 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                         if (reactInstanceManager == null || activity == null) {
                             return super.getMerchantView(viewGroup, merchantViewType);
                         } else {
-                            ReactRootView reactRootView = new ReactRootView(activity);
+                            View merchantView = null;
                             switch (merchantViewType) {
                                 case HEADER:
                                     if (isViewRegistered(MerchantViewConstants.JUSPAY_HEADER))
-                                        reactRootView.startReactApplication(reactInstanceManager, MerchantViewConstants.JUSPAY_HEADER);
+                                        merchantView = createMerchantView(MerchantViewConstants.JUSPAY_HEADER);
                                     break;
                                 case FOOTER:
                                     if (isViewRegistered(MerchantViewConstants.JUSPAY_FOOTER))
-                                        reactRootView.startReactApplication(reactInstanceManager, MerchantViewConstants.JUSPAY_FOOTER);
+                                        merchantView = createMerchantView(MerchantViewConstants.JUSPAY_FOOTER);
                                     break;
                                 case FOOTER_ATTACHED:
                                     if (isViewRegistered(MerchantViewConstants.JUSPAY_FOOTER_ATTACHED))
-                                        reactRootView.startReactApplication(reactInstanceManager, MerchantViewConstants.JUSPAY_FOOTER_ATTACHED);
+                                        merchantView = createMerchantView(MerchantViewConstants.JUSPAY_FOOTER_ATTACHED);
                                     break;
                                 case HEADER_ATTACHED:
                                     if (isViewRegistered(MerchantViewConstants.JUSPAY_HEADER_ATTACHED))
-                                        reactRootView.startReactApplication(reactInstanceManager, MerchantViewConstants.JUSPAY_HEADER_ATTACHED);
+                                        merchantView = createMerchantView(MerchantViewConstants.JUSPAY_HEADER_ATTACHED);
                                     break;
                             }
-                            return reactRootView;
+                            return merchantView;
                         }
                     }
                 });
@@ -335,7 +392,9 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
             return;
         }
         Application app = activity.getApplication();
+        this.newArchEnabled = isFabricEnabled();
         if (app instanceof ReactApplication) {
+            this.app = ((ReactApplication) app);
             reactInstanceManager = ((ReactApplication) app).getReactNativeHost().getReactInstanceManager();
         }
         if (tenantId != null && clientId != null) {
