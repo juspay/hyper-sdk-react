@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.0.52](https://github.com/juspay/hyper-sdk-react/compare/v3.0.51...v3.0.52) (2025-07-25)
+
+
+### Bug Fixes
+
+* adding new arch enable for merchantView with backward compatibility ([f841c77](https://github.com/juspay/hyper-sdk-react/commit/f841c77360f0e0ce7b4d8a92a9e9077b4e145489))
+
 ### [3.0.51](https://github.com/juspay/hyper-sdk-react/compare/v3.0.50...v3.0.51) (2025-07-24)
 
 
