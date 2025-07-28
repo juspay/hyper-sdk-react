@@ -10,6 +10,7 @@ package in.juspay.hypersdkreact;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -67,7 +68,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
     @Nullable
     private ReactApplication app;
 
-    private Boolean newArchEnabled = false;
+    private final Boolean newArchEnabled = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED;
 
     /**
      * All the React methods in here should be synchronized on this specific object because there
@@ -244,16 +245,6 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
         }
     }
 
-    private boolean isFabricEnabled() {
-        try {
-            Class<?> buildConfigClass = Class.forName("com.facebook.react.BuildConfig");
-            Field field = buildConfigClass.getField("IS_NEW_ARCHITECTURE_ENABLED");
-            return field.getBoolean(null);
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
     @ReactMethod
     public void initiate(String data) {
         synchronized (lock) {
@@ -300,26 +291,25 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
                     private Object getReactHostOrInstanceManager() {
                         try {
-                            Object reactNativeHost = app.getReactNativeHost();
-                            Method getReactHostMethod = reactNativeHost.getClass().getMethod("getReactHost");
-                            return getReactHostMethod.invoke(reactNativeHost);
+                            Method getReactHostMethod = app.getClass().getMethod("getReactHost");
+                            return getReactHostMethod.invoke(app);
 
                         } catch (Exception e) {
                             return null;
                         }
                     }
 
-                    public View createReactSurfaceView(Activity activity, String viewName) {
+
+                    public View createReactSurfaceView(String viewName) {
                         try {
                             Class<?> reactSurfaceClass = Class.forName("com.facebook.react.interfaces.fabric.ReactSurface");
                             Object host = getReactHostOrInstanceManager();
                             if (host == null) {
                                 return null;
                             }
-                            Object surface = host.getClass().getMethod("createSurface", Activity.class, String.class, Bundle.class).invoke(host, activity, viewName, null);
+                            Object surface = host.getClass().getMethod("createSurface", Context.class, String.class, Bundle.class).invoke(host, context, viewName, null);
 
                             reactSurfaceClass.getMethod("start").invoke(surface);
-
                             return (View) reactSurfaceClass.getMethod("getView").invoke(surface);
 
                         } catch (Exception e) {
@@ -329,7 +319,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
                     private View createMerchantView(String viewName) {
                         if (newArchEnabled) {
-                            return createReactSurfaceView(activity, viewName);
+                            return createReactSurfaceView(viewName);
                         } else {
                             ReactRootView reactRootView = new ReactRootView(activity);
                             reactRootView.startReactApplication(reactInstanceManager, viewName);
@@ -392,7 +382,6 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
             return;
         }
         Application app = activity.getApplication();
-        this.newArchEnabled = isFabricEnabled();
         if (app instanceof ReactApplication) {
             this.app = ((ReactApplication) app);
             reactInstanceManager = ((ReactApplication) app).getReactNativeHost().getReactInstanceManager();
