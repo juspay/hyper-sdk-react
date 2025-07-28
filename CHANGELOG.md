@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.0.53](https://github.com/juspay/hyper-sdk-react/compare/v3.0.52...v3.0.53) (2025-07-28)
+
+
+### Bug Fixes
+
+* fixing createSurface fuction input parameter ([933e2ef](https://github.com/juspay/hyper-sdk-react/commit/933e2ef0ea84b50e0e0d6f660dfa9cc0a44c26c6))
+
 ### [3.0.52](https://github.com/juspay/hyper-sdk-react/compare/v3.0.51...v3.0.52) (2025-07-25)
 
 
