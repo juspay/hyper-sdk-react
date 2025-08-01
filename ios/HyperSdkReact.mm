@@ -16,10 +16,10 @@
 #import <React/RCTEventEmitter.h>
 #import <React/RCTModalHostViewController.h>
 #import <React/RCTRootView.h>
-#import <React-RCTAppDelegate/RCTAppDelegate.h>
 
-#if __has_include(<React-RCTAppDelegate/RCTRootViewFactory.h>)
+#if __has_include(<React-RCTAppDelegate/RCTAppDelegate.h>) && __has_include(<React-RCTAppDelegate/RCTRootViewFactory.h>)
 #import <React-RCTAppDelegate/RCTRootViewFactory.h>
+#import <React-RCTAppDelegate/RCTAppDelegate.h>
 #define HAS_NEW_ARCH_SUPPORT 1
 #else
 #define HAS_NEW_ARCH_SUPPORT 0
@@ -152,7 +152,6 @@ NSMutableSet<NSString *> *registeredComponents = [[NSMutableSet alloc] init];
 
     void (^addHeightConstraint)(UIView *);
 
-    // 2. Define and assign the block implementation
     addHeightConstraint = ^void(UIView *merchantView) {
         NSNumber *height = [self.heightHolder objectForKey:moduleName];
         if (height && [height isKindOfClass:[NSNumber class]]) {
@@ -161,12 +160,41 @@ NSMutableSet<NSString *> *registeredComponents = [[NSMutableSet alloc] init];
             [self.heightConstraintHolder setObject:heightConstriant forKey:moduleName];
         }
     };
-    
-    bool rootFactoryAvailable = false;
-    id appDelegate = RCTSharedApplication().delegate;
-    rootFactoryAvailable = [appDelegate respondsToSelector:@selector(rootViewFactory)];
 
-    if (HAS_NEW_ARCH_SUPPORT && rootFactoryAvailable) {
+    UIView *(^oldArchCall)();
+
+    oldArchCall = ^UIView *() {
+        // Save a reference of the react root view
+        // This will be used to update height constraint if a newer value is sent by the merchant
+        RCTRootView *rrv = [SDKRootView alloc];
+        [self.rootHolder setObject:rrv forKey:moduleName];
+        rrv = [rrv initWithBridge: self.bridge
+                       moduleName:moduleName
+                initialProperties:nil
+        ];
+        
+        // Remove background colour. Default colour white is getting applied to the merchant view
+        rrv.backgroundColor = UIColor.clearColor ;
+
+        // Remove height 0, width 0 constraints added by default.
+        rrv.translatesAutoresizingMaskIntoConstraints = false;
+
+        addHeightConstraint(rrv);
+
+        // This is sent to hypersdk. Hyper sdk adds the view to it's heirarchy and set's superview's top and bottom to match rrv's top and bottom
+        return rrv;
+    };
+
+
+    if (HAS_NEW_ARCH_SUPPORT) {
+
+        bool rootFactoryAvailable = false;
+        id appDelegate = RCTSharedApplication().delegate;
+        rootFactoryAvailable = [appDelegate respondsToSelector:@selector(rootViewFactory)];
+        if (!rootFactoryAvailable) {
+            return oldArchCall();
+        }
+
         RCTRootViewFactory *factory = ((RCTAppDelegate *)appDelegate).rootViewFactory;
         MerchantViewRoot *wrapper = [[MerchantViewRoot alloc] init];
 
@@ -188,26 +216,7 @@ NSMutableSet<NSString *> *registeredComponents = [[NSMutableSet alloc] init];
         // This is sent to hypersdk. Hyper sdk adds the view to it's heirarchy and set's superview's top and bottom to match rrv's top and bottom
         return wrapper;
     } else {
-        
-        // Save a reference of the react root view
-        // This will be used to update height constraint if a newer value is sent by the merchant
-        RCTRootView *rrv = [SDKRootView alloc];
-        [self.rootHolder setObject:rrv forKey:moduleName];
-        rrv = [rrv initWithBridge: self.bridge
-                       moduleName:moduleName
-                initialProperties:nil
-        ];
-        
-        // Remove background colour. Default colour white is getting applied to the merchant view
-        rrv.backgroundColor = UIColor.clearColor ;
-
-        // Remove height 0, width 0 constraints added by default.
-        rrv.translatesAutoresizingMaskIntoConstraints = false;
-
-        addHeightConstraint(rrv);
-
-        // This is sent to hypersdk. Hyper sdk adds the view to it's heirarchy and set's superview's top and bottom to match rrv's top and bottom
-        return rrv;
+        return oldArchCall();
     }
 }
 
