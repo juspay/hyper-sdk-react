@@ -324,11 +324,28 @@ HyperSdkReact.updateMerchantViewHeight(HyperSdkReact.JuspayHeader, 200);
 ```
 
 If your view dynamically computes height. Height can be obtained by adding the following property to the root of component registered
+
+#### For react-native old architecture
 ```ts
   onLayout={(event) => {
         const { height } = event.nativeEvent.layout;
         HyperSdkReact.updateMerchantViewHeight(HyperSdkReact.JuspayHeader, height);
       }}
+
+```
+
+#### For react-native new architecture
+```ts
+  const ref = useRef<View>(null);
+  useLayoutEffect(() => {
+    if (ref.current?.measure) {
+      ref.current.measure((x, y, width, height, pageX, pageY) => {
+        HyperServices.updateMerchantViewHeight(HyperSdkReact.JuspayHeader, height);
+      });
+    }
+  }, []);
+
+  <View ref={ref}> </View>
 
 ```
 
@@ -343,4 +360,3 @@ See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the 
 ## License
 
 hyper-sdk-react is distributed under [AGPL-3.0-only](https://github.com/juspay/hyper-sdk-react/src/main/LICENSE.md) license.
-
