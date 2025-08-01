@@ -17,48 +17,9 @@
 #import <React/RCTModalHostViewController.h>
 #import <React/RCTRootView.h>
 
-#if __has_include(<React-RCTAppDelegate/RCTAppDelegate.h>) && __has_include(<React-RCTAppDelegate/RCTRootViewFactory.h>)
-#import <React-RCTAppDelegate/RCTRootViewFactory.h>
-#import <React-RCTAppDelegate/RCTAppDelegate.h>
-#define HAS_NEW_ARCH_SUPPORT 1
-#else
-#define HAS_NEW_ARCH_SUPPORT 0
-#endif
 #import <HyperSDK/HyperSDK.h>
 
 __weak static HyperServices *_hyperServicesReference;
-
-
-@implementation MerchantViewRoot
-
-- (void)layoutSubviews {
-  [super layoutSubviews];
-}
-
-- (void)didMoveToSuperview {
-  [super didMoveToSuperview];
-
-  if (_leading.isActive) _leading.active = NO;
-  if (_trailing.isActive) _trailing.active = NO;
-
-  if (self.superview) {
-    self.translatesAutoresizingMaskIntoConstraints = NO;
-    _leading = [self.leadingAnchor constraintEqualToAnchor:self.superview.leadingAnchor];
-    _trailing = [self.trailingAnchor constraintEqualToAnchor:self.superview.trailingAnchor];
-    _leading.active = YES;
-    _trailing.active = YES;
-  }
-
-  for (UIView *subview in self.subviews) {
-    subview.translatesAutoresizingMaskIntoConstraints = NO;
-    [subview.leadingAnchor constraintEqualToAnchor:self.leadingAnchor].active = YES;
-    [subview.trailingAnchor constraintEqualToAnchor:self.trailingAnchor].active = YES;
-    [subview.topAnchor constraintEqualToAnchor:self.topAnchor].active = YES;
-    [subview.heightAnchor constraintEqualToAnchor:self.heightAnchor].active = YES;
-  }
-}
-
-@end
 
 // Overriding the RCTRootView to add contraints to align with the views superview
 @implementation SDKRootView
@@ -66,11 +27,11 @@ __weak static HyperServices *_hyperServicesReference;
 -(void)didMoveToSuperview {
     // Remove old leading anchor
     if (self.leading.isActive) {
-        self.leading.active = false;
+        self.leading.active = @NO;
     }
     // Remove old trailing anchor
     if (self.trailing.isActive) {
-        self.trailing.active = false;
+        self.trailing.active = @NO;
     }
 
     //Checking superview just to be sure that it is not nil
@@ -80,8 +41,8 @@ __weak static HyperServices *_hyperServicesReference;
         self.trailing = [self.trailingAnchor constraintEqualToAnchor:self.superview.trailingAnchor];
         // Save contraints so that it can be removed if there is superview is changed.
         // This should not happen as per usecase
-        self.leading.active = true;
-        self.trailing.active = true;
+        self.leading.active = @YES;
+        self.trailing.active = @YES;
     }
 }
 
@@ -121,11 +82,11 @@ NSMutableSet<NSString *> *registeredComponents = [[NSMutableSet alloc] init];
     if (rootView && [rootView isKindOfClass: [UIView class]]) {
         // If present set earlier constraint to inactive
         if (heightConstraint && [heightConstraint isKindOfClass:[NSLayoutConstraint class]]) {
-            heightConstraint.active = false;
+            heightConstraint.active = @NO;
         }
         // Set a new constraint with the latest height
         NSLayoutConstraint *newHeightConstraint = [rootView.heightAnchor constraintEqualToConstant: [height doubleValue]];
-        newHeightConstraint.active = true;
+        newHeightConstraint.active = @YES;
         // Save the constraint so that it can be made inactive if a new constraint is created
         [self.heightConstraintHolder setObject:newHeightConstraint forKey:tag];
     }
@@ -139,6 +100,7 @@ NSMutableSet<NSString *> *registeredComponents = [[NSMutableSet alloc] init];
 - (UIView * _Nullable)merchantViewForViewType:(NSString * _Nonnull)viewType {
 
     // Create a SDKRootView so that we can attach width constraints once it is attached to it's parent
+    RCTRootView *rrv = [SDKRootView alloc];
     NSString *moduleName = @"JP_003";
     if ([viewType isEqual:@"HEADER"] && [registeredComponents containsObject:@"JuspayHeader"]) {
         moduleName = @"JuspayHeader";
@@ -150,74 +112,31 @@ NSMutableSet<NSString *> *registeredComponents = [[NSMutableSet alloc] init];
         moduleName = @"JuspayFooterAttached";
     }
 
-    void (^addHeightConstraint)(UIView *);
-
-    addHeightConstraint = ^void(UIView *merchantView) {
-        NSNumber *height = [self.heightHolder objectForKey:moduleName];
-        if (height && [height isKindOfClass:[NSNumber class]]) {
-            NSLayoutConstraint *heightConstriant = [merchantView.heightAnchor constraintEqualToConstant: [height doubleValue]];
-            heightConstriant.active = true;
-            [self.heightConstraintHolder setObject:heightConstriant forKey:moduleName];
-        }
-    };
-
-    UIView *(^oldArchCall)();
-
-    oldArchCall = ^UIView *() {
-        // Save a reference of the react root view
-        // This will be used to update height constraint if a newer value is sent by the merchant
-        RCTRootView *rrv = [SDKRootView alloc];
-        [self.rootHolder setObject:rrv forKey:moduleName];
-        rrv = [rrv initWithBridge: self.bridge
-                       moduleName:moduleName
-                initialProperties:nil
-        ];
-        
-        // Remove background colour. Default colour white is getting applied to the merchant view
-        rrv.backgroundColor = UIColor.clearColor ;
-
-        // Remove height 0, width 0 constraints added by default.
-        rrv.translatesAutoresizingMaskIntoConstraints = false;
-
-        addHeightConstraint(rrv);
-
-        // This is sent to hypersdk. Hyper sdk adds the view to it's heirarchy and set's superview's top and bottom to match rrv's top and bottom
-        return rrv;
-    };
+    // Save a reference of the react root view
+    // This will be used to update height constraint if a newer value is sent by the merchant
+    [self.rootHolder setObject:rrv forKey:moduleName];
 
 
-    if (HAS_NEW_ARCH_SUPPORT) {
+    rrv = [rrv initWithBridge: self.bridge
+                   moduleName:moduleName
+            initialProperties:nil
+    ];
 
-        bool rootFactoryAvailable = false;
-        id appDelegate = RCTSharedApplication().delegate;
-        rootFactoryAvailable = [appDelegate respondsToSelector:@selector(rootViewFactory)];
-        if (!rootFactoryAvailable) {
-            return oldArchCall();
-        }
+    // Remove background colour. Default colour white is getting applied to the merchant view
+    rrv.backgroundColor = UIColor.clearColor ;
 
-        RCTRootViewFactory *factory = ((RCTAppDelegate *)appDelegate).rootViewFactory;
-        MerchantViewRoot *wrapper = [[MerchantViewRoot alloc] init];
+    // Remove height 0, width 0 constraints added by default.
+    rrv.translatesAutoresizingMaskIntoConstraints = false;
 
-        UIView *rrv = [factory viewWithModuleName:moduleName initialProperties:nil];
-        [wrapper addSubview:rrv];
-        
-        // Remove background colour. Default colour white is getting applied to the merchant view
-        wrapper.backgroundColor = UIColor.clearColor ;
-        
-        // Remove height 0, width 0 constraints added by default.
-        wrapper.translatesAutoresizingMaskIntoConstraints = false;
-        
-        rrv.translatesAutoresizingMaskIntoConstraints = false;
-
-        [self.rootHolder setObject:wrapper forKey:moduleName];
-        addHeightConstraint(wrapper);
-
-
-        // This is sent to hypersdk. Hyper sdk adds the view to it's heirarchy and set's superview's top and bottom to match rrv's top and bottom
-        return wrapper;
-    } else {
-        return oldArchCall();
+    // If height is available set the height
+    NSNumber *height = [self.heightHolder objectForKey:moduleName];
+    if (height && [height isKindOfClass:[NSNumber class]]) {
+        NSLayoutConstraint *heightConstriant = [rrv.heightAnchor constraintEqualToConstant: [height doubleValue]];
+        heightConstriant.active = @YES;
+        [self.heightConstraintHolder setObject:heightConstriant forKey:moduleName];
     }
+    // This is sent to hypersdk. Hyper sdk adds the view to it's heirarchy and set's superview's top and bottom to match rrv's top and bottom
+    return rrv;
 }
 
 - (void) onWebViewReady:(WKWebView *)webView {
@@ -497,4 +416,3 @@ RCT_EXPORT_METHOD(process:(nonnull NSNumber *)viewTag nameSpace:(NSString *)name
 }
 
 @end
-
