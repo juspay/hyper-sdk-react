@@ -29,13 +29,6 @@
 - initWithBridge: (RCTBridge *) bridge;
 @end
 
-@interface MerchantViewRoot : UIView
-
-@property (nonatomic, strong) NSLayoutConstraint *leading;
-@property (nonatomic, strong) NSLayoutConstraint *trailing;
-
-@end
-
 @interface SDKRootView : RCTRootView
 
 @property (nonatomic, strong) NSLayoutConstraint *leading;
