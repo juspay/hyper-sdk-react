@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.0.4](https://github.com/juspay/hyper-sdk-react/compare/v4.0.3...v4.0.4) (2025-08-06)
+
+
+### Bug Fixes
+
+* adding React-RCTAppDelegate as a dependency in ios podspec ([#114](https://github.com/juspay/hyper-sdk-react/issues/114)) ([5ce9fa6](https://github.com/juspay/hyper-sdk-react/commit/5ce9fa6e3a94be0fcb802d6e6627bde492259473))
+
 ### [4.0.3](https://github.com/juspay/hyper-sdk-react/compare/v4.0.2...v4.0.3) (2025-08-06)
 
 
