@@ -17,9 +17,9 @@
 #import <React/RCTModalHostViewController.h>
 #import <React/RCTRootView.h>
 
-#if __has_include(<React-RCTAppDelegate/RCTAppDelegate.h>) && __has_include(<React-RCTAppDelegate/RCTRootViewFactory.h>)
-#import <React-RCTAppDelegate/RCTRootViewFactory.h>
-#import <React-RCTAppDelegate/RCTAppDelegate.h>
+#if __has_include("RCTAppDelegate.h") && __has_include("RCTRootViewFactory.h")
+#import "RCTAppDelegate.h"
+#import "RCTRootViewFactory.h"
 #define HAS_NEW_ARCH_SUPPORT 1
 #else
 #define HAS_NEW_ARCH_SUPPORT 0
