@@ -185,7 +185,7 @@ NSMutableSet<NSString *> *registeredComponents = [[NSMutableSet alloc] init];
     };
 
 
-    if (HAS_NEW_ARCH_SUPPORT) {
+    #if HAS_NEW_ARCH_SUPPORT
 
         bool rootFactoryAvailable = false;
         id appDelegate = RCTSharedApplication().delegate;
@@ -214,9 +214,9 @@ NSMutableSet<NSString *> *registeredComponents = [[NSMutableSet alloc] init];
 
         // This is sent to hypersdk. Hyper sdk adds the view to it's heirarchy and set's superview's top and bottom to match rrv's top and bottom
         return wrapper;
-    } else {
+    #else
         return oldArchCall();
-    }
+    #endif
 }
 
 - (void) onWebViewReady:(WKWebView *)webView {

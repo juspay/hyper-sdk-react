@@ -36,5 +36,6 @@ Pod::Spec.new do |s|
   s.source_files = "ios/**/*.{h,m,mm,swift}"
 
   s.dependency "React-Core"
+  s.dependency "React-RCTAppDelegate"
   s.dependency "HyperSDK", hyper_sdk_version
 end
