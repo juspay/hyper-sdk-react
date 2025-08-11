@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.0.5](https://github.com/juspay/hyper-sdk-react/compare/v4.0.4...v4.0.5) (2025-08-11)
+
+
+### Bug Fixes
+
+* payment popup disappearing on ios with loader fixed ([6926837](https://github.com/juspay/hyper-sdk-react/commit/6926837994ac3eb8cf8db8bc9847473465ff924f))
+
 ### [4.0.4](https://github.com/juspay/hyper-sdk-react/compare/v4.0.3...v4.0.4) (2025-08-06)
 
 
