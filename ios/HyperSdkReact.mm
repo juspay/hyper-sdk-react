@@ -327,7 +327,7 @@ RCT_EXPORT_METHOD(process:(NSString *)data) {
         @try {
             NSDictionary *jsonData = [HyperSdkReact stringToDictionary:data];
             // Update baseViewController if it's nil or not in the view hierarchy.
-            if (self.hyperInstance.baseViewController == nil || self.hyperInstance.baseViewController.view.window == nil) {
+            if (self.hyperInstance.baseViewController == nil || self.hyperInstance.baseViewController.view.window == nil || [self.hyperInstance.baseViewController isMemberOfClass:RCTModalHostViewController.class]) {
                 // Getting topViewController
                 id baseViewController = RCTPresentedViewController();
                 
