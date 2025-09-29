@@ -108,7 +108,8 @@ const generateProcessPayloadPP = (
   merchantId: string,
   orderDetails: string,
   signature: string,
-  merchantKeyId: string
+  merchantKeyId: string,
+  statusBarLight: boolean
 ) => {
   return {
     requestId: uuidv4(),
@@ -120,6 +121,7 @@ const generateProcessPayloadPP = (
       orderDetails,
       signature,
       merchantKeyId,
+      statusBarLight,
     },
   };
 };
@@ -445,7 +447,8 @@ type HyperUtils = {
     merchantId: string,
     orderDetails: string,
     signature: string,
-    merchantKeyId: string
+    merchantKeyId: string,
+    statusBarLight: boolean
   ): {};
   generatePreFetchPayload(clientId: string, service: string): {};
   generateOrderId(): string;
