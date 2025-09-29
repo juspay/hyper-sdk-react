@@ -479,6 +479,8 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                 }
 
                 Intent i = new Intent(activity, ProcessActivity.class);
+                boolean statusBarLight = payload.optJSONObject("payload").optBoolean("statusBarLight", false);
+                i.putExtra("statusBarLight", statusBarLight);
                 ProcessActivity.setActivityCallback(new ActivityCallback() {
                     @Override
                     public void onCreated(@NonNull FragmentActivity fragmentActivity) {
@@ -542,6 +544,8 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                 }
 
                 Intent i = new Intent(activity, ProcessActivity.class);
+                boolean statusBarLight = sdkPayload.optJSONObject("payload").optBoolean("statusBarLight", false);
+                i.putExtra("statusBarLight", statusBarLight);
                 ProcessActivity.setActivityCallback(new ActivityCallback() {
                     @Override
                     public void onCreated(@NonNull FragmentActivity processActivity) {
