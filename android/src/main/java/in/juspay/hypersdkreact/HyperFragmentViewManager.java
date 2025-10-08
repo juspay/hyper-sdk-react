@@ -88,16 +88,6 @@ public class HyperFragmentViewManager extends ViewGroupManager<FrameLayout> {
         }
     }
 
-    @ReactProp(name = "height", defaultFloat = 0f)
-    public void setHeight(FrameLayout view, float height) {
-        // Height prop received
-    }
-
-    @ReactProp(name = "width", defaultFloat = 0f)
-    public void setWidth(FrameLayout view, float width) {
-        // Width prop received
-    }
-
     private void processWithProps(FrameLayout view, String namespace, String payload) {
         try {
             setupLayout(view);
