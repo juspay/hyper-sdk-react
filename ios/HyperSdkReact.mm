@@ -387,6 +387,19 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(isNull) {
     return self.hyperInstance == NULL? @true : @false;
 }
 
+RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(getArchitectureInfo) {
+    #if HAS_NEW_ARCH_SUPPORT
+        NSString *architecture = @"NEW_ARCHITECTURE";
+        NSString *details = [NSString stringWithFormat:@"React Native Architecture: %@ (HAS_NEW_ARCH_SUPPORT=1)", architecture];
+    #else
+        NSString *architecture = @"OLD_ARCHITECTURE";
+        NSString *details = [NSString stringWithFormat:@"React Native Architecture: %@ (HAS_NEW_ARCH_SUPPORT=0)", architecture];
+    #endif
+    
+    NSLog(@"[HyperSDK] %@", details);
+    return details;
+}
+
 RCT_EXPORT_METHOD(terminate) {
     if (_hyperInstance) {
         [_hyperInstance terminate];
@@ -496,4 +509,3 @@ RCT_EXPORT_METHOD(process:(nonnull NSNumber *)viewTag nameSpace:(NSString *)name
 }
 
 @end
-

@@ -479,6 +479,8 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                 }
 
                 Intent i = new Intent(activity, ProcessActivity.class);
+                boolean statusBarLight = payload.optJSONObject("payload").optBoolean("statusBarLight", false);
+                i.putExtra("statusBarLight", statusBarLight);
                 ProcessActivity.setActivityCallback(new ActivityCallback() {
                     @Override
                     public void onCreated(@NonNull FragmentActivity fragmentActivity) {
@@ -542,6 +544,8 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                 }
 
                 Intent i = new Intent(activity, ProcessActivity.class);
+                boolean statusBarLight = sdkPayload.optJSONObject("payload").optBoolean("statusBarLight", false);
+                i.putExtra("statusBarLight", statusBarLight);
                 ProcessActivity.setActivityCallback(new ActivityCallback() {
                     @Override
                     public void onCreated(@NonNull FragmentActivity processActivity) {
@@ -596,6 +600,24 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
     @ReactMethod(isBlockingSynchronousMethod = true)
     public boolean isNull() {
         return hyperServices == null;
+    }
+
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    public String getArchitectureInfo() {
+        String architecture = newArchEnabled ? "NEW_ARCHITECTURE" : "OLD_ARCHITECTURE";
+        String details = "React Native Architecture: " + architecture + 
+                        " (newArchEnabled=" + newArchEnabled + ")";
+        
+        // Log architecture info for debugging
+        SdkTracker.trackBootLifecycle(
+                LogConstants.SUBCATEGORY_HYPER_SDK,
+                LogConstants.LEVEL_INFO,
+                LogConstants.SDK_TRACKER_LABEL,
+                "getArchitectureInfo",
+                details
+        );
+        
+        return details;
     }
 
     @ReactMethod

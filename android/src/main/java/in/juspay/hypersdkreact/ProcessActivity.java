@@ -8,9 +8,13 @@
 package in.juspay.hypersdkreact;
 
 import android.os.Bundle;
+import android.view.View;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class ProcessActivity extends AppCompatActivity {
 
@@ -25,7 +29,11 @@ public class ProcessActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-
+        boolean statusBarLight = getIntent().getBooleanExtra("statusBarLight", false);
+        if (statusBarLight) {
+            View decorView = getWindow().getDecorView();
+            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        }
         if (activityCallback != null) {
             activityCallback.onCreated(this);
         }

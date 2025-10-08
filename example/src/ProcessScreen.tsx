@@ -89,6 +89,7 @@ class ProcessScreen extends React.Component {
     super(props, context);
     this.navigation = props.navigation;
     this.isPopupVisible = false;
+    this.statusBarLight = false;
 
     const params = props.route.params;
     this.merchantId = params.merchantId;
@@ -221,6 +222,7 @@ class ProcessScreen extends React.Component {
               JSON.stringify(orderDetailsNew),
               signNew,
               this.merchantKeyId
+              this.statusBarLight
             );
             HyperSdkReact.process(JSON.stringify(payload));
           }}
@@ -835,6 +837,7 @@ class ProcessScreen extends React.Component {
                       JSON.stringify(this.orderDetails),
                       this.signature,
                       this.merchantKeyId
+                      this.statusBarLight
                     );
 
                     HyperSdkReact.process(JSON.stringify(payload));
@@ -850,6 +853,7 @@ class ProcessScreen extends React.Component {
                       JSON.stringify(this.orderDetails),
                       this.signature,
                       this.merchantKeyId
+                      this.statusBarLight
                     );
 
                     HyperSdkReact.processWithActivity(JSON.stringify(payload));
@@ -868,7 +872,8 @@ class ProcessScreen extends React.Component {
                           this.merchantId,
                           JSON.stringify(this.orderDetails),
                           this.signature,
-                          this.merchantKeyId
+                          this.merchantKeyId,
+                          this.statusBarLight
                         )
                       ),
                     });

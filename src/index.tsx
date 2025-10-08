@@ -50,6 +50,7 @@ type HyperSdkReactType = {
   terminate(): void;
   onBackPressed(): boolean;
   isNull(): boolean;
+  getArchitectureInfo(): string;
   isInitialised(): Promise<boolean>;
   updateBaseViewController(): void;
   openPaymentPage(data: string): void;
