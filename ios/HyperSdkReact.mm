@@ -460,7 +460,7 @@ RCT_EXPORT_METHOD(process:(nonnull NSNumber *)viewTag nameSpace:(NSString *)name
     if (payload && payload.length>0) {
         @try {
             NSDictionary *jsonData = [HyperSdkReact stringToDictionary:payload];
-            if (jsonData && [jsonData isKindOfClass:[NSDictionary class]] && jsonData.allKeys.count>0) {
+            if (jsonData && [jsonData isKindOfClass:[NSDictionary class]] && jsonData.allKeys.count>0 && HAS_NEW_ARCH_SUPPORT) {
                 [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, UIView *> *viewRegistry) {
                     if (hyperServicesInstance.baseViewController == nil || hyperServicesInstance.baseViewController.view.window == nil) {
                         id baseViewController = RCTPresentedViewController();
