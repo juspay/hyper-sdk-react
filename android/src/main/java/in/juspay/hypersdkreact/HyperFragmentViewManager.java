@@ -40,6 +40,9 @@ public class HyperFragmentViewManager extends ViewGroupManager<FrameLayout> {
     private String currentNamespace = null;
     private String currentPayload = null;
     private FrameLayout currentView = null;
+    
+    // Architecture detection
+    private final Boolean newArchEnabled = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED;
 
     public HyperFragmentViewManager(ReactApplicationContext reactContext) {
         this.reactContext = reactContext;
@@ -78,7 +81,7 @@ public class HyperFragmentViewManager extends ViewGroupManager<FrameLayout> {
     }
     
     private void tryProcessProps() {
-        if (currentNamespace != null && currentPayload != null && currentView != null) {
+        if (currentNamespace != null && currentPayload != null && currentView != null && newArchEnabled) {
             currentView.post(() -> {
                 processWithProps(currentView, currentNamespace, currentPayload);
             });

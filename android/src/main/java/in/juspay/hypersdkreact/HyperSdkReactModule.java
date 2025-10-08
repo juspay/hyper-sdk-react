@@ -602,23 +602,6 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
         return hyperServices == null;
     }
 
-    @ReactMethod(isBlockingSynchronousMethod = true)
-    public String getArchitectureInfo() {
-        String architecture = newArchEnabled ? "NEW_ARCHITECTURE" : "OLD_ARCHITECTURE";
-        String details = "React Native Architecture: " + architecture + 
-                        " (newArchEnabled=" + newArchEnabled + ")";
-        
-        // Log architecture info for debugging
-        SdkTracker.trackBootLifecycle(
-                LogConstants.SUBCATEGORY_HYPER_SDK,
-                LogConstants.LEVEL_INFO,
-                LogConstants.SDK_TRACKER_LABEL,
-                "getArchitectureInfo",
-                details
-        );
-        
-        return details;
-    }
 
     @ReactMethod
     public void isInitialised(Promise promise) {

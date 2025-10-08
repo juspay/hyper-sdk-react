@@ -387,18 +387,6 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(isNull) {
     return self.hyperInstance == NULL? @true : @false;
 }
 
-RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(getArchitectureInfo) {
-    #if HAS_NEW_ARCH_SUPPORT
-        NSString *architecture = @"NEW_ARCHITECTURE";
-        NSString *details = [NSString stringWithFormat:@"React Native Architecture: %@ (HAS_NEW_ARCH_SUPPORT=1)", architecture];
-    #else
-        NSString *architecture = @"OLD_ARCHITECTURE";
-        NSString *details = [NSString stringWithFormat:@"React Native Architecture: %@ (HAS_NEW_ARCH_SUPPORT=0)", architecture];
-    #endif
-    
-    NSLog(@"[HyperSDK] %@", details);
-    return details;
-}
 
 RCT_EXPORT_METHOD(terminate) {
     if (_hyperInstance) {
@@ -473,7 +461,7 @@ RCT_EXPORT_METHOD(process:(nonnull NSNumber *)viewTag nameSpace:(NSString *)name
     if (payload && payload.length>0) {
         @try {
             NSDictionary *jsonData = [HyperSdkReact stringToDictionary:payload];
-            if (jsonData && [jsonData isKindOfClass:[NSDictionary class]] && jsonData.allKeys.count>0) {
+            if (jsonData && [jsonData isKindOfClass:[NSDictionary class]] && jsonData.allKeys.count>0 && HAS_NEW_ARCH_SUPPORT) {
                 [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, UIView *> *viewRegistry) {
                     if (hyperServicesInstance.baseViewController == nil || hyperServicesInstance.baseViewController.view.window == nil) {
                         id baseViewController = RCTPresentedViewController();
