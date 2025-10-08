@@ -71,7 +71,14 @@ const HyperFragmentView: React.FC<HyperFragmentViewProps> = ({
 
   return (
     <View style={{ height: height, width: width }}>
-      <HyperFragmentViewManager ref={ref} />
+      <HyperFragmentViewManager 
+        ref={ref}
+        style={{ flex: 1 }}
+        namespace={namespace}
+        payload={payload}
+        height={height}
+        width={width}
+      />
     </View>
   );
 };
