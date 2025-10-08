@@ -21,6 +21,7 @@ import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.ViewGroupManager;
+import com.facebook.react.uimanager.annotations.ReactProp;
 
 import org.json.JSONObject;
 
@@ -35,11 +36,14 @@ public class HyperFragmentViewManager extends ViewGroupManager<FrameLayout> {
     private static final int COMMAND_PROCESS = 175;
 
     private final ReactApplicationContext reactContext;
+    // Track props for each view
+    private String currentNamespace = null;
+    private String currentPayload = null;
+    private FrameLayout currentView = null;
 
     public HyperFragmentViewManager(ReactApplicationContext reactContext) {
         this.reactContext = reactContext;
     }
-
 
     @NonNull
     @Override
@@ -57,6 +61,69 @@ public class HyperFragmentViewManager extends ViewGroupManager<FrameLayout> {
     @Override
     public Map<String, Integer> getCommandsMap() {
         return MapBuilder.of("process", COMMAND_PROCESS);
+    }
+    // Fabric-compatible props
+    @ReactProp(name = "namespace")
+    public void setNamespace(FrameLayout view, @Nullable String namespace) {
+        currentNamespace = namespace;
+        currentView = view;
+        tryProcessProps();
+    }
+
+    @ReactProp(name = "payload")
+    public void setPayload(FrameLayout view, @Nullable String payload) {
+        currentPayload = payload;
+        currentView = view;
+        tryProcessProps();
+    }
+    
+    private void tryProcessProps() {
+        if (currentNamespace != null && currentPayload != null && currentView != null) {
+            currentView.post(() -> {
+                processWithProps(currentView, currentNamespace, currentPayload);
+            });
+        }
+    }
+
+    @ReactProp(name = "height", defaultFloat = 0f)
+    public void setHeight(FrameLayout view, float height) {
+        // Height prop received
+    }
+
+    @ReactProp(name = "width", defaultFloat = 0f)
+    public void setWidth(FrameLayout view, float width) {
+        // Width prop received
+    }
+
+    private void processWithProps(FrameLayout view, String namespace, String payload) {
+        try {
+            setupLayout(view);
+
+            JSONObject fragments = new JSONObject();
+            fragments.put(namespace, view);
+
+            JSONObject payloadObj = new JSONObject(payload);
+            payloadObj.getJSONObject("payload").put("fragmentViewGroups", fragments);
+            
+            FragmentActivity activity = (FragmentActivity) reactContext.getCurrentActivity();
+            HyperServices hyperServices = HyperSdkReactModule.getHyperServices();
+            
+            if (activity == null || hyperServices == null) {
+                return;
+            }
+
+            hyperServices.process(activity, payloadObj);
+            
+        } catch (Exception e) {
+            SdkTracker.trackAndLogBootException(
+                    NAME,
+                    LogConstants.CATEGORY_LIFECYCLE,
+                    LogConstants.SUBCATEGORY_HYPER_SDK,
+                    LogConstants.SDK_TRACKER_LABEL,
+                    "Exception in processWithProps",
+                    e
+            );
+        }
     }
 
     @Override
@@ -118,6 +185,10 @@ public class HyperFragmentViewManager extends ViewGroupManager<FrameLayout> {
     }
 
     private void setupLayout(View view) {
+        if (view == null) {
+            return;
+        }
+        
         Choreographer.getInstance().postFrameCallback(new Choreographer.FrameCallback() {
             @Override
             public void doFrame(long frameTimeNanos) {
