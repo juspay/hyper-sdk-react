@@ -30,8 +30,11 @@ if (Platform.OS === 'android') {
   );
 }
 
+const newArchEnabled = global?.nativeFabricUIManager ? true : false;
+
 const createFragment = (viewId: number, namespace: string, payload: string) => {
-  if (Platform.OS === 'android') {
+  if(!newArchEnabled) {
+    if (Platform.OS === 'android') {
     UIManager.dispatchViewManagerCommand(
       viewId,
       //@ts-ignore
@@ -49,6 +52,9 @@ const createFragment = (viewId: number, namespace: string, payload: string) => {
       ]);
     }
   }
+
+  }
+  
 };
 
 const HyperFragmentView: React.FC<HyperFragmentViewProps> = ({
@@ -71,7 +77,15 @@ const HyperFragmentView: React.FC<HyperFragmentViewProps> = ({
 
   return (
     <View style={{ height: height, width: width }}>
-      <HyperFragmentViewManager ref={ref} />
+      {newArchEnabled?<HyperFragmentViewManager 
+        ref={ref}
+        style={{ flex: 1 }}
+        ns={namespace}
+        payload={payload}
+      />:<HyperFragmentViewManager 
+        ref={ref}
+        style={{ flex: 1 }}
+      />}
     </View>
   );
 };
