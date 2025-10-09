@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.0.1](https://github.com/juspay/hyper-sdk-react/compare/v4.0.6...v5.0.1) (2025-10-09)
+
+
+### Bug Fixes
+
+* resolve type checking issues ([#126](https://github.com/juspay/hyper-sdk-react/issues/126)) ([a417741](https://github.com/juspay/hyper-sdk-react/commit/a4177411a8b61c620c984bcacc7b720723ca32f6))
+
 ### [4.0.6](https://github.com/juspay/hyper-sdk-react/compare/v4.0.5...v4.0.6) (2025-10-06)
 
 ### [4.0.5](https://github.com/juspay/hyper-sdk-react/compare/v4.0.4...v4.0.5) (2025-08-11)
