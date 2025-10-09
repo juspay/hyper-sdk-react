@@ -30,31 +30,29 @@ if (Platform.OS === 'android') {
   );
 }
 
-const newArchEnabled = global?.nativeFabricUIManager ? true : false;
+const newArchEnabled = (global as any)?.nativeFabricUIManager ? true : false;
 
 const createFragment = (viewId: number, namespace: string, payload: string) => {
-  if(!newArchEnabled) {
+  if (!newArchEnabled) {
     if (Platform.OS === 'android') {
-    UIManager.dispatchViewManagerCommand(
-      viewId,
-      //@ts-ignore
-      UIManager.HyperFragmentViewManager.Commands.process.toString(),
-      [viewId, namespace, payload]
-    );
-  } else {
-    const commandId = UIManager.getViewManagerConfig(
-      'HyperFragmentViewManagerIOS'
-    ).Commands.process;
-    if (typeof commandId !== 'undefined') {
-      UIManager.dispatchViewManagerCommand(viewId, commandId, [
-        namespace,
-        payload,
-      ]);
+      UIManager.dispatchViewManagerCommand(
+        viewId,
+        //@ts-ignore
+        UIManager.HyperFragmentViewManager.Commands.process.toString(),
+        [viewId, namespace, payload]
+      );
+    } else {
+      const commandId = UIManager.getViewManagerConfig(
+        'HyperFragmentViewManagerIOS'
+      ).Commands.process;
+      if (typeof commandId !== 'undefined') {
+        UIManager.dispatchViewManagerCommand(viewId, commandId, [
+          namespace,
+          payload,
+        ]);
+      }
     }
   }
-
-  }
-  
 };
 
 const HyperFragmentView: React.FC<HyperFragmentViewProps> = ({
@@ -77,15 +75,16 @@ const HyperFragmentView: React.FC<HyperFragmentViewProps> = ({
 
   return (
     <View style={{ height: height, width: width }}>
-      {newArchEnabled?<HyperFragmentViewManager 
-        ref={ref}
-        style={{ flex: 1 }}
-        ns={namespace}
-        payload={payload}
-      />:<HyperFragmentViewManager 
-        ref={ref}
-        style={{ flex: 1 }}
-      />}
+      {newArchEnabled ? (
+        <HyperFragmentViewManager
+          ref={ref}
+          style={{ flex: 1 }}
+          ns={namespace}
+          payload={payload}
+        />
+      ) : (
+        <HyperFragmentViewManager ref={ref} style={{ flex: 1 }} />
+      )}
     </View>
   );
 };
