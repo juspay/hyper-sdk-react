@@ -30,7 +30,7 @@ if (Platform.OS === 'android') {
   );
 }
 
-const newArchEnabled = false;
+const newArchEnabled = global?.nativeFabricUIManager ? true : false;
 
 const createFragment = (viewId: number, namespace: string, payload: string) => {
   if(!newArchEnabled) {
