@@ -17,8 +17,7 @@
 #import <React/RCTModalHostViewController.h>
 #import <React/RCTRootView.h>
 
-#if __has_include("RCTAppDelegate.h") && __has_include("RCTRootViewFactory.h")
-#import "RCTAppDelegate.h"
+#if __has_include("RCTRootViewFactory.h")
 #import "RCTRootViewFactory.h"
 #define HAS_NEW_ARCH_SUPPORT 1
 #else
@@ -189,15 +188,19 @@ NSMutableSet<NSString *> *registeredComponents = [[NSMutableSet alloc] init];
 
         bool rootFactoryAvailable = false;
         id appDelegate = RCTSharedApplication().delegate;
-        rootFactoryAvailable = [appDelegate respondsToSelector:@selector(rootViewFactory)];
+        rootFactoryAvailable = [appDelegate respondsToSelector:@selector(reactNativeFactory)];
         if (!rootFactoryAvailable) {
             return oldArchCall();
         }
 
-        RCTRootViewFactory *factory = ((RCTAppDelegate *)appDelegate).rootViewFactory;
-        MerchantViewRoot *wrapper = [[MerchantViewRoot alloc] init];
+        id factory = [appDelegate performSelector:NSSelectorFromString(@"reactNativeFactory")];
+        if (![factory respondsToSelector:NSSelectorFromString(@"rootViewFactory")]) {
+            return oldArchCall();
+        }
+        RCTRootViewFactory *rootViewFactory = [factory performSelector:NSSelectorFromString(@"rootViewFactory")];
+        UIView *rrv = [rootViewFactory viewWithModuleName:moduleName initialProperties:nil];
 
-        UIView *rrv = [factory viewWithModuleName:moduleName initialProperties:nil];
+        MerchantViewRoot *wrapper = [[MerchantViewRoot alloc] init];
         [wrapper addSubview:rrv];
         
         // Remove background colour. Default colour white is getting applied to the merchant view
