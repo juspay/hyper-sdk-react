@@ -17,12 +17,7 @@
 #import <React/RCTModalHostViewController.h>
 #import <React/RCTRootView.h>
 
-#if __has_include("RCTRootViewFactory.h")
-#import "RCTRootViewFactory.h"
-#define HAS_NEW_ARCH_SUPPORT 1
-#else
-#define HAS_NEW_ARCH_SUPPORT 0
-#endif
+#import "HyperMerchantView.h"
 
 __weak static HyperServices *_hyperServicesReference;
 
@@ -183,43 +178,29 @@ NSMutableSet<NSString *> *registeredComponents = [[NSMutableSet alloc] init];
         return rrv;
     };
 
+    UIView *rrv = [HyperMerchantView createReactNativeViewWithModuleName:moduleName];
 
-    #if HAS_NEW_ARCH_SUPPORT
-
-        bool rootFactoryAvailable = false;
-        id appDelegate = RCTSharedApplication().delegate;
-        rootFactoryAvailable = [appDelegate respondsToSelector:@selector(reactNativeFactory)];
-        if (!rootFactoryAvailable) {
-            return oldArchCall();
-        }
-
-        id factory = [appDelegate performSelector:NSSelectorFromString(@"reactNativeFactory")];
-        if (![factory respondsToSelector:NSSelectorFromString(@"rootViewFactory")]) {
-            return oldArchCall();
-        }
-        RCTRootViewFactory *rootViewFactory = [factory performSelector:NSSelectorFromString(@"rootViewFactory")];
-        UIView *rrv = [rootViewFactory viewWithModuleName:moduleName initialProperties:nil];
-
-        MerchantViewRoot *wrapper = [[MerchantViewRoot alloc] init];
-        [wrapper addSubview:rrv];
-        
-        // Remove background colour. Default colour white is getting applied to the merchant view
-        wrapper.backgroundColor = UIColor.clearColor ;
-        
-        // Remove height 0, width 0 constraints added by default.
-        wrapper.translatesAutoresizingMaskIntoConstraints = false;
-        
-        rrv.translatesAutoresizingMaskIntoConstraints = false;
-
-        [self.rootHolder setObject:wrapper forKey:moduleName];
-        addHeightConstraint(wrapper);
-
-
-        // This is sent to hypersdk. Hyper sdk adds the view to it's heirarchy and set's superview's top and bottom to match rrv's top and bottom
-        return wrapper;
-    #else
+    if (rrv == nil) {
         return oldArchCall();
-    #endif
+    }
+   MerchantViewRoot *wrapper = [[MerchantViewRoot alloc] init];
+   [wrapper addSubview:rrv];
+
+    
+    // Remove background colour. Default colour white is getting applied to the merchant view
+    wrapper.backgroundColor = UIColor.clearColor ;
+    
+    // Remove height 0, width 0 constraints added by default.
+    wrapper.translatesAutoresizingMaskIntoConstraints = false;
+    
+    rrv.translatesAutoresizingMaskIntoConstraints = false;
+
+    [self.rootHolder setObject:wrapper forKey:moduleName];
+    addHeightConstraint(wrapper);
+
+
+    // This is sent to hypersdk. Hyper sdk adds the view to it's heirarchy and set's superview's top and bottom to match rrv's top and bottom
+    return wrapper;
 }
 
 - (void) onWebViewReady:(WKWebView *)webView {
