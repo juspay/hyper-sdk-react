@@ -17,13 +17,7 @@
 #import <React/RCTModalHostViewController.h>
 #import <React/RCTRootView.h>
 
-#if __has_include("RCTAppDelegate.h") && __has_include("RCTRootViewFactory.h")
-#import "RCTAppDelegate.h"
-#import "RCTRootViewFactory.h"
-#define HAS_NEW_ARCH_SUPPORT 1
-#else
-#define HAS_NEW_ARCH_SUPPORT 0
-#endif
+#import "HyperMerchantView.h"
 
 __weak static HyperServices *_hyperServicesReference;
 
@@ -184,39 +178,29 @@ NSMutableSet<NSString *> *registeredComponents = [[NSMutableSet alloc] init];
         return rrv;
     };
 
+    UIView *rrv = [HyperMerchantView createReactNativeViewWithModuleName:moduleName];
 
-    #if HAS_NEW_ARCH_SUPPORT
-
-        bool rootFactoryAvailable = false;
-        id appDelegate = RCTSharedApplication().delegate;
-        rootFactoryAvailable = [appDelegate respondsToSelector:@selector(rootViewFactory)];
-        if (!rootFactoryAvailable) {
-            return oldArchCall();
-        }
-
-        RCTRootViewFactory *factory = ((RCTAppDelegate *)appDelegate).rootViewFactory;
-        MerchantViewRoot *wrapper = [[MerchantViewRoot alloc] init];
-
-        UIView *rrv = [factory viewWithModuleName:moduleName initialProperties:nil];
-        [wrapper addSubview:rrv];
-        
-        // Remove background colour. Default colour white is getting applied to the merchant view
-        wrapper.backgroundColor = UIColor.clearColor ;
-        
-        // Remove height 0, width 0 constraints added by default.
-        wrapper.translatesAutoresizingMaskIntoConstraints = false;
-        
-        rrv.translatesAutoresizingMaskIntoConstraints = false;
-
-        [self.rootHolder setObject:wrapper forKey:moduleName];
-        addHeightConstraint(wrapper);
-
-
-        // This is sent to hypersdk. Hyper sdk adds the view to it's heirarchy and set's superview's top and bottom to match rrv's top and bottom
-        return wrapper;
-    #else
+    if (rrv == nil) {
         return oldArchCall();
-    #endif
+    }
+   MerchantViewRoot *wrapper = [[MerchantViewRoot alloc] init];
+   [wrapper addSubview:rrv];
+
+    
+    // Remove background colour. Default colour white is getting applied to the merchant view
+    wrapper.backgroundColor = UIColor.clearColor ;
+    
+    // Remove height 0, width 0 constraints added by default.
+    wrapper.translatesAutoresizingMaskIntoConstraints = false;
+    
+    rrv.translatesAutoresizingMaskIntoConstraints = false;
+
+    [self.rootHolder setObject:wrapper forKey:moduleName];
+    addHeightConstraint(wrapper);
+
+
+    // This is sent to hypersdk. Hyper sdk adds the view to it's heirarchy and set's superview's top and bottom to match rrv's top and bottom
+    return wrapper;
 }
 
 - (void) onWebViewReady:(WKWebView *)webView {
@@ -439,7 +423,13 @@ RCT_EXPORT_METHOD(updateMerchantViewHeight: (NSString * _Nonnull) tag height: (N
 @end
 
 @implementation HyperFragmentViewManagerIOS
-RCT_EXPORT_MODULE()
+
+
+RCT_EXPORT_MODULE(HyperFragmentViewManagerIOS)
+
+NSString *_currentNamespace;
+NSString *_currentPayload;
+UIView *_currentView;
 
 - (dispatch_queue_t)methodQueue{
     return dispatch_get_main_queue();
@@ -454,7 +444,81 @@ RCT_EXPORT_MODULE()
     return [[UIView alloc] init];
 }
 
-RCT_EXPORT_METHOD(process:(nonnull NSNumber *)viewTag nameSpace:(NSString *)nameSpace payload:(NSString *)payload)
+
+RCT_CUSTOM_VIEW_PROPERTY(ns, NSString, UIView)
+{
+    [self setNs:json forView:view];
+}
+
+RCT_CUSTOM_VIEW_PROPERTY(payload, NSString, UIView)
+{
+    [self setPayload:json forView:view];
+}
+
+
+- (void) setHeight:(NSString*)ns forView:(UIView*)view {
+    
+}
+
+- (void) setWidth:(NSString*)ns forView:(UIView*)view {
+    
+}
+- (void)setNs:(NSString *)ns forView:(UIView *)view
+{
+    _currentNamespace = ns;
+    _currentView = view;
+    [self tryProcessProps];
+}
+
+
+- (void)setPayload:(NSString *)payload forView:(UIView *)view
+{
+    _currentPayload = payload;
+    _currentView = view;
+    [self tryProcessProps];
+}
+
+- (void)tryProcessProps
+{
+    if (_currentNamespace && _currentPayload && _currentView) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self processWithPropsForView:_currentView ns:_currentNamespace payload:_currentPayload];
+        });
+    }
+}
+
+- (void)processWithPropsForView:(UIView *)view ns:(NSString *)ns payload:(NSString *)payload
+{
+    HyperServices *hyperServicesInstance = _hyperServicesReference;
+    if (payload && payload.length > 0) {
+        @try {
+            NSDictionary *jsonData = [HyperSdkReact stringToDictionary:payload];
+            if (jsonData && [jsonData isKindOfClass:[NSDictionary class]] && jsonData.allKeys.count > 0) {
+                if (hyperServicesInstance.baseViewController == nil || hyperServicesInstance.baseViewController.view.window == nil) {
+                    id baseViewController = RCTPresentedViewController();
+                    if ([baseViewController isMemberOfClass:RCTModalHostViewController.class] && [baseViewController presentingViewController]) {
+                        [hyperServicesInstance setBaseViewController:[baseViewController presentingViewController]];
+                    } else {
+                        [hyperServicesInstance setBaseViewController:baseViewController];
+                    }
+                }
+                
+                [self manuallyLayoutChildren:view];
+                
+                NSMutableDictionary *nestedPayload = [jsonData[@"payload"] mutableCopy];
+                NSDictionary *fragmentViewGroup = @{ns: view};
+                nestedPayload[@"fragmentViewGroups"] = fragmentViewGroup;
+                NSMutableDictionary *updatedJsonData = [jsonData mutableCopy];
+                updatedJsonData[@"payload"] = nestedPayload;
+                [hyperServicesInstance process:[updatedJsonData copy]];
+            }
+        } @catch (NSException *exception) {
+            // Handle exception silently
+        }
+    }
+}
+
+RCT_EXPORT_METHOD(process:(nonnull NSNumber *)viewTag ns:(NSString *)ns payload:(NSString *)payload)
 {
     HyperServices *hyperServicesInstance = _hyperServicesReference;
     if (payload && payload.length>0) {
@@ -477,7 +541,7 @@ RCT_EXPORT_METHOD(process:(nonnull NSNumber *)viewTag nameSpace:(NSString *)name
                         return;
                     }
                     NSMutableDictionary *nestedPayload = [jsonData[@"payload"] mutableCopy];
-                    NSDictionary *fragmentViewGroup = @{nameSpace: view};
+                    NSDictionary *fragmentViewGroup = @{ns: view};
                     nestedPayload[@"fragmentViewGroups"] = fragmentViewGroup;
                     NSMutableDictionary *updatedJsonData = [jsonData mutableCopy];
                     updatedJsonData[@"payload"] = nestedPayload;
@@ -496,4 +560,3 @@ RCT_EXPORT_METHOD(process:(nonnull NSNumber *)viewTag nameSpace:(NSString *)name
 }
 
 @end
-

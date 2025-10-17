@@ -21,6 +21,7 @@ import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.ViewGroupManager;
+import com.facebook.react.uimanager.annotations.ReactProp;
 
 import org.json.JSONObject;
 
@@ -35,6 +36,13 @@ public class HyperFragmentViewManager extends ViewGroupManager<FrameLayout> {
     private static final int COMMAND_PROCESS = 175;
 
     private final ReactApplicationContext reactContext;
+    // Track props for each view
+    private String currentNamespace = null;
+    private String currentPayload = null;
+    private FrameLayout currentView = null;
+    
+    // Architecture detection
+    private final Boolean newArchEnabled = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED;
 
     public HyperFragmentViewManager(ReactApplicationContext reactContext) {
         this.reactContext = reactContext;
@@ -57,6 +65,67 @@ public class HyperFragmentViewManager extends ViewGroupManager<FrameLayout> {
     @Override
     public Map<String, Integer> getCommandsMap() {
         return MapBuilder.of("process", COMMAND_PROCESS);
+    }
+    // Fabric-compatible props
+    @ReactProp(name = "ns")
+    public void setNs(FrameLayout view, @Nullable String ns) {
+        currentNamespace = ns;
+        currentView = view;
+        tryProcessProps();
+    }
+
+    @ReactProp(name = "payload")
+    public void setPayload(FrameLayout view, @Nullable String payload) {
+        currentPayload = payload;
+        currentView = view;
+        tryProcessProps();
+    }
+
+    @Override
+    public void onDropViewInstance(@NonNull FrameLayout view) {
+        super.onDropViewInstance(view);
+        currentNamespace = null;
+        currentPayload = null;
+        currentView = null;
+    }
+    
+    private void tryProcessProps() {
+        if (currentNamespace != null && currentPayload != null && currentView != null && newArchEnabled) {
+            currentView.post(() -> {
+                processWithProps(currentView, currentNamespace, currentPayload);
+            });
+        }
+    }
+
+    private void processWithProps(FrameLayout view, String namespace, String payload) {
+        try {
+            setupLayout(view);
+
+            JSONObject fragments = new JSONObject();
+            fragments.put(namespace, view);
+
+            JSONObject payloadObj = new JSONObject(payload);
+            payloadObj.getJSONObject("payload").put("fragmentViewGroups", fragments);
+            
+            FragmentActivity activity = (FragmentActivity) reactContext.getCurrentActivity();
+            HyperServices hyperServices = HyperSdkReactModule.getHyperServices();
+            
+            if (activity == null || hyperServices == null) {
+                return;
+            }
+
+            hyperServices.process(activity, payloadObj);
+            
+        } catch (Exception e) {
+            SdkTracker.trackAndLogBootException(
+                    NAME,
+                    LogConstants.CATEGORY_LIFECYCLE,
+                    LogConstants.SUBCATEGORY_HYPER_SDK,
+                    LogConstants.SDK_TRACKER_LABEL,
+                    "Exception in processWithProps",
+                    e
+            );
+        }
     }
 
     @Override
@@ -122,7 +191,11 @@ public class HyperFragmentViewManager extends ViewGroupManager<FrameLayout> {
             @Override
             public void doFrame(long frameTimeNanos) {
                 try {
-                    manuallyLayoutChildren(view);
+                    if (newArchEnabled) {
+                        manuallyLayoutChildrenForNewArch(view);
+                    } else {
+                        manuallyLayoutChildren(view);
+                    }
                     view.getViewTreeObserver().dispatchOnGlobalLayout();
                     Choreographer.getInstance().postFrameCallback(this);
                 } catch (Exception e) {
@@ -151,5 +224,19 @@ public class HyperFragmentViewManager extends ViewGroupManager<FrameLayout> {
         );
 
         view.layout(0, 0, width, height);
+    }
+
+    private void manuallyLayoutChildrenForNewArch(@NonNull View view) {
+        // Get the final size AND position calculated by React Native's Yoga engine
+        int width = view.getWidth();
+        int height = view.getHeight();
+        int left = view.getLeft();
+        int top = view.getTop();
+
+        view.measure(
+                View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.EXACTLY)
+        );
+        view.layout(left, top, left + width, top + height);
     }
 }
