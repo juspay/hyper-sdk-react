@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.0.3](https://github.com/juspay/hyper-sdk-react/compare/v5.0.2...v5.0.3) (2025-10-23)
+
+
+### Bug Fixes
+
+* Added HyperSdkReactDelegate to get reactNativeFactory ([#131](https://github.com/juspay/hyper-sdk-react/issues/131)) ([2875970](https://github.com/juspay/hyper-sdk-react/commit/28759709c9f79013cbb3a40e4fa6ea8b88652aa2))
+
 ### [5.0.2](https://github.com/juspay/hyper-sdk-react/compare/v5.0.1...v5.0.2) (2025-10-17)
 
 
