@@ -6,6 +6,7 @@
 //
 // HyperMerchantView.mm
 #import "HyperMerchantView.h"
+#import "HyperSdkReact.h"
 #import <objc/runtime.h>
 #if __has_include("RCTRootViewFactory.h")
 #import "RCTRootViewFactory.h"
@@ -19,18 +20,25 @@
     
     #if HAS_NEW_ARCH_SUPPORT
         id appDelegate = RCTSharedApplication().delegate;
-        unsigned int ivarCount = 0;
-        Ivar *ivars = class_copyIvarList([appDelegate class], &ivarCount);
         id factory = nil;
-        for (unsigned int i = 0; i < ivarCount; i++) {
-            const char *ivarName = ivar_getName(ivars[i]);
-            // Swift mangles property names - look for reactNativeFactory or _reactNativeFactory
-            if (strcmp(ivarName, "_reactNativeFactory") == 0 || strcmp(ivarName, "reactNativeFactory") == 0) {
-                factory = object_getIvar(appDelegate, ivars[i]);
-                break;
-            }
+        if ([appDelegate conformsToProtocol:@protocol(HyperSdkReactDelegate)]) {
+            id<HyperSdkReactDelegate> reactDelegate = appDelegate;
+            factory = [reactDelegate getReactNativeFactory];
         }
-        free(ivars);
+
+        if (!factory) {
+            unsigned int ivarCount = 0;
+            Ivar *ivars = class_copyIvarList([appDelegate class], &ivarCount);
+            for (unsigned int i = 0; i < ivarCount; i++) {
+                const char *ivarName = ivar_getName(ivars[i]);
+                // Swift mangles property names - look for reactNativeFactory or _reactNativeFactory
+                if (strcmp(ivarName, "_reactNativeFactory") == 0 || strcmp(ivarName, "reactNativeFactory") == 0) {
+                    factory = object_getIvar(appDelegate, ivars[i]);
+                    break;
+                }
+            }
+            free(ivars);
+        }
         if (!factory) {
             return nil;
         }

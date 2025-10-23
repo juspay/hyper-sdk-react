@@ -349,6 +349,26 @@ If your view dynamically computes height. Height can be obtained by adding the f
 
 ```
 
+#### If your AppDelegate is in swift
+If your `AppDelegate` is in `swift` and you are using react native version greater than or equal to 0.78, then your AppDelegate.swift has to implement the protocol `HyperSdkReactDelegate` and return the `reactNativeFactory` property from the `getReactNativeFactory` function. This helps us to render your view(Merchant View) in our payment page.
+
+```swift
+  ...
+  import hyper_sdk_react
+
+  @main
+  class AppDelegate: UIResponder, UIApplicationDelegate, HyperSdkReactDelegate {
+    ...
+    var reactNativeFactory: RCTReactNativeFactory?
+    ...
+    
+    func getReactNativeFactory() -> Any! {
+      return reactNativeFactory
+    }
+  }
+
+```
+
 ## Payload Structure
 
 Please refer [here for Express Checkout SDK](https://developer.juspay.in/v2.0/docs/payload) and [here for Payment Page SDK](https://developer.juspay.in/v4.0/docs/payload), for all request and response payload structure.

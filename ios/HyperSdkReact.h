@@ -15,9 +15,14 @@
 
 @interface HyperSdkReact : RCTEventEmitter <RCTBridgeModule>
 
-#import <HyperSDK/HyperSDK.h>
 @property HyperServices *hyperInstance;
 @property id <HyperDelegate> delegate;
+
+@end
+
+@protocol HyperSdkReactDelegate <NSObject>
+
+- (id)getReactNativeFactory;
 
 @end
 
