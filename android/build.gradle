@@ -1,5 +1,6 @@
 import com.android.Version
 import in.juspay.payments.core.ClientConfig
+import groovy.json.JsonSlurper
 
 buildscript {
     repositories {
@@ -13,6 +14,53 @@ buildscript {
         classpath 'in.juspay:hypersdk.plugin:2.2.10'
     }
 }
+
+def getRNVersion() {
+    def rootPackageFile = new File(rootDir, "../package.json")
+    if (rootPackageFile.exists()) {
+        try {
+            def json = new JsonSlurper().parse(rootPackageFile)
+            def version = json.dependencies["react-native"] ?: json.devDependencies["react-native"]
+            if (version) {
+                return version
+            }
+        } catch (Exception e) {
+            // Ignore parsing errors and continue
+        }
+    }
+
+    def searchPaths = [
+        '../react-native/package.json',
+        '../../react-native/package.json',
+        '../../../react-native/package.json',
+        'node_modules/react-native/package.json',
+        '../node_modules/react-native/package.json',
+        '../../node_modules/react-native/package.json'
+    ]
+
+    for (path in searchPaths) {
+        def packageFile = new File(project.projectDir, path).getCanonicalFile()
+        if (packageFile.exists()) {
+            try {
+                def json = new JsonSlurper().parse(packageFile)
+                def version = json.version
+                if (version) {
+                    if (version == '*' || version.contains('*')) {
+                        return "0.80.0" // Default for wildcard versions
+                    }
+                    return version
+                }
+            } catch (Exception e) {
+                // Ignore parsing errors and continue
+            }
+        }
+    }
+    return "0.77.0"
+}
+
+
+def rnVersion = getRNVersion()
+println "Found react native version as ${rnVersion}"
 
 def isNewArchitectureEnabled() {
     return rootProject.hasProperty("newArchEnabled") && rootProject.getProperty("newArchEnabled") == "true"
@@ -49,6 +97,7 @@ android {
         minSdkVersion getExtOrIntegerDefault('minSdkVersion')
         targetSdkVersion getExtOrIntegerDefault('targetSdkVersion')
         buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
+        buildConfigField "String", "REACT_NATIVE_VERSION", "\"${rnVersion}\""
         consumerProguardFiles "consumer-rules.pro"
     }
     buildTypes {
