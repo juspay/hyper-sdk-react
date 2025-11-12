@@ -3,6 +3,7 @@ require "json"
 package = JSON.parse(File.read(File.join(__dir__, "package.json")))
 
 rn_minor_version = 0
+rn_major_version = 0
   [
   '../react-native/package.json',
   '../../react-native/package.json',
@@ -16,8 +17,11 @@ rn_minor_version = 0
         version = package1 ['version']
         if version == '*' || version.include?('*')
           rn_minor_version = 80
+          rn_major_version = 0
         else
-          rn_minor_version = version.split('.')[1].to_i
+          version_parts = version.split('.')
+          rn_major_version = version_parts[0].to_i
+          rn_minor_version = version_parts[1].to_i
         end
         break
       rescue => e
@@ -39,8 +43,11 @@ if rn_minor_version == 0
        version = package1 ['version']
        if version == '*' || version.include?('*')
          rn_minor_version = 80
+         rn_major_version = 0
        else
-         rn_minor_version = version.split('.')[1].to_i
+         version_parts = version.split('.')
+         rn_major_version = version_parts[0].to_i
+         rn_minor_version = version_parts[1].to_i
        end
        break
      rescue => e
@@ -52,8 +59,9 @@ end
 # Fallback if still not found
 if rn_minor_version == 0
   rn_minor_version = 77
+  rn_major_version = 0
 end
-puts ("Found react native minor version as #{rn_minor_version}").yellow
+puts ("Found react native minor version as #{rn_major_version}.#{rn_minor_version}").yellow
 
 folly_compiler_flags = '-DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 -Wno-comma -Wno-shorten-64-to-32'
 
@@ -79,7 +87,7 @@ puts ("HyperSDK Version: #{hyper_sdk_version}")
 source_files_array = ["ios/**/*.{h,m,mm,swift}"]
 exclude_files = []
 
-if rn_minor_version >= 78
+if rn_minor_version >= 78 || (rn_major_version > 0)
  source_files_array << "ios/latest/**/*.{h,m,mm,swift}"
  exclude_files << "ios/rn77/**/*"
 else

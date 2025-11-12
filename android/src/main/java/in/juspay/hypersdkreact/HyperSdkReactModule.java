@@ -22,6 +22,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 
 import com.facebook.react.ReactApplication;
+import com.facebook.react.ReactHost;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactRootView;
 import com.facebook.react.bridge.ActivityEventListener;
@@ -89,6 +90,8 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
     private boolean wasProcessWithActivity = false;
 
+    private boolean useNewApprochForMerchantView = false;
+
     private Set<String> registeredComponents = new HashSet<>();
 
     @NonNull
@@ -97,6 +100,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
     HyperSdkReactModule(ReactApplicationContext reactContext) {
         super(reactContext);
         this.context = reactContext;
+        useNewApprochForMerchantView = setUseNewApprochForMerchantView();
         reactContext.addActivityEventListener(this);
     }
 
@@ -318,20 +322,56 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                     }
 
                     private View createMerchantView(String viewName) {
-                        if (newArchEnabled) {
-                            return createReactSurfaceView(viewName);
-                        } else {
+
+                        if (!useNewApprochForMerchantView) {
+                            if (reactInstanceManager == null) {
+                                Application app = activity.getApplication();
+                                if (app instanceof ReactApplication) {
+                                    reactInstanceManager = ((ReactApplication) app).getReactNativeHost().getReactInstanceManager();
+                                }
+                            }
+                            if (newArchEnabled) {
+                                return createReactSurfaceView(viewName);
+                            }
+                            if (reactInstanceManager == null) {
+                                return null;
+                            }
                             ReactRootView reactRootView = new ReactRootView(activity);
                             reactRootView.startReactApplication(reactInstanceManager, viewName);
                             return reactRootView;
                         }
+                        try {
+                            ReactHost reactHost = ((ReactApplication) activity.getApplication()).getReactHost();
+                            if (reactHost != null) {
+                                Object surface = reactHost.createSurface(
+                                        activity,
+                                        viewName,
+                                        null
+                                );
+                                surface.getClass().getMethod("start").invoke(surface);
+
+                                return (View) surface.getClass().getMethod("getView").invoke(surface);
+                            }
+                            return null;
+                        } catch (Exception e) {
+                            SdkTracker.trackAndLogBootException(
+                                    NAME,
+                                    LogConstants.CATEGORY_LIFECYCLE,
+                                    LogConstants.SUBCATEGORY_HYPER_SDK,
+                                    LogConstants.SDK_TRACKER_LABEL,
+                                    "Exception in createMerchantView",
+                                    e
+                            );
+                            return null;
+                        }
                     }
+
 
                     @Nullable
                     @Override
                     public View getMerchantView(ViewGroup viewGroup, MerchantViewType merchantViewType) {
                         Activity activity = (Activity) getCurrentActivity();
-                        if (reactInstanceManager == null || activity == null) {
+                        if (activity == null) {
                             return super.getMerchantView(viewGroup, merchantViewType);
                         } else {
                             View merchantView = null;
@@ -370,6 +410,17 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
         }
     }
 
+    private Boolean setUseNewApprochForMerchantView() {
+        String version = BuildConfig.REACT_NATIVE_VERSION;
+        String[] parts = version.split("\\.");
+        if (parts.length > 1) {
+            int major = Integer.parseInt(parts[0]);
+            int minor = Integer.parseInt(parts[1]);
+            return major > 0 || (major == 0 && minor >= 82);
+        }
+        return false;
+    }
+
     private void createHyperService(@Nullable String tenantId, @Nullable String clientId) {
         FragmentActivity activity = (FragmentActivity) getCurrentActivity();
         if (activity == null) {
@@ -384,7 +435,6 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
         Application app = activity.getApplication();
         if (app instanceof ReactApplication) {
             this.app = ((ReactApplication) app);
-            reactInstanceManager = ((ReactApplication) app).getReactNativeHost().getReactInstanceManager();
         }
         if (tenantId != null && clientId != null) {
             hyperServices = new HyperServices(activity, tenantId, clientId);
