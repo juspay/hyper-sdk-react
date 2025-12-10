@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.0.5](https://github.com/juspay/hyper-sdk-react/compare/v5.0.4...v5.0.5) (2025-12-10)
+
+
+### Bug Fixes
+
+* PICAF-23321: Updating License to Apache 2.0 ([f2ee573](https://github.com/juspay/hyper-sdk-react/commit/f2ee573f8cd0f4d13ca521642e7dd63d61013ec3))
+
 ### [5.0.4](https://github.com/juspay/hyper-sdk-react/compare/v5.0.3...v5.0.4) (2025-11-14)
 
 
