@@ -10,6 +10,9 @@ jobs:
   merged-pr:
     if: github.event.pull_request.merged == true && !contains(github.event.pull_request.title, '[skip ci]')
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
 
       - name: Generate GitHub app token
@@ -95,7 +98,4 @@ jobs:
           body: "${{ steps.changelog.outputs.clean_changelog }}"
 
       - name: Publish package on NPM 📦
-        permissions:
-          id-token: write
-          contents: read
         run: npm publish
