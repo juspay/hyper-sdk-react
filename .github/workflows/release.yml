@@ -39,7 +39,7 @@ jobs:
         id: determine-release
         run: |
           shopt -s nocasematch
-          
+
           PR_TITLE='${{ github.event.pull_request.title }}'
 
           if [[ "$PR_TITLE" =~ (\[breaking\]|\[major\]) ]]; then
@@ -95,6 +95,7 @@ jobs:
           body: "${{ steps.changelog.outputs.clean_changelog }}"
 
       - name: Publish package on NPM 📦
+        permissions:
+          id-token: write
+          contents: read
         run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
