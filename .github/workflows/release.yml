@@ -25,7 +25,6 @@ jobs:
         with:
           node-version: "24.11.0"
           registry-url: "https://registry.npmjs.org"
-          always-auth: true
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
