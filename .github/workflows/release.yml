@@ -98,4 +98,4 @@ jobs:
           body: "${{ steps.changelog.outputs.clean_changelog }}"
 
       - name: Publish package on NPM 📦
-        run: npm publish
+        run: npm publish --access public --tag latest
