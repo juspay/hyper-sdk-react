@@ -1,14 +1,16 @@
 name: Releases
 on:
-  pull_request_target:
+  push:
     branches:
       - main
-    types:
-      - closed
 
 jobs:
   merged-pr:
-    if: github.event.pull_request.merged == true && !contains(github.event.pull_request.title, '[skip ci]')
+    if: |
+      github.ref == 'refs/heads/main' &&
+      !contains(github.actor, 'bot') &&
+      !contains(github.event.head_commit.message, '[skip ci]')
+
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -43,7 +45,7 @@ jobs:
         run: |
           shopt -s nocasematch
 
-          COMMITS="$(git log --format=%B -1 ${{ github.event.pull_request.merge_commit_sha }})"
+          COMMITS="$(git log --format=%B ${{ github.event.before }}..${{ github.sha }})"
 
           if [[ "$COMMITS" == *"[breaking]"* || "$COMMITS" == *"[major]"* ]]; then
             echo "release_type=major" >> "$GITHUB_OUTPUT"
