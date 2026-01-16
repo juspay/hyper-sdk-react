@@ -12,7 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
-      contents: read
+      contents: write
+
     steps:
 
       - name: Generate GitHub app token
@@ -25,9 +26,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
           token: ${{ steps.generate_app_token.outputs.token }}
-          fetch-depth: ${{ github.event.pull_request.commits }}
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -43,14 +43,14 @@ jobs:
         run: |
           shopt -s nocasematch
 
-          PR_TITLE='${{ github.event.pull_request.title }}'
+          COMMITS="$(git log --format=%B -1 ${{ github.event.pull_request.merge_commit_sha }})"
 
-          if [[ "$PR_TITLE" =~ (\[breaking\]|\[major\]) ]]; then
-            echo "release_type=major" >> $GITHUB_OUTPUT
-          elif [[ "$PR_TITLE" =~ \[minor\] ]]; then
-            echo "release_type=minor" >> $GITHUB_OUTPUT
+          if [[ "$COMMITS" == *"[breaking]"* || "$COMMITS" == *"[major]"* ]]; then
+            echo "release_type=major" >> "$GITHUB_OUTPUT"
+          elif [[ "$COMMITS" == *"[minor]"* ]]; then
+            echo "release_type=minor" >> "$GITHUB_OUTPUT"
           else
-            echo "release_type=patch" >> $GITHUB_OUTPUT
+            echo "release_type=patch" >> "$GITHUB_OUTPUT"
           fi
 
           shopt -u nocasematch
@@ -85,8 +85,6 @@ jobs:
 
       - name: Push tags and changelog
         run: git push --follow-tags origin main
-        env:
-          GH_TOKEN: ${{ steps.generate_app_token.outputs.token }}
 
       - name: create release
         uses: actions/create-release@v1
@@ -98,4 +96,4 @@ jobs:
           body: "${{ steps.changelog.outputs.clean_changelog }}"
 
       - name: Publish package on NPM 📦
-        run: npm publish --access public --tag latest
+        run: npm publish --access public
