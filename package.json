@@ -28,6 +28,7 @@
     "!**/__mocks__"
   ],
   "scripts": {
+    "preinstall":"echo install_started",
     "test": "jest",
     "typecheck": "tsc --noEmit",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
