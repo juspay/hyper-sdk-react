@@ -12,6 +12,7 @@ jobs:
       !contains(github.event.head_commit.message, '[skip ci]')
 
     runs-on: ubuntu-latest
+    environment: production
     permissions:
       id-token: write
       contents: write
