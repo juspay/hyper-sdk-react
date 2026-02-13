@@ -47,7 +47,21 @@ public class MainApplication extends Application implements ReactApplication {
 
                 @Override
                 protected boolean isNewArchEnabled() {
-                    return BuildConfig.IS_NEW_ARCHITECTURE_ENABLED;
+                    if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
+                        return true;
+                    }
+
+                    String version = BuildConfig.REACT_NATIVE_VERSION;
+                    String[] parts = version.split("\\.");
+
+                    if (parts.length < 2) {
+                        return false;
+                    }
+
+                    int major = Integer.parseInt(parts[0]);
+                    int minor = Integer.parseInt(parts[1]);
+
+                    return major > 0 || (major == 0 && minor >= 82);
                 }
 
                 @Override
