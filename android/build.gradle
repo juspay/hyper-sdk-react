@@ -63,7 +63,18 @@ def rnVersion = getRNVersion()
 println "Found react native version as ${rnVersion}"
 
 def isNewArchitectureEnabled() {
-    return rootProject.hasProperty("newArchEnabled") && rootProject.getProperty("newArchEnabled") == "true"
+    if (rootProject.hasProperty("newArchEnabled") && rootProject.getProperty("newArchEnabled") == "true") {
+        return true
+    }
+
+    def version = rnVersion.replaceAll(/[^0-9.]/, "")
+    def parts = version.tokenize('.')
+    if (parts.size() < 2) {
+        return false
+    }
+    def major = parts[0] as int
+    def minor = parts[1] as int
+    return (major > 0) || (major == 0 && minor >= 82)
 }
 
 apply plugin: 'com.android.library'
