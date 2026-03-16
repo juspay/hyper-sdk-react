@@ -22,7 +22,7 @@ def getRNVersion() {
             def json = new JsonSlurper().parse(rootPackageFile)
             def version = json.dependencies["react-native"] ?: json.devDependencies["react-native"]
             if (version) {
-                return version
+                return version.replaceAll(/[\^~]/, "")
             }
         } catch (Exception e) {
             // Ignore parsing errors and continue
@@ -48,7 +48,7 @@ def getRNVersion() {
                     if (version == '*' || version.contains('*')) {
                         return "0.80.0" // Default for wildcard versions
                     }
-                    return version
+                    return version.replaceAll(/[\^~]/, "")
                 }
             } catch (Exception e) {
                 // Ignore parsing errors and continue
