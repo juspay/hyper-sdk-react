@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.0.30](https://github.com/juspay/hyper-sdk-react/compare/v5.0.29...v5.0.30) (2026-03-25)
+
+
+### Bug Fixes
+
+* Adding version check for new arch ([a057120](https://github.com/juspay/hyper-sdk-react/commit/a057120808477fa158fba9a18f012795e162960c))
+* fixing release pipeline ([f8b3847](https://github.com/juspay/hyper-sdk-react/commit/f8b38472e8d10c495f66a9be35bf549704a10390))
+* removing ^ from the react native version ([046d032](https://github.com/juspay/hyper-sdk-react/commit/046d03263f9ed1f5a497c9a52a4fbb45b7ffa4fe))
+* security fix on build.yaml ([#162](https://github.com/juspay/hyper-sdk-react/issues/162)) ([c346bc7](https://github.com/juspay/hyper-sdk-react/commit/c346bc71918aba7f629c223df2d11b597995a0f6))
+
 ### [5.0.29](https://github.com/juspay/hyper-sdk-react/compare/v5.0.28...v5.0.29) (2026-01-16)
 
 ### [5.0.28](https://github.com/juspay/hyper-sdk-react/compare/v5.0.27...v5.0.28) (2026-01-16)
