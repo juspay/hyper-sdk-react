@@ -32,6 +32,22 @@ jobs:
           token: ${{ steps.generate_app_token.outputs.token }}
           fetch-depth: 0
 
+      - name: Install SSH key
+        env:
+          DEPLOY_KEY: ${{ secrets.HYPER_SDK_DEPLOY_KEY }}
+        run: |
+          # create .ssh
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+
+          # write private key
+          echo "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+
+          # ensure github host key is known (avoid StrictHostKeyChecking prompt)
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
