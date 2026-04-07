@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.0.31](https://github.com/juspay/hyper-sdk-react/compare/v5.0.30...v5.0.31) (2026-04-07)
+
+
+### Bug Fixes
+
+* adding microsdks in plugin ([8648b30](https://github.com/juspay/hyper-sdk-react/commit/8648b3050421c68a95c4e3862e966db15eb5f708))
+
 ### [5.0.30](https://github.com/juspay/hyper-sdk-react/compare/v5.0.29...v5.0.30) (2026-03-25)
 
 
