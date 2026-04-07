@@ -238,3 +238,7 @@ if (!rootProject.hasProperty("clientId") && rootProject.hasProperty("clientConfi
 if(rootProject.hasProperty('hyperAssetVersion')) {
     hyperSdkPlugin.assetVersion = rootProject.hyperAssetVersion
 }
+
+if(rootProject.hasProperty('microSDKs')) {
+    hyperSdkPlugin.microSDKs = rootProject.microSDKs
+}
