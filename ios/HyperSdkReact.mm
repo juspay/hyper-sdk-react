@@ -311,12 +311,12 @@ RCT_EXPORT_METHOD(process:(NSString *)data) {
         @try {
             NSDictionary *jsonData = [HyperSdkReact stringToDictionary:data];
             // Update baseViewController if it's nil or not in the view hierarchy.
-            if (self.hyperInstance.baseViewController == nil || self.hyperInstance.baseViewController.view.window == nil || [self.hyperInstance.baseViewController isMemberOfClass:RCTModalHostViewController.class]) {
+            if (self.hyperInstance.baseViewController == nil || self.hyperInstance.baseViewController.view.window == nil || [HyperSdkReact isRCTModalHostViewController:self.hyperInstance.baseViewController]) {
                 // Getting topViewController
                 id baseViewController = RCTPresentedViewController();
                 
                 // Set the presenting ViewController as baseViewController if the topViewController is RCTModalHostViewController.
-                if ([baseViewController isMemberOfClass:RCTModalHostViewController.class] && [baseViewController presentingViewController]) {
+                if ([HyperSdkReact isRCTModalHostViewController:baseViewController] && [baseViewController presentingViewController]) {
                     [self.hyperInstance setBaseViewController:[baseViewController presentingViewController]];
                 } else {
                     [self.hyperInstance setBaseViewController:baseViewController];
@@ -420,6 +420,11 @@ RCT_EXPORT_METHOD(updateMerchantViewHeight: (NSString * _Nonnull) tag height: (N
     return data;
 }
 
++ (BOOL)isRCTModalHostViewController:(UIViewController *)viewController {
+    Class rctModalClass = NSClassFromString(@"RCTModalHostViewController");
+    return rctModalClass && [viewController isMemberOfClass:rctModalClass];
+}
+
 @end
 
 @implementation HyperFragmentViewManagerIOS
@@ -496,7 +501,7 @@ RCT_CUSTOM_VIEW_PROPERTY(payload, NSString, UIView)
             if (jsonData && [jsonData isKindOfClass:[NSDictionary class]] && jsonData.allKeys.count > 0) {
                 if (hyperServicesInstance.baseViewController == nil || hyperServicesInstance.baseViewController.view.window == nil) {
                     id baseViewController = RCTPresentedViewController();
-                    if ([baseViewController isMemberOfClass:RCTModalHostViewController.class] && [baseViewController presentingViewController]) {
+                    if ([HyperSdkReact isRCTModalHostViewController:baseViewController] && [baseViewController presentingViewController]) {
                         [hyperServicesInstance setBaseViewController:[baseViewController presentingViewController]];
                     } else {
                         [hyperServicesInstance setBaseViewController:baseViewController];
@@ -528,7 +533,7 @@ RCT_EXPORT_METHOD(process:(nonnull NSNumber *)viewTag ns:(NSString *)ns payload:
                 [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, UIView *> *viewRegistry) {
                     if (hyperServicesInstance.baseViewController == nil || hyperServicesInstance.baseViewController.view.window == nil) {
                         id baseViewController = RCTPresentedViewController();
-                        if ([baseViewController isMemberOfClass:RCTModalHostViewController.class] && [baseViewController presentingViewController]) {
+                        if ([HyperSdkReact isRCTModalHostViewController:baseViewController] && [baseViewController presentingViewController]) {
                             [hyperServicesInstance setBaseViewController:[baseViewController presentingViewController]];
                         } else {
                             [hyperServicesInstance setBaseViewController:baseViewController];
