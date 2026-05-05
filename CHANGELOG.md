@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.0.32](https://github.com/juspay/hyper-sdk-react/compare/v5.0.31...v5.0.32) (2026-05-05)
+
+
+### Bug Fixes
+
+* PICAF-22334: License update in package ([600b5ff](https://github.com/juspay/hyper-sdk-react/commit/600b5ff7de0d18ab36139d3713b5b9664cd9acc0))
+
 ### [5.0.31](https://github.com/juspay/hyper-sdk-react/compare/v5.0.30...v5.0.31) (2026-04-07)
 
 
