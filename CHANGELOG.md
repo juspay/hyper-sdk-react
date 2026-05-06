@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.0.33](https://github.com/juspay/hyper-sdk-react/compare/v5.0.32...v5.0.33) (2026-05-06)
+
+
+### Bug Fixes
+
+* resolve build failure caused by removal of RCTModalHostViewController in RN 0.84 ([51af55c](https://github.com/juspay/hyper-sdk-react/commit/51af55ce55f5400fbe2604754c803238b53627be))
+
 ### [5.0.32](https://github.com/juspay/hyper-sdk-react/compare/v5.0.31...v5.0.32) (2026-05-05)
 
 
