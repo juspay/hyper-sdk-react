@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.0.34](https://github.com/juspay/hyper-sdk-react/compare/v5.0.33...v5.0.34) (2026-07-16)
+
+
+### Bug Fixes
+
+* removed release-it and performed npm audit ([d95e500](https://github.com/juspay/hyper-sdk-react/commit/d95e5000bfa8a528d667b48258c3377e307e09f7))
+
 ### [5.0.33](https://github.com/juspay/hyper-sdk-react/compare/v5.0.32...v5.0.33) (2026-05-06)
 
 
