@@ -329,9 +329,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
     @ReactMethod
     public void initiate(String data) {
-        synchronized (lock) {
-            initiate(HYPER_EVENT, hyperServices, data);
-        }
+        initiate(HYPER_EVENT, hyperServices, data);
     }
 
     @ReactMethod
@@ -579,9 +577,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
     @ReactMethod
     public void process(String data) {
-        synchronized (lock) {
-            process(hyperServices, data);
-        }
+        process(hyperServices, data);
     }
     @ReactMethod
     public void processWithKey(String data, String key) {
@@ -639,9 +635,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
     @ReactMethod
     public void processWithActivity(String data) {
-        synchronized (lock) {
-            processWithActivity(HYPER_EVENT, hyperServices, data);
-        }
+        processWithActivity(HYPER_EVENT, hyperServices, data);
     }
     @ReactMethod
     public void processWithActivityWithKey(String data, String key) {
