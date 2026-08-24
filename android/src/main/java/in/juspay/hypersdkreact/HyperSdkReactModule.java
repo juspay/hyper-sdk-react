@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -243,12 +244,14 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
     public void createHyperServicesWithKey(String key, String tenantId, String clientId) {
         synchronized (lock) {
             if (key == null || HYPER_EVENT.equals(key) || hyperServicesMap.containsKey(key)) {
+                String reason = key == null ? "key is null" : "key is reserved or already in use";
+                Log.w(NAME, "createHyperServicesWithKey skipped: " + reason);
                 SdkTracker.trackBootLifecycle(
                         LogConstants.SUBCATEGORY_HYPER_SDK,
                         LogConstants.LEVEL_WARN,
                         LogConstants.SDK_TRACKER_LABEL,
                         "createHyperServicesWithKey",
-                        key == null ? "key is null" : "key is reserved or already in use");
+                        reason);
                 return;
             }
             if (tenantId == null || tenantId.isEmpty() || clientId == null || clientId.isEmpty()) {
@@ -266,7 +269,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                     LogConstants.SUBCATEGORY_HYPER_SDK,
                     LogConstants.LEVEL_ERROR,
                     LogConstants.SDK_TRACKER_LABEL,
-                    "createHyperServicesWithKey",
+                    "createHyperServiceWithKey",
                     "activity is null");
             return;
         }
