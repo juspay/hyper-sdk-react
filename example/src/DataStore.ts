@@ -1,3 +1,5 @@
+import type { HyperServiceInstance } from 'hyper-sdk-react';
+
 let x: {
   merchant_id: String;
   customer_id: String;
@@ -30,4 +32,18 @@ export function setOrderDetails(value: {
 
 export function getOrderDetails() {
   return x;
+}
+
+let activeInstance: HyperServiceInstance | undefined;
+
+/**
+ * The instance driving the current payment flow, so components the SDK renders
+ * (merchant views) can route their calls to the right HyperServices object.
+ */
+export function setActiveInstance(instance: HyperServiceInstance | undefined) {
+  activeInstance = instance;
+}
+
+export function getActiveInstance(): HyperServiceInstance | undefined {
+  return activeInstance;
 }

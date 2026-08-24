@@ -156,19 +156,76 @@ public class HyperAPIUtils extends ReactContextBaseJavaModule {
     @ReactMethod
     public void generateSign(String keyString, @NonNull String payload, @NonNull Promise promise) {
         try {
+            if (keyString == null || keyString.trim().isEmpty()) {
+                promise.reject("generateSign",
+                        "sign-failed: privateKey is empty. Provide it via Set Params or merchant_config.json");
+                return;
+            }
+            byte[] keyBytes = Base64.decode(stripPemArmor(keyString), Base64.DEFAULT);
             KeyFactory kf = KeyFactory.getInstance("RSA");
-            PKCS8EncodedKeySpec keySpecPKCS8 = new PKCS8EncodedKeySpec(Base64.decode(keyString, Base64.DEFAULT));
-            PrivateKey privateKey = kf.generatePrivate(keySpecPKCS8);
+            PrivateKey privateKey;
+            try {
+                // Standard PKCS#8 ("BEGIN PRIVATE KEY")
+                privateKey = kf.generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
+            } catch (InvalidKeySpecException e) {
+                // PKCS#1 ("BEGIN RSA PRIVATE KEY") - wrap in a PKCS#8 envelope and retry
+                privateKey = kf.generatePrivate(new PKCS8EncodedKeySpec(wrapPkcs1InPkcs8(keyBytes)));
+            }
             Signature privateSignature = Signature.getInstance("SHA256withRSA");
             privateSignature.initSign(privateKey);
             privateSignature.update(payload.getBytes(StandardCharsets.UTF_8));
             byte[] signature = privateSignature.sign();
             promise.resolve(Base64.encodeToString(signature, Base64.DEFAULT));
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException |
-                 SignatureException e) {
-            e.printStackTrace();
-            promise.reject("generateSign", "sign-failed");
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "generateSign failed", e);
+            promise.reject("generateSign", "sign-failed: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Removes PEM header/footer lines and all whitespace so keys pasted straight
+     * from a .pem file decode cleanly.
+     */
+    @NonNull
+    private static String stripPemArmor(@NonNull String key) {
+        return key.replaceAll("-----[^-]+-----", "").replaceAll("\\s", "");
+    }
+
+    /**
+     * Wraps a PKCS#1 RSAPrivateKey DER blob in the PKCS#8 PrivateKeyInfo envelope so
+     * {@link PKCS8EncodedKeySpec} can parse it.
+     */
+    @NonNull
+    private static byte[] wrapPkcs1InPkcs8(@NonNull byte[] pkcs1) {
+        byte[] version = {0x02, 0x01, 0x00};
+        byte[] rsaAlgId = {
+                0x30, 0x0d, 0x06, 0x09, 0x2a, (byte) 0x86, 0x48, (byte) 0x86,
+                (byte) 0xf7, 0x0d, 0x01, 0x01, 0x01, 0x05, 0x00
+        };
+        byte[] octetString = derWrap((byte) 0x04, pkcs1);
+        byte[] inner = new byte[version.length + rsaAlgId.length + octetString.length];
+        System.arraycopy(version, 0, inner, 0, version.length);
+        System.arraycopy(rsaAlgId, 0, inner, version.length, rsaAlgId.length);
+        System.arraycopy(octetString, 0, inner, version.length + rsaAlgId.length, octetString.length);
+        return derWrap((byte) 0x30, inner);
+    }
+
+    @NonNull
+    private static byte[] derWrap(byte tag, @NonNull byte[] content) {
+        byte[] lengthBytes;
+        int len = content.length;
+        if (len < 0x80) {
+            lengthBytes = new byte[]{(byte) len};
+        } else if (len <= 0xff) {
+            lengthBytes = new byte[]{(byte) 0x81, (byte) len};
+        } else {
+            lengthBytes = new byte[]{(byte) 0x82, (byte) (len >> 8), (byte) (len & 0xff)};
+        }
+        byte[] out = new byte[1 + lengthBytes.length + len];
+        out[0] = tag;
+        System.arraycopy(lengthBytes, 0, out, 1, lengthBytes.length);
+        System.arraycopy(content, 0, out, 1 + lengthBytes.length, len);
+        return out;
     }
 
     @NonNull

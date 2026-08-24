@@ -218,6 +218,15 @@ NSString *JUSPAY_FOOTER = @"JuspayFooter";
 NSString *JUSPAY_HEADER_ATTACHED = @"JuspayHeaderAttached";
 NSString *JUSPAY_FOOTER_ATTACHED = @"JuspayFooterAttached";
 
+- (instancetype)init {
+  if (self = [super init]) {
+    _hyperServicesDict = [NSMutableDictionary new];
+    _hyperDelegatesDict = [NSMutableDictionary new];
+    _knownEventKeys = [NSMutableSet new];
+  }
+  return self;
+}
+
 - (dispatch_queue_t)methodQueue{
     return dispatch_get_main_queue();
 }
@@ -226,8 +235,34 @@ NSString *JUSPAY_FOOTER_ATTACHED = @"JuspayFooterAttached";
     return YES;
 }
 
+- (void)invalidate {
+    NSArray *keyedInstances;
+    @synchronized (self.hyperServicesDict) {
+        keyedInstances = self.hyperServicesDict.allValues;
+        [self.hyperServicesDict removeAllObjects];
+        [self.hyperDelegatesDict removeAllObjects];
+        [self.knownEventKeys removeAllObjects];
+    }
+    // Terminate on the main queue: the SDK drives UIKit. The legacy hyperInstance is left
+    // untouched, matching the Android module and the pre-existing single-instance behaviour.
+    dispatch_async(dispatch_get_main_queue(), ^{
+        for (HyperServices *hyperServices in keyedInstances) {
+            @try {
+                [hyperServices terminate];
+            } @catch (NSException *exception) {
+                // Ignored
+            }
+        }
+    });
+    [super invalidate];
+}
+
 - (NSArray<NSString *> *)supportedEvents {
-    return @[@"HyperEvent"];
+    NSMutableArray<NSString *> *events = [NSMutableArray arrayWithObject:@"HyperEvent"];
+    @synchronized (self.hyperServicesDict) {
+        [events addObjectsFromArray:self.knownEventKeys.allObjects];
+    }
+    return events;
 }
 
 - (NSDictionary *)constantsToExport
@@ -272,6 +307,26 @@ RCT_EXPORT_METHOD(createHyperServices) {
     }
 }
 
+RCT_EXPORT_METHOD(createHyperServicesWithKey:(NSString *)key tenantId:(NSString *)tenantId clientId:(NSString *)clientId) {
+    @synchronized (self.hyperServicesDict) {
+        // key.length is 0 for nil too, so this covers both nil and empty keys. An empty key
+        // would otherwise collide with the "no key means the module-wide instance" convention.
+        if (key == nil || key.length == 0 || [key isEqualToString:@"HyperEvent"] || self.hyperServicesDict[key] != nil) {
+            NSLog(@"[HyperSdkReact] createHyperServicesWithKey skipped: %@",
+                  key.length == 0 ? @"key is nil or empty" : @"key is reserved or already in use");
+            return;
+        }
+        HyperServices *hyperServices;
+        if (tenantId.length > 0 && clientId.length > 0) {
+            hyperServices = [[HyperServices new] initWithTenantId:tenantId clientId:clientId];
+        } else {
+            hyperServices = [HyperServices new];
+        }
+        [self.hyperServicesDict setObject:hyperServices forKey:key];
+        [self.knownEventKeys addObject:key];
+    }
+}
+
 RCT_EXPORT_METHOD(createHyperServicesWithTenantId:(NSString *)tenantId clientId:(NSString *)clientId) {
     if (self.hyperInstance == NULL) {
       self.hyperInstance = [[HyperServices new] initWithTenantId:tenantId clientId:clientId];
@@ -279,7 +334,11 @@ RCT_EXPORT_METHOD(createHyperServicesWithTenantId:(NSString *)tenantId clientId:
     }
 }
 
-RCT_EXPORT_METHOD(initiate:(NSString *)data) {
+/**
+ * Shared initiate body for the legacy and keyed paths, mirroring the Android module:
+ * eventName doubles as the instance key ("HyperEvent" for the module-wide instance).
+ */
+- (void)initiateInternal:(HyperServices *)hyperServices data:(NSString *)data eventName:(NSString *)eventName logTag:(NSString *)logTag {
     if (data && data.length>0) {
         @try {
             NSDictionary *jsonData = [HyperSdkReact stringToDictionary:data];
@@ -287,55 +346,91 @@ RCT_EXPORT_METHOD(initiate:(NSString *)data) {
 
                 UIViewController *baseViewController = RCTPresentedViewController();
                 __weak HyperSdkReact *weakSelf = self;
-                self.delegate = [[SdkDelegate alloc] initWithBridge:self.bridge];
-                [_hyperInstance setHyperDelegate: _delegate];
-                [_hyperInstance initiate:baseViewController payload:jsonData callback:^(NSDictionary<NSString *,id> * _Nullable data) {
-                    [weakSelf sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
+                SdkDelegate *delegate = [[SdkDelegate alloc] initWithBridge:self.bridge];
+                if ([eventName isEqualToString:@"HyperEvent"]) {
+                    self.delegate = delegate;
+                } else {
+                    @synchronized (self.hyperServicesDict) {
+                        [self.hyperDelegatesDict setObject:delegate forKey:eventName];
+                    }
+                }
+                [hyperServices setHyperDelegate: delegate];
+                [hyperServices initiate:baseViewController payload:jsonData callback:^(NSDictionary<NSString *,id> * _Nullable cbData) {
+                    [weakSelf sendEventWithName:eventName body:[[self class] dictionaryToString:cbData]];
                 }];
             } else {
-                // Define proper error code and return proper error
-                // [self sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
+                NSLog(@"[HyperSdkReact] %@ skipped: payload is empty or not valid JSON", logTag);
             }
         } @catch (NSException *exception) {
-            // Define proper error code and return proper error
-            // [self sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
+            NSLog(@"[HyperSdkReact] %@ failed: %@", logTag, exception.reason);
         }
     } else {
-        // Define proper error code and return proper error
-        // [self sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
+        NSLog(@"[HyperSdkReact] %@ skipped: data is empty", logTag);
     }
 }
 
-RCT_EXPORT_METHOD(process:(NSString *)data) {
+/**
+ * Shared process body for the legacy and keyed paths.
+ */
+- (void)processInternal:(HyperServices *)hyperServices data:(NSString *)data logTag:(NSString *)logTag {
     if (data && data.length>0) {
         @try {
             NSDictionary *jsonData = [HyperSdkReact stringToDictionary:data];
             // Update baseViewController if it's nil or not in the view hierarchy.
-            if (self.hyperInstance.baseViewController == nil || self.hyperInstance.baseViewController.view.window == nil || [HyperSdkReact isRCTModalHostViewController:self.hyperInstance.baseViewController]) {
+            if (hyperServices.baseViewController == nil || hyperServices.baseViewController.view.window == nil || [HyperSdkReact isRCTModalHostViewController:hyperServices.baseViewController]) {
                 // Getting topViewController
                 id baseViewController = RCTPresentedViewController();
-                
+
                 // Set the presenting ViewController as baseViewController if the topViewController is RCTModalHostViewController.
                 if ([HyperSdkReact isRCTModalHostViewController:baseViewController] && [baseViewController presentingViewController]) {
-                    [self.hyperInstance setBaseViewController:[baseViewController presentingViewController]];
+                    [hyperServices setBaseViewController:[baseViewController presentingViewController]];
                 } else {
-                    [self.hyperInstance setBaseViewController:baseViewController];
+                    [hyperServices setBaseViewController:baseViewController];
                 }
             }
             if (jsonData && [jsonData isKindOfClass:[NSDictionary class]] && jsonData.allKeys.count>0) {
-                [self.hyperInstance process:jsonData];
+                [hyperServices process:jsonData];
             } else {
-                // Define proper error code and return proper error
-                // [self sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
+                NSLog(@"[HyperSdkReact] %@ skipped: payload is empty or not valid JSON", logTag);
             }
         } @catch (NSException *exception) {
-            // Define proper error code and return proper error
-            // [self sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
+            NSLog(@"[HyperSdkReact] %@ failed: %@", logTag, exception.reason);
         }
     } else {
-        // Define proper error code and return proper error
-        // [self sendEventWithName:@"HyperEvent" body:[[self class] dictionaryToString:data]];
+        NSLog(@"[HyperSdkReact] %@ skipped: data is empty", logTag);
     }
+}
+
+RCT_EXPORT_METHOD(initiate:(NSString *)data) {
+    [self initiateInternal:self.hyperInstance data:data eventName:@"HyperEvent" logTag:@"initiate"];
+}
+
+RCT_EXPORT_METHOD(initiateWithKey:(NSString *)data key:(NSString *)key) {
+    HyperServices *hyperServices;
+    @synchronized (self.hyperServicesDict) {
+        hyperServices = key != nil ? self.hyperServicesDict[key] : nil;
+    }
+    if (hyperServices == nil) {
+        NSLog(@"[HyperSdkReact] initiateWithKey skipped: no instance for key");
+        return;
+    }
+    [self initiateInternal:hyperServices data:data eventName:key logTag:@"initiateWithKey"];
+}
+
+RCT_EXPORT_METHOD(process:(NSString *)data) {
+    [self processInternal:self.hyperInstance data:data logTag:@"process"];
+}
+
+RCT_EXPORT_METHOD(processWithKey:(NSString *)data key:(NSString *)key) {
+    HyperServices *hyperServices;
+    @synchronized (self.hyperServicesDict) {
+        hyperServices = key != nil ? self.hyperServicesDict[key] : nil;
+    }
+    if (hyperServices == nil) {
+        NSLog(@"[HyperSdkReact] processWithKey skipped: no instance for key");
+        return;
+    }
+    [self processInternal:hyperServices data:data logTag:@"processWithKey"];
 }
 
 RCT_EXPORT_METHOD(openPaymentPage:(NSString *)data) {
@@ -371,6 +466,38 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(isNull) {
     return self.hyperInstance == NULL? @true : @false;
 }
 
+RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(isNullWithKey:(NSString *)key) {
+    HyperServices *hyperServices;
+    @synchronized (self.hyperServicesDict) {
+        hyperServices = key != nil ? self.hyperServicesDict[key] : nil;
+    }
+    if (hyperServices == NULL) {
+        NSLog(@"[HyperSdkReact] isNullWithKey: no instance for key");
+    }
+    return hyperServices == NULL? @true : @false;
+}
+
+RCT_EXPORT_METHOD(terminateWithKey:(NSString *)key) {
+    if (key == nil) {
+        NSLog(@"[HyperSdkReact] terminateWithKey skipped: key is nil");
+        return;
+    }
+    HyperServices *hyperServices;
+    @synchronized (self.hyperServicesDict) {
+        hyperServices = self.hyperServicesDict[key];
+        [self.hyperServicesDict removeObjectForKey:key];
+        [self.hyperDelegatesDict removeObjectForKey:key];
+        // knownEventKeys is deliberately NOT cleared here: an SDK callback already in flight
+        // can still emit on this key after terminate, and RCTEventEmitter raises an assert
+        // (redbox in debug) for any event name missing from supportedEvents. Keeping the key
+        // registered turns that late emit into a harmless no-op. The set is cleared wholesale
+        // in -invalidate.
+    }
+    if (hyperServices) {
+        [hyperServices terminate];
+    }
+}
+
 RCT_EXPORT_METHOD(terminate) {
     if (_hyperInstance) {
         [_hyperInstance terminate];
@@ -385,6 +512,19 @@ RCT_EXPORT_METHOD(isInitialised:(RCTPromiseResolveBlock)resolve  reject:(RCTProm
     if (self.hyperInstance) {
         resolve(self.hyperInstance.isInitialised? @true : @false);
     } else {
+        resolve(@false);
+    }
+}
+
+RCT_EXPORT_METHOD(isInitialisedWithKey:(NSString *)key resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject) {
+    HyperServices *hyperServices;
+    @synchronized (self.hyperServicesDict) {
+        hyperServices = key != nil ? self.hyperServicesDict[key] : nil;
+    }
+    if (hyperServices) {
+        resolve(hyperServices.isInitialised? @true : @false);
+    } else {
+        NSLog(@"[HyperSdkReact] isInitialisedWithKey: no instance for key");
         resolve(@false);
     }
 }

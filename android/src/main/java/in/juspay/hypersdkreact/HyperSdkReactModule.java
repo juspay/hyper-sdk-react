@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -22,7 +23,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 
 import com.facebook.react.ReactApplication;
-import com.facebook.react.ReactHost;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactRootView;
 import com.facebook.react.bridge.ActivityEventListener;
@@ -39,6 +39,7 @@ import org.json.JSONObject;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -83,6 +84,8 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
     @Nullable
     private HyperServices hyperServices;
+
+    private static final Map<String, HyperServices> hyperServicesMap = new ConcurrentHashMap<>();
 
     private static WeakReference<HyperServices> hyperServicesReference = new WeakReference<>(null);
 
@@ -214,6 +217,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
     public void createHyperServices() {
         synchronized (lock) {
             if (hyperServices != null) {
+                Log.w(NAME, "createHyperServices: hyperServices instance already exists");
                 SdkTracker.trackBootLifecycle(
                         LogConstants.SUBCATEGORY_HYPER_SDK,
                         LogConstants.LEVEL_WARN,
@@ -227,9 +231,58 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
     }
 
     @ReactMethod
+    public void createHyperServicesWithKey(String key, String tenantId, String clientId) {
+        if (key == null || key.isEmpty() || HYPER_EVENT.equals(key) || hyperServicesMap.containsKey(key)) {
+            String reason = (key == null || key.isEmpty())
+                    ? "key is null or empty"
+                    : "key is reserved or already in use";
+            Log.w(NAME, "createHyperServicesWithKey skipped: " + reason);
+            SdkTracker.trackBootLifecycle(
+                    LogConstants.SUBCATEGORY_HYPER_SDK,
+                    LogConstants.LEVEL_WARN,
+                    LogConstants.SDK_TRACKER_LABEL,
+                    "createHyperServicesWithKey",
+                    reason);
+            return;
+        }
+        if (tenantId == null || tenantId.isEmpty() || clientId == null || clientId.isEmpty()) {
+            createHyperServiceWithKey(key, null, null);
+        } else {
+            createHyperServiceWithKey(key, tenantId, clientId);
+        }
+    }
+
+    private void createHyperServiceWithKey(String key, @Nullable String tenantId, @Nullable String clientId){
+        FragmentActivity activity = (FragmentActivity) getCurrentActivity();
+        if (activity == null) {
+            Log.w(NAME, "createHyperServiceWithKey: activity is null");
+            SdkTracker.trackBootLifecycle(
+                    LogConstants.SUBCATEGORY_HYPER_SDK,
+                    LogConstants.LEVEL_ERROR,
+                    LogConstants.SDK_TRACKER_LABEL,
+                    "createHyperServiceWithKey",
+                    "activity is null");
+            return;
+        }
+        Application application = activity.getApplication();
+        if (application instanceof ReactApplication) {
+            this.app = ((ReactApplication) application);
+        }
+        HyperServices hyperServices;
+        if (tenantId != null && clientId != null) {
+            hyperServices = new HyperServices(activity, tenantId, clientId);
+        } else {
+            hyperServices = new HyperServices(activity);
+        }
+
+        hyperServicesMap.put(key, hyperServices);
+    }
+
+    @ReactMethod
     public void createHyperServicesWithTenantId(String tenantId, String clientId) {
         synchronized (lock) {
             if (hyperServices != null) {
+                Log.w(NAME, "createHyperServicesWithTenantId: hyperServices instance already exists");
                 SdkTracker.trackBootLifecycle(
                         LogConstants.SUBCATEGORY_HYPER_SDK,
                         LogConstants.LEVEL_WARN,
@@ -244,6 +297,20 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
     @ReactMethod(isBlockingSynchronousMethod = true)
     public boolean onBackPressed() {
+        return onBackPressed(hyperServices);
+    }
+
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    public boolean onBackPressedWithKey(String key) {
+        if (key == null) {
+            Log.w(NAME, "onBackPressedWithKey skipped: key is null");
+            return false;
+        }
+
+        return onBackPressed(hyperServicesMap.get(key));
+    }
+
+    private boolean onBackPressed(HyperServices hyperServices) {
         synchronized (lock) {
             return hyperServices != null && hyperServices.onBackPressed();
         }
@@ -251,12 +318,26 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
     @ReactMethod
     public void initiate(String data) {
+        initiate(HYPER_EVENT, hyperServices, data);
+    }
+
+    @ReactMethod
+    public void initiateWithKey(String data, String key) {
+        if (key == null) {
+            Log.w(NAME, "initiateWithKey skipped: key is null");
+            return;
+        }
+        initiate(key, hyperServicesMap.get(key), data);
+    }
+
+    private void initiate(String key, HyperServices hyperServices, String data) {
         synchronized (lock) {
             try {
                 JSONObject payload = new JSONObject(data);
                 FragmentActivity activity = (FragmentActivity) getCurrentActivity();
 
                 if (activity == null) {
+                    Log.w(NAME, "initiate: activity is null");
                     SdkTracker.trackBootLifecycle(
                             LogConstants.SUBCATEGORY_HYPER_SDK,
                             LogConstants.LEVEL_ERROR,
@@ -267,6 +348,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                 }
 
                 if (hyperServices == null) {
+                    Log.w(NAME, "initiate: hyperServices is null");
                     SdkTracker.trackBootLifecycle(
                             LogConstants.SUBCATEGORY_HYPER_SDK,
                             LogConstants.LEVEL_ERROR,
@@ -290,7 +372,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                             wasProcessWithActivity = false;
                             processActivityRef = new WeakReference<>(null);
                         }
-                        sendEventToJS(data);
+                        sendEventToJS(key, data);
                     }
 
                     private Object getReactHostOrInstanceManager() {
@@ -341,13 +423,13 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                             return reactRootView;
                         }
                         try {
-                            ReactHost reactHost = ((ReactApplication) activity.getApplication()).getReactHost();
+                            // ReactHost is only present on RN >= 0.74, so resolve it reflectively to
+                            // keep this class compiling against older React Native versions.
+                            Object reactHost = getReactHostOrInstanceManager();
                             if (reactHost != null) {
-                                Object surface = reactHost.createSurface(
-                                        activity,
-                                        viewName,
-                                        null
-                                );
+                                Object surface = reactHost.getClass()
+                                        .getMethod("createSurface", Context.class, String.class, Bundle.class)
+                                        .invoke(reactHost, activity, viewName, null);
                                 surface.getClass().getMethod("start").invoke(surface);
 
                                 return (View) surface.getClass().getMethod("getView").invoke(surface);
@@ -424,6 +506,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
     private void createHyperService(@Nullable String tenantId, @Nullable String clientId) {
         FragmentActivity activity = (FragmentActivity) getCurrentActivity();
         if (activity == null) {
+            Log.w(NAME, "createHyperServices: activity is null");
             SdkTracker.trackBootLifecycle(
                     LogConstants.SUBCATEGORY_HYPER_SDK,
                     LogConstants.LEVEL_ERROR,
@@ -451,15 +534,15 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
         return registeredComponents.contains(tag);
     }
 
-    private void sendEventToJS(JSONObject data) {
+    private void sendEventToJS(String key, JSONObject data) {
         DeviceEventManagerModule.RCTDeviceEventEmitter jsModule = getJSModule();
         if (jsModule == null) {
             Handler handler = new Handler();
-            handler.postDelayed(() -> sendEventToJS(data), 200);
+            handler.postDelayed(() -> sendEventToJS(key, data), 200);
             return;
         }
 
-        jsModule.emit(HYPER_EVENT, data.toString());
+        jsModule.emit(key, data.toString());
     }
 
     private DeviceEventManagerModule.RCTDeviceEventEmitter getJSModule() {
@@ -469,12 +552,25 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
     @ReactMethod
     public void process(String data) {
+        process(hyperServices, data);
+    }
+    @ReactMethod
+    public void processWithKey(String data, String key) {
+        if (key == null) {
+            Log.w(NAME, "processWithKey skipped: key is null");
+            return;
+        }
+        process(hyperServicesMap.get(key), data);
+    }
+
+    private void process(HyperServices hyperService, String data) {
         synchronized (lock) {
             try {
                 JSONObject payload = new JSONObject(data);
                 FragmentActivity activity = (FragmentActivity) getCurrentActivity();
 
                 if (activity == null) {
+                    Log.w(NAME, "process: activity is null");
                     SdkTracker.trackBootLifecycle(
                             LogConstants.SUBCATEGORY_HYPER_SDK,
                             LogConstants.LEVEL_ERROR,
@@ -484,7 +580,8 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                     return;
                 }
 
-                if (hyperServices == null) {
+                if (hyperService == null) {
+                    Log.w(NAME, "process: hyperService is null");
                     SdkTracker.trackBootLifecycle(
                             LogConstants.SUBCATEGORY_HYPER_SDK,
                             LogConstants.LEVEL_ERROR,
@@ -493,10 +590,10 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                             "hyperServices is null");
                     return;
                 }
-                hyperServices.setActivityLaunchDelegate(new ReactLaunchDelegate(context));
-                hyperServices.setRequestPermissionDelegate(new ReactRequestDelegate(activity));
+                hyperService.setActivityLaunchDelegate(new ReactLaunchDelegate(context));
+                hyperService.setRequestPermissionDelegate(new ReactRequestDelegate(activity));
 
-                hyperServices.process(activity, payload);
+                hyperService.process(activity, payload);
             } catch (JSONException e) {
                 SdkTracker.trackAndLogBootException(
                         NAME,
@@ -513,12 +610,18 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
     @ReactMethod
     public void processWithActivity(String data) {
+        processWithActivity(hyperServices, data);
+    }
+
+
+    private void processWithActivity(HyperServices hyperService, String data) {
         synchronized (lock) {
             try {
                 JSONObject payload = new JSONObject(data);
                 FragmentActivity activity = (FragmentActivity) getCurrentActivity();
 
                 if (activity == null) {
+                    Log.w(NAME, "processWithActivity: activity is null");
                     SdkTracker.trackBootLifecycle(
                             LogConstants.SUBCATEGORY_HYPER_SDK,
                             LogConstants.LEVEL_ERROR,
@@ -534,7 +637,8 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                 ProcessActivity.setActivityCallback(new ActivityCallback() {
                     @Override
                     public void onCreated(@NonNull FragmentActivity fragmentActivity) {
-                        if (hyperServices == null) {
+                        if (hyperService == null) {
+                            Log.w(NAME, "processWithActivity: hyperService is null");
                             SdkTracker.trackBootLifecycle(
                                     LogConstants.SUBCATEGORY_HYPER_SDK,
                                     LogConstants.LEVEL_ERROR,
@@ -546,7 +650,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
                         wasProcessWithActivity = true;
                         processActivityRef = new WeakReference<>(fragmentActivity);
-                        hyperServices.process(fragmentActivity, payload);
+                        hyperService.process(fragmentActivity, payload);
                     }
 
                     @Override
@@ -556,8 +660,8 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
                     @Override
                     public void resetActivity(@NonNull FragmentActivity activity) {
-                        if (hyperServices != null) {
-                            hyperServices.resetActivity(activity);
+                        if (hyperService != null) {
+                            hyperService.resetActivity(activity);
                         }
                     }
                 });
@@ -584,6 +688,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                 FragmentActivity activity = (FragmentActivity) getCurrentActivity();
 
                 if (activity == null) {
+                    Log.w(NAME, "openPaymentPage: activity is null");
                     SdkTracker.trackBootLifecycle(
                             LogConstants.SUBCATEGORY_HYPER_SDK,
                             LogConstants.LEVEL_ERROR,
@@ -607,7 +712,7 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                                     processActivity.overridePendingTransition(0, android.R.anim.fade_out);
                                     ProcessActivity.setActivityCallback(null);
                                 }
-                                sendEventToJS(data);
+                                sendEventToJS(HYPER_EVENT, data);
                             }
                         });
                     }
@@ -643,23 +748,78 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
     }
 
     @ReactMethod
+    public void terminateWithKey(String key) {
+        if (key == null) {
+            Log.w(NAME, "terminateWithKey skipped: key is null");
+            return;
+        }
+        synchronized (lock) {
+            HyperServices hyperService = hyperServicesMap.remove(key);
+            if (hyperService != null) {
+                hyperService.terminate();
+            }
+        }
+    }
+
+    @ReactMethod
     public void notifyAboutRegisterComponent(String tag) {
         registeredComponents.add(tag);
     }
 
     @ReactMethod(isBlockingSynchronousMethod = true)
     public boolean isNull() {
+        return isNull(hyperServices);
+    }
+
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    public boolean isNullWithKey(String key) {
+        if (key == null) {
+            Log.w(NAME, "isNullWithKey: key is null");
+            return true;
+        }
+
+        return isNull(hyperServicesMap.get(key));
+    }
+
+    private boolean isNull(HyperServices hyperServices) {
         return hyperServices == null;
     }
 
     @ReactMethod
     public void isInitialised(Promise promise) {
+        isInitialised(hyperServices, promise);
+    }
+
+    @ReactMethod
+    public void isInitialisedWithKey(String key, Promise promise) {
+        if (key == null) {
+            Log.w(NAME, "isInitialisedWithKey: key is null");
+            promise.resolve(false);
+            return;
+        }
+
+        HyperServices hyperService = hyperServicesMap.get(key);
+        if (hyperService != null) {
+            isInitialised(hyperService, promise);
+        } else {
+            Log.w(NAME, "isInitialisedWithKey: hyperServices is null");
+            SdkTracker.trackBootLifecycle(
+                    LogConstants.SUBCATEGORY_HYPER_SDK,
+                    LogConstants.LEVEL_WARN,
+                    LogConstants.SDK_TRACKER_LABEL,
+                    "isInitialisedWithKey",
+                    "hyperServices is null");
+            promise.resolve(false);
+        }
+    }
+
+    private void isInitialised(HyperServices hyperService, Promise promise) {
         boolean isInitialized = false;
 
         synchronized (lock) {
-            if (hyperServices != null) {
+            if (hyperService != null) {
                 try {
-                    isInitialized = hyperServices.isInitialised();
+                    isInitialized = hyperService.isInitialised();
                 } catch (Exception e) {
                     SdkTracker.trackAndLogBootException(
                             NAME,
@@ -679,18 +839,47 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
     @Override
     public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
         synchronized (lock) {
-            if (hyperServices == null) {
+            boolean delivered = false;
+            if (hyperServices != null) {
+                hyperServices.onActivityResult(requestCode, resultCode, data);
+                delivered = true;
+            }
+            for (HyperServices hyperService : hyperServicesMap.values()) {
+                hyperService.onActivityResult(requestCode, resultCode, data);
+                delivered = true;
+            }
+            if (!delivered) {
+                Log.w(NAME, "onActivityResult: hyperServices is null");
                 SdkTracker.trackBootLifecycle(
                         LogConstants.SUBCATEGORY_HYPER_SDK,
                         LogConstants.LEVEL_ERROR,
                         LogConstants.SDK_TRACKER_LABEL,
                         "onActivityResult",
                         "hyperServices is null");
-                return;
             }
-
-            hyperServices.onActivityResult(requestCode, resultCode, data);
         }
+    }
+
+    @Override
+    public void invalidate() {
+        synchronized (lock) {
+            for (HyperServices hyperService : hyperServicesMap.values()) {
+                try {
+                    hyperService.terminate();
+                } catch (Exception e) {
+                    SdkTracker.trackAndLogBootException(
+                            NAME,
+                            LogConstants.CATEGORY_LIFECYCLE,
+                            LogConstants.SUBCATEGORY_HYPER_SDK,
+                            LogConstants.SDK_TRACKER_LABEL,
+                            "Exception while terminating hyperServices in invalidate",
+                            e
+                    );
+                }
+            }
+            hyperServicesMap.clear();
+        }
+        super.invalidate();
     }
 
     @Override
@@ -713,7 +902,8 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
         void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
             HyperServices hyperServices = hyperServicesHolder.get();
 
-            if (hyperServices == null) {
+            if (hyperServices == null && hyperServicesMap.isEmpty()) {
+                Log.w(NAME, "onRequestPermissionsResult: hyperServices is null");
                 SdkTracker.trackBootLifecycle(
                         LogConstants.SUBCATEGORY_HYPER_SDK,
                         LogConstants.LEVEL_ERROR,
@@ -730,7 +920,14 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                     "onRequestPermissionsResult",
                     "onRequestPermissionsResult() called with: requestCode = [" + requestCode + "], permissions = [" + Arrays.toString(permissions) + "], grantResults = [" + Arrays.toString(grantResults) + "]");
 
-            hyperServices.onRequestPermissionsResult(requestCode, permissions, grantResults);
+            if (hyperServices != null) {
+                hyperServices.onRequestPermissionsResult(requestCode, permissions, grantResults);
+            }
+            // The SDK routes results internally by requestCode, so every keyed instance can safely
+            // be offered the result.
+            for (HyperServices hyperService : hyperServicesMap.values()) {
+                hyperService.onRequestPermissionsResult(requestCode, permissions, grantResults);
+            }
         }
     }
 
@@ -745,7 +942,8 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
         void onActivityResult(int requestCode, int resultCode, Intent data) {
             HyperServices hyperServices = hyperServicesHolder.get();
 
-            if (hyperServices == null) {
+            if (hyperServices == null && hyperServicesMap.isEmpty()) {
+                Log.w(NAME, "onActivityResult: hyperServices is null");
                 SdkTracker.trackBootLifecycle(
                         LogConstants.SUBCATEGORY_HYPER_SDK,
                         LogConstants.LEVEL_ERROR,
@@ -762,7 +960,14 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                     "onActivityResult",
                     "onActivityResult() called with: requestCode = [" + requestCode + "], resultCode = [" + resultCode + "], data = [" + data + "]"
             );
-            hyperServices.onActivityResult(requestCode, resultCode, data);
+            if (hyperServices != null) {
+                hyperServices.onActivityResult(requestCode, resultCode, data);
+            }
+            // The SDK routes results internally by requestCode, so every keyed instance can safely
+            // be offered the result.
+            for (HyperServices hyperService : hyperServicesMap.values()) {
+                hyperService.onActivityResult(requestCode, resultCode, data);
+            }
         }
     }
 }
