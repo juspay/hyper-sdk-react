@@ -17,6 +17,9 @@
 
 @property HyperServices *hyperInstance;
 @property id <HyperDelegate> delegate;
+@property (nonatomic, strong) NSMutableDictionary *hyperServicesDict;
+@property (nonatomic, strong) NSMutableDictionary *hyperDelegatesDict;
+@property (nonatomic, strong) NSMutableSet<NSString *> *knownEventKeys;
 
 @end
 
