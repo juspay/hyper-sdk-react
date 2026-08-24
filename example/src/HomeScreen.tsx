@@ -15,6 +15,8 @@ import {
   TouchableOpacity,
   NativeEventEmitter,
   NativeModules,
+  type EmitterSubscription,
+  type NativeEventSubscription,
   Animated,
   Dimensions,
   BackHandler,
@@ -22,14 +24,12 @@ import {
   Alert,
 } from 'react-native';
 import HyperAPIUtils from './API';
-import HyperSdkReact from 'hyper-sdk-react';
-import { HyperServiceInstance } from 'hyper-sdk-react';
+import HyperSdkReact, { HyperServiceInstance } from 'hyper-sdk-react';
 import HyperUtils from './Utils';
 import merchantConfig from './merchant_config.json';
 import customerConfig from './customer_config.json';
 import { Picker } from '@react-native-picker/picker';
 import { useNavigation } from '@react-navigation/native';
-// import HyperServiceInstance from 'src/HyperServiceManager';
 
 class HomeScreen extends React.Component {
   state = {
@@ -40,6 +40,8 @@ class HomeScreen extends React.Component {
   };
 
   navigation: any;
+  instanceListeners = new Map<string, EmitterSubscription>();
+  backHandler: NativeEventSubscription | undefined;
   preFetchPayload: {};
   signaturePayload: {};
   initiatePayload: {};
@@ -92,7 +94,7 @@ class HomeScreen extends React.Component {
       }
     );
 
-    BackHandler.addEventListener('hardwareBackPress', () => {
+    this.backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
       if (this.isPopupVisible) {
         this.handleClose();
         return true;
@@ -103,7 +105,9 @@ class HomeScreen extends React.Component {
 
   componentWillUnmount() {
     this.eventListener.remove();
-    BackHandler.removeEventListener('hardwareBackPress', () => null);
+    this.instanceListeners.forEach((listener) => listener.remove());
+    this.instanceListeners.clear();
+    this.backHandler?.remove();
   }
 
   handleOpen = () => {
@@ -210,59 +214,27 @@ class HomeScreen extends React.Component {
             <CustomButton
               title="Create HyperService Object (Multiple)"
               onPress={() => {
-                if (this.tenantId !== '') {
-                  let hyperserviceInstance = new HyperServiceInstance(
-                    this.tenantId,
-                    this.clientId
-                  );
-                  let hypInsMap = this.state.hyperInstances;
-                  hypInsMap.set(
-                    hyperserviceInstance.getHyperEventString(),
-                    hyperserviceInstance
-                  );
-                  this.setState({
-                    hyperInstances: hypInsMap,
-                  });
-                  const eventEmitter = new NativeEventEmitter(
-                    NativeModules.HyperSdkReact
-                  );
-                  eventEmitter.addListener(
-                    hyperserviceInstance.getHyperEventString(),
-                    (resp) => {
-                      HyperUtils.alertCallbackResponse(
-                        'Custom HomeScreen',
-                        resp
-                      );
-                    }
-                  );
-                  // Alert.alert("hyperInstances", JSON.stringify(Object.fromEntries(hypInsMap)))
-                } else {
-                  let hyperserviceInstance = new HyperServiceInstance(
-                    undefined,
-                    undefined
-                  );
-                  let hypInsMap = this.state.hyperInstances;
-                  hypInsMap.set(
-                    hyperserviceInstance.getHyperEventString(),
-                    hyperserviceInstance
-                  );
-                  this.setState({
-                    hyperInstances: hypInsMap,
-                  });
-                  const eventEmitter = new NativeEventEmitter(
-                    NativeModules.HyperSdkReact
-                  );
-                  eventEmitter.addListener(
-                    hyperserviceInstance.getHyperEventString(),
-                    (resp) => {
-                      HyperUtils.alertCallbackResponse(
-                        'Custom HomeScreen',
-                        resp
-                      );
-                    }
-                  );
-                  //Alert.alert("hyperInstances", JSON.stringify(Object.fromEntries(hypInsMap)))
-                }
+                const hyperserviceInstance =
+                  this.tenantId !== ''
+                    ? new HyperServiceInstance(this.tenantId, this.clientId)
+                    : new HyperServiceInstance();
+                const instanceKey = hyperserviceInstance.getHyperEventString();
+                const hypInsMap = this.state.hyperInstances;
+                hypInsMap.set(instanceKey, hyperserviceInstance);
+                this.setState({
+                  hyperInstances: hypInsMap,
+                  currentlySelectedInstance:
+                    this.state.currentlySelectedInstance || instanceKey,
+                });
+                const eventEmitter = new NativeEventEmitter(
+                  NativeModules.HyperSdkReact
+                );
+                this.instanceListeners.set(
+                  instanceKey,
+                  eventEmitter.addListener(instanceKey, (resp) => {
+                    HyperUtils.alertCallbackResponse('Custom HomeScreen', resp);
+                  })
+                );
               }}
             />
 
@@ -320,6 +292,10 @@ class HomeScreen extends React.Component {
                       })
                       .catch((err) => {
                         console.warn(err);
+                        HyperUtils.showCopyAlert(
+                          'Sign failed',
+                          err?.message ?? String(err)
+                        );
                       });
                   }}
                 />
@@ -442,10 +418,19 @@ class HomeScreen extends React.Component {
               <CustomButton
                 title="Terminate instance"
                 onPress={() => {
-                  let hypInstance = this.state.hyperInstances.get(
-                    this.state.currentlySelectedInstance
-                  )!;
+                  const instanceKey = this.state.currentlySelectedInstance;
+                  const hypInstance =
+                    this.state.hyperInstances.get(instanceKey)!;
                   hypInstance.terminate();
+                  this.instanceListeners.get(instanceKey)?.remove();
+                  this.instanceListeners.delete(instanceKey);
+                  const hypInsMap = this.state.hyperInstances;
+                  hypInsMap.delete(instanceKey);
+                  this.setState({
+                    hyperInstances: hypInsMap,
+                    currentlySelectedInstance:
+                      hypInsMap.keys().next().value ?? '',
+                  });
                 }}
               />
             )}
