@@ -132,15 +132,26 @@ NSMutableSet<NSString *> *registeredComponents = [[NSMutableSet alloc] init];
 - (UIView * _Nullable)merchantViewForViewType:(NSString * _Nonnull)viewType {
 
     // Create a SDKRootView so that we can attach width constraints once it is attached to it's parent
+    NSString *standardName = nil;
+    if ([viewType isEqual:@"HEADER"]) {
+        standardName = @"JuspayHeader";
+    } else if ([viewType isEqual:@"HEADER_ATTACHED"]) {
+        standardName = @"JuspayHeaderAttached";
+    } else if ([viewType isEqual:@"FOOTER"]) {
+        standardName = @"JuspayFooter";
+    } else if ([viewType isEqual:@"FOOTER_ATTACHED"]) {
+        standardName = @"JuspayFooterAttached";
+    }
+
     NSString *moduleName = @"JP_003";
-    if ([viewType isEqual:@"HEADER"] && [registeredComponents containsObject:@"JuspayHeader"]) {
-        moduleName = @"JuspayHeader";
-    } else if ([viewType isEqual:@"HEADER_ATTACHED"] && [registeredComponents containsObject:@"JuspayHeaderAttached"]) {
-        moduleName = @"JuspayHeaderAttached";
-    } else if ([viewType isEqual:@"FOOTER"] && [registeredComponents containsObject:@"JuspayFooter"]) {
-        moduleName = @"JuspayFooter";
-    } else if ([viewType isEqual:@"FOOTER_ATTACHED"] && [registeredComponents containsObject:@"JuspayFooterAttached"]) {
-        moduleName = @"JuspayFooterAttached";
+    if (standardName != nil) {
+        // A component registered for this specific instance wins over the process-wide registration.
+        NSString *instanceComponent = self.componentMapping[standardName];
+        if (instanceComponent != nil) {
+            moduleName = instanceComponent;
+        } else if ([registeredComponents containsObject:standardName]) {
+            moduleName = standardName;
+        }
     }
 
     void (^addHeightConstraint)(UIView *);
@@ -221,7 +232,9 @@ NSString *JUSPAY_FOOTER_ATTACHED = @"JuspayFooterAttached";
 - (instancetype)init {
   if (self = [super init]) {
     _hyperServicesDict = [NSMutableDictionary new];
-    _keyCounter = 0;
+    _hyperDelegatesDict = [NSMutableDictionary new];
+    _keyedComponentsDict = [NSMutableDictionary new];
+    _knownEventKeys = [NSMutableSet new];
   }
   return self;
 }
@@ -234,8 +247,34 @@ NSString *JUSPAY_FOOTER_ATTACHED = @"JuspayFooterAttached";
     return YES;
 }
 
+- (void)invalidate {
+    NSArray *keyedInstances;
+    @synchronized (self.hyperServicesDict) {
+        keyedInstances = self.hyperServicesDict.allValues;
+        [self.hyperServicesDict removeAllObjects];
+        [self.hyperDelegatesDict removeAllObjects];
+        [self.keyedComponentsDict removeAllObjects];
+    }
+    // Terminate on the main queue: the SDK drives UIKit. The legacy hyperInstance is left
+    // untouched, matching the Android module and the pre-existing single-instance behaviour.
+    dispatch_async(dispatch_get_main_queue(), ^{
+        for (HyperServices *hyperServices in keyedInstances) {
+            @try {
+                [hyperServices terminate];
+            } @catch (NSException *exception) {
+                // Ignored
+            }
+        }
+    });
+    [super invalidate];
+}
+
 - (NSArray<NSString *> *)supportedEvents {
-    return @[@"HyperEvent"];
+    NSMutableArray<NSString *> *events = [NSMutableArray arrayWithObject:@"HyperEvent"];
+    @synchronized (self.hyperServicesDict) {
+        [events addObjectsFromArray:self.knownEventKeys.allObjects];
+    }
+    return events;
 }
 
 - (NSDictionary *)constantsToExport
@@ -280,9 +319,23 @@ RCT_EXPORT_METHOD(createHyperServices) {
     }
 }
 
-RCT_EXPORT_METHOD(createHyperServicesWithKey:(NSString *) key) {
-    HyperServices *hyperServices = [HyperServices new];
-    [self.hyperServicesDict setObject:hyperServices forKey:key];
+RCT_EXPORT_METHOD(createHyperServicesWithKey:(NSString *)key tenantId:(NSString *)tenantId clientId:(NSString *)clientId) {
+    @synchronized (self.hyperServicesDict) {
+        if (key == nil || [key isEqualToString:@"HyperEvent"] || self.hyperServicesDict[key] != nil) {
+            return;
+        }
+        HyperServices *hyperServices;
+        if (tenantId.length > 0 && clientId.length > 0) {
+            hyperServices = [[HyperServices new] initWithTenantId:tenantId clientId:clientId];
+        } else {
+            hyperServices = [HyperServices new];
+        }
+        [self.hyperServicesDict setObject:hyperServices forKey:key];
+        [self.knownEventKeys addObject:key];
+        if (self.keyedComponentsDict[key] == nil) {
+            [self.keyedComponentsDict setObject:[NSMutableDictionary new] forKey:key];
+        }
+    }
 }
 
 RCT_EXPORT_METHOD(createHyperServicesWithTenantId:(NSString *)tenantId clientId:(NSString *)clientId) {
@@ -290,11 +343,6 @@ RCT_EXPORT_METHOD(createHyperServicesWithTenantId:(NSString *)tenantId clientId:
       self.hyperInstance = [[HyperServices new] initWithTenantId:tenantId clientId:clientId];
         _hyperServicesReference = self.hyperInstance;
     }
-}
-
-RCT_EXPORT_METHOD(createHyperServicesWithTenantIdWithKey:(NSString *)tenantId clientId:(NSString *)clientId key:(NSString *)key) {
-    HyperServices *hyperServices = [HyperServices new] initWithTenantId:tenantId clientId:clientId];
-    [self.hyperServicesDict setObject:hyperServices forKey:key];
 }
 
 RCT_EXPORT_METHOD(initiate:(NSString *)data) {
@@ -327,14 +375,24 @@ RCT_EXPORT_METHOD(initiate:(NSString *)data) {
 RCT_EXPORT_METHOD(initiateWithKey:(NSString *)data key:(NSString *)key) {
     if (data && data.length>0) {
         @try {
-            HyperServices *hyperServices = self.hyperServicesDict[key];
+            HyperServices *hyperServices;
+            @synchronized (self.hyperServicesDict) {
+                hyperServices = key != nil ? self.hyperServicesDict[key] : nil;
+            }
+            if (hyperServices == nil) {
+                return;
+            }
             NSDictionary *jsonData = [HyperSdkReact stringToDictionary:data];
             if (jsonData && [jsonData isKindOfClass:[NSDictionary class]] && jsonData.allKeys.count>0) {
 
                 UIViewController *baseViewController = RCTPresentedViewController();
                 __weak HyperSdkReact *weakSelf = self;
-                self.delegate = [[SdkDelegate alloc] initWithBridge:self.bridge];
-                [hyperServices setHyperDelegate: _delegate];
+                SdkDelegate *delegate = [[SdkDelegate alloc] initWithBridge:self.bridge];
+                @synchronized (self.hyperServicesDict) {
+                    delegate.componentMapping = self.keyedComponentsDict[key];
+                    [self.hyperDelegatesDict setObject:delegate forKey:key];
+                }
+                [hyperServices setHyperDelegate: delegate];
                 [hyperServices initiate:baseViewController payload:jsonData callback:^(NSDictionary<NSString *,id> * _Nullable data) {
                     [weakSelf sendEventWithName:key body:[[self class] dictionaryToString:data]];
                 }];
@@ -387,15 +445,21 @@ RCT_EXPORT_METHOD(process:(NSString *)data) {
 RCT_EXPORT_METHOD(processWithKey:(NSString *)data key:(NSString *)key) {
     if (data && data.length>0) {
         @try {
-            HyperServices *hyperServices = self.hyperServicesDict[key];
+            HyperServices *hyperServices;
+            @synchronized (self.hyperServicesDict) {
+                hyperServices = key != nil ? self.hyperServicesDict[key] : nil;
+            }
+            if (hyperServices == nil) {
+                return;
+            }
             NSDictionary *jsonData = [HyperSdkReact stringToDictionary:data];
             // Update baseViewController if it's nil or not in the view hierarchy.
-            if (hyperServices.baseViewController == nil || hyperServices.baseViewController.view.window == nil) {
+            if (hyperServices.baseViewController == nil || hyperServices.baseViewController.view.window == nil || [HyperSdkReact isRCTModalHostViewController:hyperServices.baseViewController]) {
                 // Getting topViewController
                 id baseViewController = RCTPresentedViewController();
-                
+
                 // Set the presenting ViewController as baseViewController if the topViewController is RCTModalHostViewController.
-                if ([baseViewController isMemberOfClass:RCTModalHostViewController.class] && [baseViewController presentingViewController]) {
+                if ([HyperSdkReact isRCTModalHostViewController:baseViewController] && [baseViewController presentingViewController]) {
                     [hyperServices setBaseViewController:[baseViewController presentingViewController]];
                 } else {
                     [hyperServices setBaseViewController:baseViewController];
@@ -449,16 +513,23 @@ RCT_EXPORT_METHOD(openPaymentPage:(NSString *)data) {
 RCT_EXPORT_METHOD(openPaymentPageWithKey:(NSString *)data key:(NSString *)key) {
     if (data && data.length>0) {
         @try {
-            HyperServices *hyperServices = self.hyperServicesDict[key];
+            HyperServices *hyperServices;
+            @synchronized (self.hyperServicesDict) {
+                hyperServices = key != nil ? self.hyperServicesDict[key] : nil;
+            }
             NSDictionary *sdkPayload = [HyperSdkReact stringToDictionary:data];
             // Update baseViewController if it's nil or not in the view hierarchy.
             if (sdkPayload && [sdkPayload isKindOfClass:[NSDictionary class]] && sdkPayload.allKeys.count>0) {
 
                 id baseViewController = RCTPresentedViewController();
-                              
+
                 __weak HyperSdkReact *weakSelf = self;
-                self.delegate = [[SdkDelegate alloc] initWithBridge:self.bridge];
-                [hyperServices setHyperDelegate: _delegate];
+                SdkDelegate *delegate = [[SdkDelegate alloc] initWithBridge:self.bridge];
+                @synchronized (self.hyperServicesDict) {
+                    delegate.componentMapping = self.keyedComponentsDict[key];
+                    [self.hyperDelegatesDict setObject:delegate forKey:key];
+                }
+                [hyperServices setHyperDelegate: delegate];
                 [HyperCheckoutLite openPaymentPage:baseViewController payload:sdkPayload callback:^(NSDictionary<NSString *,id> * _Nullable data) {
                     [weakSelf sendEventWithName:key body:[[self class] dictionaryToString:data]];
                 }];
@@ -481,12 +552,24 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(isNull) {
 }
 
 RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(isNullWithKey:(NSString *)key) {
-    HyperServices *hyperServices = self.hyperServicesDict[key];
+    HyperServices *hyperServices;
+    @synchronized (self.hyperServicesDict) {
+        hyperServices = key != nil ? self.hyperServicesDict[key] : nil;
+    }
     return hyperServices == NULL? @true : @false;
 }
 
 RCT_EXPORT_METHOD(terminateWithKey:(NSString *)key) {
-    HyperServices *hyperServices = self.hyperServicesDict[key];
+    if (key == nil) {
+        return;
+    }
+    HyperServices *hyperServices;
+    @synchronized (self.hyperServicesDict) {
+        hyperServices = self.hyperServicesDict[key];
+        [self.hyperServicesDict removeObjectForKey:key];
+        [self.hyperDelegatesDict removeObjectForKey:key];
+        [self.keyedComponentsDict removeObjectForKey:key];
+    }
     if (hyperServices) {
         [hyperServices terminate];
     }
@@ -502,6 +585,20 @@ RCT_EXPORT_METHOD(notifyAboutRegisterComponent:(NSString *)viewType) {
     [registeredComponents addObject:viewType];
 }
 
+RCT_EXPORT_METHOD(notifyAboutRegisterComponentWithKey:(NSString *)viewType componentName:(NSString *)componentName key:(NSString *)key) {
+    if (key == nil || viewType == nil) {
+        return;
+    }
+    @synchronized (self.hyperServicesDict) {
+        NSMutableDictionary *mapping = self.keyedComponentsDict[key];
+        if (mapping == nil) {
+            mapping = [NSMutableDictionary new];
+            [self.keyedComponentsDict setObject:mapping forKey:key];
+        }
+        mapping[viewType] = componentName.length > 0 ? componentName : viewType;
+    }
+}
+
 RCT_EXPORT_METHOD(isInitialised:(RCTPromiseResolveBlock)resolve  reject:(RCTPromiseRejectBlock)reject) {
     if (self.hyperInstance) {
         resolve(self.hyperInstance.isInitialised? @true : @false);
@@ -510,8 +607,11 @@ RCT_EXPORT_METHOD(isInitialised:(RCTPromiseResolveBlock)resolve  reject:(RCTProm
     }
 }
 
-RCT_EXPORT_METHOD(isInitialisedWithKey:(NSString *)key resolve(RCTPromiseResolveBlock)resolve  reject:(RCTPromiseRejectBlock)reject) {
-    HyperServices *hyperServices = self.hyperServicesDict[key];
+RCT_EXPORT_METHOD(isInitialisedWithKey:(NSString *)key resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject) {
+    HyperServices *hyperServices;
+    @synchronized (self.hyperServicesDict) {
+        hyperServices = key != nil ? self.hyperServicesDict[key] : nil;
+    }
     if (hyperServices) {
         resolve(hyperServices.isInitialised? @true : @false);
     } else {
@@ -528,6 +628,16 @@ RCT_EXPORT_METHOD(updateBaseViewController) {
 RCT_EXPORT_METHOD(updateMerchantViewHeight: (NSString * _Nonnull) tag height: (NSNumber * _Nonnull) h) {
     if (self.delegate) {
         [((SdkDelegate *) self.delegate) setHeight:h forTag:tag];
+    }
+}
+
+RCT_EXPORT_METHOD(updateMerchantViewHeightWithKey: (NSString * _Nonnull) tag height: (NSNumber * _Nonnull) h key: (NSString * _Nonnull) key) {
+    SdkDelegate *delegate;
+    @synchronized (self.hyperServicesDict) {
+        delegate = self.hyperDelegatesDict[key];
+    }
+    if (delegate) {
+        [delegate setHeight:h forTag:tag];
     }
 }
 
@@ -562,9 +672,9 @@ RCT_EXPORT_METHOD(updateMerchantViewHeight: (NSString * _Nonnull) tag height: (N
 
 RCT_EXPORT_MODULE(HyperFragmentViewManagerIOS)
 
-NSString *_currentNamespace;
-NSString *_currentPayload;
-UIView *_currentView;
+// Props tracked per view, so multiple HyperFragmentViews (e.g. one per instance) don't clobber
+// each other. Weak view keys let entries die with their views. Main-queue only.
+static NSMapTable<UIView *, NSMutableDictionary *> *fragmentViewProps;
 
 - (dispatch_queue_t)methodQueue{
     return dispatch_get_main_queue();
@@ -590,6 +700,11 @@ RCT_CUSTOM_VIEW_PROPERTY(payload, NSString, UIView)
     [self setPayload:json forView:view];
 }
 
+RCT_CUSTOM_VIEW_PROPERTY(hyperKey, NSString, UIView)
+{
+    [self setHyperKey:[json isKindOfClass:[NSString class]] ? json : nil forView:view];
+}
+
 
 - (void) setHeight:(NSString*)ns forView:(UIView*)view {
     
@@ -598,33 +713,71 @@ RCT_CUSTOM_VIEW_PROPERTY(payload, NSString, UIView)
 - (void) setWidth:(NSString*)ns forView:(UIView*)view {
     
 }
+- (NSMutableDictionary *)propsForView:(UIView *)view
+{
+    if (fragmentViewProps == nil) {
+        fragmentViewProps = [NSMapTable weakToStrongObjectsMapTable];
+    }
+    NSMutableDictionary *props = [fragmentViewProps objectForKey:view];
+    if (props == nil) {
+        props = [NSMutableDictionary new];
+        [fragmentViewProps setObject:props forKey:view];
+    }
+    return props;
+}
+
 - (void)setNs:(NSString *)ns forView:(UIView *)view
 {
-    _currentNamespace = ns;
-    _currentView = view;
-    [self tryProcessProps];
+    [self propsForView:view][@"ns"] = ns;
+    [self tryProcessPropsForView:view];
 }
 
 
 - (void)setPayload:(NSString *)payload forView:(UIView *)view
 {
-    _currentPayload = payload;
-    _currentView = view;
-    [self tryProcessProps];
+    [self propsForView:view][@"payload"] = payload;
+    [self tryProcessPropsForView:view];
 }
 
-- (void)tryProcessProps
+- (void)setHyperKey:(NSString *)hyperKey forView:(UIView *)view
 {
-    if (_currentNamespace && _currentPayload && _currentView) {
+    // Stored only: ns/payload drive processing, so setting the key never causes an extra process.
+    NSMutableDictionary *props = [self propsForView:view];
+    if (hyperKey.length > 0) {
+        props[@"hyperKey"] = hyperKey;
+    } else {
+        [props removeObjectForKey:@"hyperKey"];
+    }
+}
+
+- (void)tryProcessPropsForView:(UIView *)view
+{
+    NSMutableDictionary *props = [self propsForView:view];
+    if (props[@"ns"] && props[@"payload"]) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            [self processWithPropsForView:_currentView ns:_currentNamespace payload:_currentPayload];
+            NSMutableDictionary *current = [fragmentViewProps objectForKey:view];
+            if (current && current[@"ns"] && current[@"payload"]) {
+                [self processWithPropsForView:view ns:current[@"ns"] payload:current[@"payload"] key:current[@"hyperKey"]];
+            }
         });
     }
 }
 
-- (void)processWithPropsForView:(UIView *)view ns:(NSString *)ns payload:(NSString *)payload
+- (HyperServices *)hyperServicesForKey:(NSString *)key
 {
-    HyperServices *hyperServicesInstance = _hyperServicesReference;
+    if (key.length > 0) {
+        // A keyed view must never fall back to the legacy singleton: a dead key means no-op.
+        HyperSdkReact *module = [self.bridge moduleForClass:[HyperSdkReact class]];
+        @synchronized (module.hyperServicesDict) {
+            return module.hyperServicesDict[key];
+        }
+    }
+    return _hyperServicesReference;
+}
+
+- (void)processWithPropsForView:(UIView *)view ns:(NSString *)ns payload:(NSString *)payload key:(NSString *)key
+{
+    HyperServices *hyperServicesInstance = [self hyperServicesForKey:key];
     if (payload && payload.length > 0) {
         @try {
             NSDictionary *jsonData = [HyperSdkReact stringToDictionary:payload];
@@ -653,9 +806,9 @@ RCT_CUSTOM_VIEW_PROPERTY(payload, NSString, UIView)
     }
 }
 
-RCT_EXPORT_METHOD(process:(nonnull NSNumber *)viewTag ns:(NSString *)ns payload:(NSString *)payload)
+RCT_EXPORT_METHOD(process:(nonnull NSNumber *)viewTag ns:(NSString *)ns payload:(NSString *)payload key:(NSString *)key)
 {
-    HyperServices *hyperServicesInstance = _hyperServicesReference;
+    HyperServices *hyperServicesInstance = [self hyperServicesForKey:key];
     if (payload && payload.length>0) {
         @try {
             NSDictionary *jsonData = [HyperSdkReact stringToDictionary:payload];

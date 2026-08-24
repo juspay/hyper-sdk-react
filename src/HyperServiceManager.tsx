@@ -1,35 +1,40 @@
+/*
+ * Copyright (c) Juspay Technologies.
+ *
+ * This source code is licensed under the AGPL 3.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
 import uuid from 'react-native-uuid';
 
 import { NativeModules, Platform } from 'react-native';
 
-const HyperSdkReactModule = NativeModules.HyperSdkReact;
+const LINKING_ERROR =
+  `The package 'hyper-sdk-react' doesn't seem to be linked. Make sure: \n\n` +
+  Platform.select({ ios: "- You have run 'pod install'\n", default: '' }) +
+  '- You rebuilt the app after installing the package\n' +
+  '- You are not using Expo Go\n';
 
-if (!HyperSdkReactModule) {
-  throw new Error('HyperSdkReactModule is not linked.');
-}
+const HyperSdkReactModule = NativeModules.HyperSdkReact
+  ? NativeModules.HyperSdkReact
+  : new Proxy(
+      {},
+      {
+        get() {
+          throw new Error(LINKING_ERROR);
+        },
+      }
+    );
 
 export default class HyperServiceInstance {
   key: string;
 
-  // constructor() {
-  //     this.key = HyperSdkReactModule.createNewHyperServices("tenantIdPlaceholder", "clientIdPlaceholder");
-  // }
   constructor(tenantId?: string, clientId?: string) {
-    if (!HyperSdkReactModule) {
-      throw new Error('HyperSdkReactModule is not linked.');
-    }
-    this.key = uuid.v4();
-    if (tenantId || clientId) {
-      if (tenantId == undefined) tenantId = '';
-      if (clientId == undefined) clientId = '';
-      HyperSdkReactModule.createHyperServicesWithKey(
-        this.key,
-        tenantId,
-        clientId
-      );
-    } else {
-      HyperSdkReactModule.createHyperServicesWithKey(this.key, '', '');
-    }
+    this.key = uuid.v4() as string;
+    HyperSdkReactModule.createHyperServicesWithKey(
+      this.key,
+      tenantId ?? '',
+      clientId ?? ''
+    );
   }
 
   initiate(data: string) {
@@ -45,8 +50,9 @@ export default class HyperServiceInstance {
   }
 
   processWithActivity(data: string) {
+    // Activities are Android-only; on iOS this is the same as process.
     if (Platform.OS === 'ios') {
-      HyperSdkReactModule.processWithKey(data, this.key);
+      return HyperSdkReactModule.processWithKey(data, this.key);
     }
     return HyperSdkReactModule.processWithActivityWithKey(data, this.key);
   }
@@ -64,7 +70,36 @@ export default class HyperServiceInstance {
   }
 
   onBackPressed(): boolean {
+    // Hardware back-press only exists on Android.
+    if (Platform.OS !== 'android') {
+      return false;
+    }
     return HyperSdkReactModule.onBackPressedWithKey(this.key);
+  }
+
+  /**
+   * Registers a merchant view component for this instance only. Register the component itself
+   * with AppRegistry under `componentName` (defaults to the view tag, which then behaves like the
+   * process-wide registration).
+   */
+  notifyAboutRegisterComponent(viewType: string, componentName?: string) {
+    return HyperSdkReactModule.notifyAboutRegisterComponentWithKey(
+      viewType,
+      componentName ?? viewType,
+      this.key
+    );
+  }
+
+  updateMerchantViewHeight(tag: string, height: number) {
+    // Merchant view height is only needed on iOS; Android measures the view itself.
+    if (Platform.OS === 'ios') {
+      return HyperSdkReactModule.updateMerchantViewHeightWithKey(
+        tag,
+        height,
+        this.key
+      );
+    }
+    console.log('UpdateMerchantViewHeight not available for android');
   }
 
   getHyperEventString(): string {

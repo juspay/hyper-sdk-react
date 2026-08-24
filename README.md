@@ -110,6 +110,13 @@ const { HyperSdkReact } = NativeModules;
 export default HyperSdkReact as HyperSdkReactType;
 ```
 
+For apps that need more than one tenant / client in the same session, the module also exports a
+`HyperServiceInstance` class. See [Multiple HyperServices Instances](#multiple-hyperservices-instances).
+
+```ts
+import HyperSdkReact, { HyperServiceInstance } from 'hyper-sdk-react';
+```
+
 ### Import HyperSDK
 
 ```ts
@@ -133,6 +140,9 @@ This method creates an instance of `HyperServices` class in the React Bridge Mod
 ```ts
 HyperSdkReact.createHyperServices();
 ```
+
+This creates a single, module-wide instance. If you need several independent instances (multiple
+tenants / clients), use [`HyperServiceInstance`](#multiple-hyperservices-instances) instead.
 
 ### Step-2: Initiate
 
@@ -340,7 +350,7 @@ If your view dynamically computes height. Height can be obtained by adding the f
   useLayoutEffect(() => {
     if (ref.current?.measure) {
       ref.current.measure((x, y, width, height, pageX, pageY) => {
-        HyperServices.updateMerchantViewHeight(HyperSdkReact.JuspayHeader, height);
+        HyperSdkReact.updateMerchantViewHeight(HyperSdkReact.JuspayHeader, height);
       });
     }
   }, []);
@@ -368,6 +378,211 @@ If your `AppDelegate` is in `swift` and you are using react native version great
   }
 
 ```
+
+## Multiple HyperServices Instances
+
+By default the module keeps a **single** `HyperServices` object, and every top-level API
+(`HyperSdkReact.initiate`, `HyperSdkReact.process`, …) operates on it. If your app needs to talk to
+more than one tenant / client in the same session — for example a marketplace that switches between
+two Juspay merchants, or a super-app hosting several sub-brands — you can create independent
+instances with `HyperServiceInstance`.
+
+Each instance owns its own `HyperServices` object natively and **emits its events on its own channel**.
+This is the only real difference in the integration: the event name is no longer the constant
+`HyperSdkReact.HyperEvent`, it is the instance's own key, returned by `getHyperEventString()`.
+
+### Step-1: Import
+
+```ts
+import HyperSdkReact, { HyperServiceInstance } from 'hyper-sdk-react';
+```
+
+### Step-2: Create an instance
+
+Replaces `HyperSdkReact.createHyperServices()` / `HyperSdkReact.createHyperServicesWithTenantId()`.
+The constructor allocates the native object immediately and generates the instance key.
+
+```ts
+// Default tenant / client
+const instance = new HyperServiceInstance();
+
+// Explicit tenant and client
+const tenantInstance = new HyperServiceInstance(tenantId, clientId);
+```
+
+On Android the native object can only be created while an activity is in the foreground, and creation
+happens asynchronously on the native side — so a synchronous `isNull()` right after the constructor
+will still report `true`. If you want to confirm creation succeeded, check `isNull()` on a later tick
+(for example just before calling `initiate`). Hold on to the object for the whole
+lifetime of the flow — an instance can only be addressed through the reference you keep in JS. A common pattern is a `Map` keyed by `getHyperEventString()`:
+
+```ts
+const instances = new Map<string, HyperServiceInstance>();
+const instance = new HyperServiceInstance(tenantId, clientId);
+instances.set(instance.getHyperEventString(), instance);
+```
+
+`preFetch` stays global and is still called once as `HyperSdkReact.preFetch(...)` — it is not per-instance.
+
+### Step-3: Listen to events from this instance
+
+Register the listener **before** calling `initiate`, using the instance's key as the event name.
+Events for one instance are never delivered on another instance's channel, nor on `HyperSdkReact.HyperEvent`.
+
+```ts
+componentDidMount() {
+  const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
+
+  this.eventListener = eventEmitter.addListener(
+    this.instance.getHyperEventString(),
+    (resp) => {
+      const data = JSON.parse(resp);
+      switch (data.event || '') {
+        case 'show_loader':
+          break;
+        case 'hide_loader':
+          break;
+        case 'initiate_result':
+          console.log('initiate_result: ', data.payload || {});
+          break;
+        case 'process_result':
+          console.log('process_result: ', data.payload || {});
+          break;
+        default:
+          console.log('Unknown Event', data);
+      }
+    }
+  );
+}
+
+componentWillUnmount() {
+  this.eventListener.remove();
+}
+```
+
+**Note**: the key is generated per instance, so it must be threaded through to whichever screen
+listens for the response. If you navigate to another screen to run `process`, pass the instance (or
+its key) through the navigation params and subscribe there.
+
+### Step-4: Initiate and Process
+
+Same payloads as the single-instance API — only the receiver changes.
+
+```ts
+instance.initiate(JSON.stringify(initiatePayload));
+instance.process(JSON.stringify(processPayload));
+```
+
+### Step-5: Android hardware back-press handling
+
+Back press must be offered to the instance that currently owns the screen. With more than one live
+instance, track which one is in the foreground and delegate to that one:
+
+```ts
+BackHandler.addEventListener('hardwareBackPress', () => {
+  const active = this.activeInstance;
+  return !!active && !active.isNull() && active.onBackPressed();
+});
+```
+
+### Step-6: Android permissions and activity results
+
+Unchanged and still done once, at the activity level — the snippets in
+[Step-6](#step-6-android-permissions-handling) of the single-instance guide apply as-is. No
+per-instance wiring is required in `MainActivity`.
+
+Permission and activity results are offered to every live instance; the SDK routes them internally by
+request code, so no per-instance wiring is needed.
+
+### Step-7: Terminate
+
+Terminate each instance you created. Terminating one instance does not affect the others.
+
+```ts
+instance.terminate();
+```
+
+After `terminate()` the key is released natively; also remove the JS listener registered in
+[Step-3](#step-3-listen-to-events-from-this-instance) and drop your reference to the object, otherwise
+the instance is retained on the JS side.
+
+### Helpers
+
+```ts
+const isNull: boolean = instance.isNull();          // native object missing / already terminated
+instance.isInitialised().then((init: boolean) => {}); // initiate has completed
+const key: string = instance.getHyperEventString();   // event channel for this instance
+```
+
+### Instance API
+
+```ts
+class HyperServiceInstance {
+  constructor(tenantId?: string, clientId?: string);
+  initiate(data: string): void;
+  process(data: string): void;
+  processWithActivity(data: string): void;
+  openPaymentPage(data: string): void;
+  terminate(): void;
+  onBackPressed(): boolean;
+  isNull(): boolean;
+  isInitialised(): Promise<boolean>;
+  notifyAboutRegisterComponent(viewType: string, componentName?: string): void;
+  updateMerchantViewHeight(tag: string, height: number): void;
+  getHyperEventString(): string;
+}
+```
+
+### Optional: Merchant views per instance
+
+Each instance can register its own merchant view components, so two instances can render different
+headers or footers. Register the component with `AppRegistry` under a name of your choice, then tell
+the instance which name to use for which slot:
+
+```ts
+AppRegistry.registerComponent('HeaderForTenantA', () => TenantAHeader);
+instanceA.notifyAboutRegisterComponent(HyperSdkReact.JuspayHeader, 'HeaderForTenantA');
+
+AppRegistry.registerComponent('HeaderForTenantB', () => TenantBHeader);
+instanceB.notifyAboutRegisterComponent(HyperSdkReact.JuspayHeader, 'HeaderForTenantB');
+```
+
+Call it before `initiate`. If `componentName` is omitted, the view tag itself is used, matching the
+single-instance behaviour. Components registered process-wide via
+`HyperSdkReact.notifyAboutRegisterComponent()` act as the fallback when an instance has no
+registration of its own.
+
+On iOS, report the component's height through the instance (Android measures the view itself):
+
+```ts
+instance.updateMerchantViewHeight('HeaderForTenantA', height);
+```
+
+### Optional: HyperFragmentView per instance
+
+Pass the instance to `HyperFragmentView` to render a fragment from that instance; omit it for the
+single-instance API:
+
+```tsx
+<HyperFragmentView
+  height={300}
+  namespace="hyperpay"
+  payload={JSON.stringify(processPayload)}
+  instance={instanceA}
+/>
+```
+
+### Limitations
+
+- **`processWithActivity`** opens one full-screen activity per call; each instance's flow now owns its
+  own activity and back-press handling, but launching two full-screen flows at the same time stacks
+  the activities, so run one visible flow at a time. On iOS it behaves exactly like `process`.
+- **Permission and activity results** are offered to every live instance and routed internally by
+  request code. If two instances trigger flows that wait on the same Android request code at the same
+  moment, results cannot be disambiguated — avoid two simultaneous permission-driven flows.
+- The single-instance `HyperSdkReact.*` API and `HyperServiceInstance` can coexist in one app; the
+  process-wide `notifyAboutRegisterComponent` registrations act as fallbacks for instances without
+  their own.
 
 ## Payload Structure
 

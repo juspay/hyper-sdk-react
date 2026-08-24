@@ -33,6 +33,8 @@ rn_major_version = 0
 #Fallback - search in common locations
 if rn_minor_version == 0
  common_paths = [
+   File.expand_path('../node_modules/react-native/package.json', Dir.pwd),
+   File.expand_path('example/node_modules/react-native/package.json', __dir__),
    File.expand_path('node_modules/react-native/package.json', Dir.pwd),
    File.expand_path('../../node_modules/react-native/package.json', __dir__),
  ]
@@ -63,7 +65,7 @@ if rn_minor_version == 0
 end
 puts ("Found react native minor version as #{rn_major_version}.#{rn_minor_version}").yellow
 
-folly_compiler_flags = '-DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 -Wno-comma -Wno-shorten-64-to-32'
+folly_compiler_flags = '-DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 -DFOLLY_CFG_NO_COROUTINES=1 -Wno-comma -Wno-shorten-64-to-32'
 
 hyper_sdk_version = "2.2.2.8"
 
@@ -107,6 +109,8 @@ Pod::Spec.new do |s|
  s.source       = { :git => "https://github.com/juspay/hyper-sdk-react.git", :tag => "v#{s.version}" }
 
  s.static_framework = true
+ s.compiler_flags = folly_compiler_flags
+ s.pod_target_xcconfig = { "CLANG_CXX_LANGUAGE_STANDARD" => "c++20" }
  s.source_files = source_files_array
 
  # Set exclude files
