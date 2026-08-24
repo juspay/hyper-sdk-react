@@ -59,6 +59,18 @@ export default class HyperServiceInstance {
     return HyperSdkReactModule.terminateWithKey(this.key);
   }
 
+  processWithActivity(data: string) {
+    // Activities are Android-only; on iOS this is the same as process.
+    if (Platform.OS === 'ios') {
+      return HyperSdkReactModule.processWithKey(data, this.key);
+    }
+    return HyperSdkReactModule.processWithActivityWithKey(data, this.key);
+  }
+
+  openPaymentPage(data: string) {
+    return HyperSdkReactModule.openPaymentPageWithKey(data, this.key);
+  }
+
   isInitialised(): Promise<boolean> {
     return HyperSdkReactModule.isInitialisedWithKey(this.key);
   }
@@ -73,6 +85,31 @@ export default class HyperServiceInstance {
       return false;
     }
     return HyperSdkReactModule.onBackPressedWithKey(this.key);
+  }
+
+  /**
+   * Registers a merchant view component for this instance only. Register the component itself
+   * with AppRegistry under `componentName` (defaults to the view tag, which then behaves like the
+   * process-wide registration).
+   */
+  notifyAboutRegisterComponent(viewType: string, componentName?: string) {
+    return HyperSdkReactModule.notifyAboutRegisterComponentWithKey(
+      viewType,
+      componentName ?? viewType,
+      this.key
+    );
+  }
+
+  updateMerchantViewHeight(tag: string, height: number) {
+    // Merchant view height is only needed on iOS; Android measures the view itself.
+    if (Platform.OS === 'ios') {
+      return HyperSdkReactModule.updateMerchantViewHeightWithKey(
+        tag,
+        height,
+        this.key
+      );
+    }
+    console.log('UpdateMerchantViewHeight not available for android');
   }
 
   getHyperEventString(): string {

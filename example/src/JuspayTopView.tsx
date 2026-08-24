@@ -1,5 +1,5 @@
 import React from 'react';
-import { getOrderDetails } from './DataStore';
+import { getOrderDetails, getActiveInstance } from './DataStore';
 import { Dimensions, Image, StyleSheet, View } from 'react-native';
 import HyperSdkReact from 'hyper-sdk-react';
 
@@ -13,7 +13,12 @@ const JuspayTopView = () => {
       onLayout={(event) => {
         const { height, width } = event.nativeEvent.layout;
         console.log('image height', height, width);
-        HyperSdkReact.updateMerchantViewHeight('JuspayHeader', height);
+        const instance = getActiveInstance();
+        if (instance) {
+          instance.updateMerchantViewHeight('JuspayHeader', height);
+        } else {
+          HyperSdkReact.updateMerchantViewHeight('JuspayHeader', height);
+        }
       }}
     >
       <Image source={require('../images/promotion.png')} style={styles.image} />

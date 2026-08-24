@@ -516,28 +516,77 @@ const key: string = instance.getHyperEventString();   // event channel for this 
 
 ### Instance API
 
+`processWithActivity` opens the payment flow in a separate Android activity (behaves like `process`
+on iOS), and `openPaymentPage` is the HyperCheckoutLite equivalent of `process` — both take the same
+payloads and emit results on the instance's event channel.
+
 ```ts
 class HyperServiceInstance {
   constructor(tenantId?: string, clientId?: string);
   initiate(data: string): void;
   process(data: string): void;
+  processWithActivity(data: string): void;
+  openPaymentPage(data: string): void;
   terminate(): void;
   onBackPressed(): boolean;
   isNull(): boolean;
   isInitialised(): Promise<boolean>;
+  notifyAboutRegisterComponent(viewType: string, componentName?: string): void;
+  updateMerchantViewHeight(tag: string, height: number): void;
   getHyperEventString(): string;
 }
 ```
 
+### Optional: Merchant views per instance
+
+Each instance can register its own merchant view components, so two instances can render different
+headers or footers. Register the component with `AppRegistry` under a name of your choice, then tell
+the instance which name to use for which slot:
+
+```ts
+AppRegistry.registerComponent('HeaderForTenantA', () => TenantAHeader);
+instanceA.notifyAboutRegisterComponent(HyperSdkReact.JuspayHeader, 'HeaderForTenantA');
+
+AppRegistry.registerComponent('HeaderForTenantB', () => TenantBHeader);
+instanceB.notifyAboutRegisterComponent(HyperSdkReact.JuspayHeader, 'HeaderForTenantB');
+```
+
+Call it before `initiate`. If `componentName` is omitted, the view tag itself is used, matching the
+single-instance behaviour. Components registered process-wide via
+`HyperSdkReact.notifyAboutRegisterComponent()` act as the fallback when an instance has no
+registration of its own.
+
+On iOS, report the component's height through the instance (Android measures the view itself):
+
+```ts
+instance.updateMerchantViewHeight('HeaderForTenantA', height);
+```
+
+### Optional: HyperFragmentView per instance
+
+Pass the instance to `HyperFragmentView` to render a fragment from that instance; omit it for the
+single-instance API:
+
+```tsx
+<HyperFragmentView
+  height={300}
+  namespace="hyperpay"
+  payload={JSON.stringify(processPayload)}
+  instance={instanceA}
+/>
+```
+
 ### Limitations
 
-- **`processWithActivity`, `openPaymentPage`, merchant views** (`JuspayHeader`, `JuspayFooter`, …)
-  and **`HyperFragmentView`** are not instance-aware yet; they operate on the single-instance
-  (module-level) API. Use `HyperSdkReact.*` for flows that need them.
+- **`processWithActivity`** opens one full-screen activity per call; each instance's flow now owns its
+  own activity and back-press handling, but launching two full-screen flows at the same time stacks
+  the activities, so run one visible flow at a time. On iOS it behaves exactly like `process`.
 - **Permission and activity results** are offered to every live instance and routed internally by
   request code. If two instances trigger flows that wait on the same Android request code at the same
   moment, results cannot be disambiguated — avoid two simultaneous permission-driven flows.
-- The single-instance `HyperSdkReact.*` API and `HyperServiceInstance` can coexist in one app.
+- The single-instance `HyperSdkReact.*` API and `HyperServiceInstance` can coexist in one app; the
+  process-wide `notifyAboutRegisterComponent` registrations act as fallbacks for instances without
+  their own.
 
 ## Payload Structure
 
