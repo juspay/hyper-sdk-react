@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
-import { getOrderDetails } from './DataStore';
+import { getOrderDetails, getActiveInstance } from './DataStore';
 import HyperAPIUtils from './API';
 import HyperSdkReact from 'hyper-sdk-react';
 
@@ -19,7 +19,12 @@ function triggerUpdateOrder(text: String) {
       service: 'in.juspay.hyperpay',
     };
     console.log('process called', r);
-    HyperSdkReact.process(JSON.stringify(r));
+    const instance = getActiveInstance();
+    if (instance) {
+      instance.process(JSON.stringify(r));
+    } else {
+      HyperSdkReact.process(JSON.stringify(r));
+    }
   });
 }
 

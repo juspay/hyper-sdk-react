@@ -17,6 +17,10 @@
 
 @property HyperServices *hyperInstance;
 @property id <HyperDelegate> delegate;
+@property (nonatomic, strong) NSMutableDictionary *hyperServicesDict;
+@property (nonatomic, strong) NSMutableDictionary *hyperDelegatesDict;
+@property (nonatomic, strong) NSMutableDictionary *keyedComponentsDict;
+@property (nonatomic, strong) NSMutableSet<NSString *> *knownEventKeys;
 
 @end
 
@@ -30,6 +34,7 @@
 @property (nonatomic, strong) NSMutableDictionary *rootHolder;
 @property (nonatomic, strong) NSMutableDictionary *heightHolder;
 @property (nonatomic, strong) NSMutableDictionary *heightConstraintHolder;
+@property (nonatomic, strong) NSDictionary *componentMapping;
 @property (nonatomic, strong) RCTBridge *bridge;
 - initWithBridge: (RCTBridge *) bridge;
 @end

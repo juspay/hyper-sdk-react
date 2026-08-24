@@ -59,7 +59,7 @@ def getRNVersion() {
 }
 
 
-def rnVersion = getRNVersion()
+ext.rnVersion = getRNVersion()
 println "Found react native version as ${rnVersion}"
 
 def isNewArchitectureEnabled() {
