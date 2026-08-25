@@ -13,16 +13,43 @@ import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ProcessActivity extends AppCompatActivity {
 
-    @Nullable
-    private static ActivityCallback activityCallback;
+    static final String EXTRA_HYPER_KEY = "hyperKey";
+    private static final String DEFAULT_CALLBACK_KEY = "HyperEvent";
+
+    /**
+     * Callbacks keyed by the HyperServices instance key (HyperEvent for the single-instance API),
+     * so concurrent flows from different instances do not clobber each other.
+     */
+    private static final Map<String, ActivityCallback> activityCallbacks = new ConcurrentHashMap<>();
 
     static void setActivityCallback(@Nullable ActivityCallback activityCallback) {
-        ProcessActivity.activityCallback = activityCallback;
+        setActivityCallback(DEFAULT_CALLBACK_KEY, activityCallback);
+    }
+
+    static void clearActivityCallbacks() {
+        activityCallbacks.clear();
+    }
+
+    static void setActivityCallback(@Nullable String key, @Nullable ActivityCallback activityCallback) {
+        if (key == null) {
+            key = DEFAULT_CALLBACK_KEY;
+        }
+        if (activityCallback == null) {
+            activityCallbacks.remove(key);
+        } else {
+            activityCallbacks.put(key, activityCallback);
+        }
+    }
+
+    @Nullable
+    private ActivityCallback getActivityCallback() {
+        String key = getIntent().getStringExtra(EXTRA_HYPER_KEY);
+        return activityCallbacks.get(key != null ? key : DEFAULT_CALLBACK_KEY);
     }
 
     @Override
@@ -34,6 +61,7 @@ public class ProcessActivity extends AppCompatActivity {
             View decorView = getWindow().getDecorView();
             decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
         }
+        ActivityCallback activityCallback = getActivityCallback();
         if (activityCallback != null) {
             activityCallback.onCreated(this);
         }
@@ -42,6 +70,7 @@ public class ProcessActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        ActivityCallback activityCallback = getActivityCallback();
         if (activityCallback != null && !activityCallback.onBackPressed()) {
             super.onBackPressed();
         }
@@ -49,6 +78,7 @@ public class ProcessActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        ActivityCallback activityCallback = getActivityCallback();
         if (activityCallback != null) {
             activityCallback.resetActivity(this);
         }

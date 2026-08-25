@@ -26,6 +26,7 @@ import com.facebook.react.uimanager.annotations.ReactProp;
 import org.json.JSONObject;
 
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import in.juspay.hypersdk.core.SdkTracker;
 import in.juspay.services.HyperServices;
@@ -36,10 +37,19 @@ public class HyperFragmentViewManager extends ViewGroupManager<FrameLayout> {
     private static final int COMMAND_PROCESS = 175;
 
     private final ReactApplicationContext reactContext;
-    // Track props for each view
-    private String currentNamespace = null;
-    private String currentPayload = null;
-    private FrameLayout currentView = null;
+
+    private static class FragmentViewProps {
+        @Nullable
+        String namespace;
+        @Nullable
+        String payload;
+        @Nullable
+        String hyperKey;
+    }
+
+    // Props tracked per view, so multiple HyperFragmentViews (e.g. one per instance) don't clobber
+    // each other. Only touched on the UI thread.
+    private final Map<FrameLayout, FragmentViewProps> viewProps = new WeakHashMap<>();
     
     // Architecture detection
     private final Boolean newArchEnabled = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED;
@@ -66,38 +76,53 @@ public class HyperFragmentViewManager extends ViewGroupManager<FrameLayout> {
     public Map<String, Integer> getCommandsMap() {
         return MapBuilder.of("process", COMMAND_PROCESS);
     }
+    private FragmentViewProps propsFor(FrameLayout view) {
+        FragmentViewProps props = viewProps.get(view);
+        if (props == null) {
+            props = new FragmentViewProps();
+            viewProps.put(view, props);
+        }
+        return props;
+    }
+
     // Fabric-compatible props
     @ReactProp(name = "ns")
     public void setNs(FrameLayout view, @Nullable String ns) {
-        currentNamespace = ns;
-        currentView = view;
-        tryProcessProps();
+        propsFor(view).namespace = ns;
+        tryProcessProps(view);
     }
 
     @ReactProp(name = "payload")
     public void setPayload(FrameLayout view, @Nullable String payload) {
-        currentPayload = payload;
-        currentView = view;
-        tryProcessProps();
+        propsFor(view).payload = payload;
+        tryProcessProps(view);
+    }
+
+    @ReactProp(name = "hyperKey")
+    public void setHyperKey(FrameLayout view, @Nullable String hyperKey) {
+        // Stored only: ns/payload drive processing, so setting the key never causes an extra process.
+        propsFor(view).hyperKey = (hyperKey == null || hyperKey.isEmpty()) ? null : hyperKey;
     }
 
     @Override
     public void onDropViewInstance(@NonNull FrameLayout view) {
         super.onDropViewInstance(view);
-        currentNamespace = null;
-        currentPayload = null;
-        currentView = null;
+        viewProps.remove(view);
     }
     
-    private void tryProcessProps() {
-        if (currentNamespace != null && currentPayload != null && currentView != null && newArchEnabled) {
-            currentView.post(() -> {
-                processWithProps(currentView, currentNamespace, currentPayload);
+    private void tryProcessProps(FrameLayout view) {
+        FragmentViewProps props = propsFor(view);
+        if (props.namespace != null && props.payload != null && newArchEnabled) {
+            view.post(() -> {
+                FragmentViewProps current = viewProps.get(view);
+                if (current != null && current.namespace != null && current.payload != null) {
+                    processWithProps(view, current.namespace, current.payload, current.hyperKey);
+                }
             });
         }
     }
 
-    private void processWithProps(FrameLayout view, String namespace, String payload) {
+    private void processWithProps(FrameLayout view, String namespace, String payload, @Nullable String hyperKey) {
         try {
             setupLayout(view);
 
@@ -108,7 +133,9 @@ public class HyperFragmentViewManager extends ViewGroupManager<FrameLayout> {
             payloadObj.getJSONObject("payload").put("fragmentViewGroups", fragments);
             
             FragmentActivity activity = (FragmentActivity) reactContext.getCurrentActivity();
-            HyperServices hyperServices = HyperSdkReactModule.getHyperServices();
+            HyperServices hyperServices = hyperKey != null
+                    ? HyperSdkReactModule.getHyperServices(hyperKey)
+                    : HyperSdkReactModule.getHyperServices();
             
             if (activity == null || hyperServices == null) {
                 return;
@@ -150,8 +177,16 @@ public class HyperFragmentViewManager extends ViewGroupManager<FrameLayout> {
                 String payloadStr = args != null ? args.getString(2) : "{}";
                 JSONObject payload = new JSONObject(payloadStr);
                 payload.getJSONObject("payload").put("fragmentViewGroups", fragments);
+
+                // arg[3] - optional HyperServices instance key (empty for the single-instance API)
+                String hyperKey = args != null && args.size() > 3 ? args.getString(3) : null;
+                if (hyperKey != null && hyperKey.isEmpty()) {
+                    hyperKey = null;
+                }
                 FragmentActivity activity = (FragmentActivity) reactContext.getCurrentActivity();
-                HyperServices hyperServices = HyperSdkReactModule.getHyperServices();
+                HyperServices hyperServices = hyperKey != null
+                        ? HyperSdkReactModule.getHyperServices(hyperKey)
+                        : HyperSdkReactModule.getHyperServices();
                 if (activity == null) {
                     SdkTracker.trackBootLifecycle(
                             LogConstants.SUBCATEGORY_HYPER_SDK,

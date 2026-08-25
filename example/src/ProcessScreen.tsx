@@ -873,25 +873,29 @@ class ProcessScreen extends React.Component {
                     this.doProcess(JSON.stringify(payload));
                   }}
                 />
-                {!this.hyperService && (
-                  <CustomButton
-                    title="Process With New Activity"
-                    onPress={() => {
-                      var payload = HyperUtils.generateProcessPayloadPP(
-                        this.state.pickerSelected,
-                        this.clientId,
-                        this.merchantId,
-                        JSON.stringify(this.orderDetails),
-                        this.signature,
-                        this.merchantKeyId,
-                        this.statusBarLight
+                <CustomButton
+                  title="Process With New Activity"
+                  onPress={() => {
+                    var payload = HyperUtils.generateProcessPayloadPP(
+                      this.state.pickerSelected,
+                      this.clientId,
+                      this.merchantId,
+                      JSON.stringify(this.orderDetails),
+                      this.signature,
+                      this.merchantKeyId,
+                      this.statusBarLight
+                    );
+                    if (this.hyperService) {
+                      this.hyperService.processWithActivity(
+                        JSON.stringify(payload)
                       );
+                    } else {
                       HyperSdkReact.processWithActivity(
                         JSON.stringify(payload)
                       );
-                    }}
-                  />
-                )}
+                    }
+                  }}
+                />
 
                 <CustomButton
                   title="Generate Process Payload"
@@ -1011,6 +1015,7 @@ class ProcessScreen extends React.Component {
                     : this.flyerPayload
                 }
                 namespace={'paymentWidget'}
+                instance={this.hyperService}
               />
             ) : null}
           </View>
