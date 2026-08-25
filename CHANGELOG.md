@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.0.35](https://github.com/juspay/hyper-sdk-react/compare/v5.0.34...v5.0.35) (2026-08-25)
+
+
+### Features
+
+* support multiple HyperServices instances ([4dc687f](https://github.com/juspay/hyper-sdk-react/commit/4dc687ff467efbf0dc0a480c4814d396c48e6f22)), closes [PKCS#8](https://github.com/juspay/PKCS/issues/8) [PKCS#1](https://github.com/juspay/PKCS/issues/1)
+
 ### [5.0.34](https://github.com/juspay/hyper-sdk-react/compare/v5.0.33...v5.0.34) (2026-07-16)
 
 
