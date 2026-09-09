@@ -33,6 +33,7 @@ buildscript {
 - You can also provide an override for base SDK version present in plugin (the newer version among both would be considered). - Optional
 - Exclude microSDKs provided with HyperSDK for given clientId by adding excludedMicroSDKs - Optional
 
+
 ### iOS
 
 Run the following command inside the ios folder of your react native project:
