@@ -14,7 +14,7 @@
 #import <React/RCTViewManager.h>
 #import <WebKit/WebKit.h>
 
-typedef void (^JuspayWebViewConfigurationCallback)(WKWebView *webView);
+typedef void (^JuspayWebViewConfigurationCallback)(WKWebView * _Nonnull webView);
 
 @interface HyperSdkReact : RCTEventEmitter <RCTBridgeModule>
 
@@ -24,7 +24,7 @@ typedef void (^JuspayWebViewConfigurationCallback)(WKWebView *webView);
 @property (nonatomic, strong) NSMutableDictionary *hyperDelegatesDict;
 @property (nonatomic, strong) NSMutableSet<NSString *> *knownEventKeys;
 
-+ (void)setJuspayWebViewConfigurationCallback:(JuspayWebViewConfigurationCallback)callback;
++ (void)setJuspayWebViewConfigurationCallback:(nullable JuspayWebViewConfigurationCallback)callback;
 + (nullable JuspayWebViewConfigurationCallback)juspayWebViewConfigurationCallback;
 
 @end

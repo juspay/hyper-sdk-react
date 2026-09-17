@@ -216,7 +216,7 @@ NSMutableSet<NSString *> *registeredComponents = [[NSMutableSet alloc] init];
 
 static JuspayWebViewConfigurationCallback _juspayWebViewConfigurationCallback = nil;
 
-+ (void)setJuspayWebViewConfigurationCallback:(JuspayWebViewConfigurationCallback)callback {
++ (void)setJuspayWebViewConfigurationCallback:(nullable JuspayWebViewConfigurationCallback)callback {
     _juspayWebViewConfigurationCallback = [callback copy];
 }
 
