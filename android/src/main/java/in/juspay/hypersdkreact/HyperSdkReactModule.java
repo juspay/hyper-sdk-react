@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Set;
 
 import in.juspay.hypercheckoutlite.HyperCheckoutLite;
+import in.juspay.hypersdk.core.JuspayWebViewConfigurationCallback;
 import in.juspay.hypersdk.core.MerchantViewType;
 import in.juspay.hypersdk.core.SdkTracker;
 import in.juspay.hypersdk.data.JuspayResponseHandler;
@@ -88,6 +89,18 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
     private static final Map<String, HyperServices> hyperServicesMap = new ConcurrentHashMap<>();
 
     private static WeakReference<HyperServices> hyperServicesReference = new WeakReference<>(null);
+
+    @Nullable
+    private static JuspayWebViewConfigurationCallback webViewConfigurationCallback = null;
+
+    /**
+     * Sets the WebView configuration callback used by HyperSDK. Merchants can use this to
+     * customise the {@link android.webkit.WebView} created by the SDK (for example, to enable
+     * Minkasu SDK access). Must be called before {@code process} to take effect.
+     */
+    public static void setWebViewConfigurationCallback(@Nullable JuspayWebViewConfigurationCallback callback) {
+        webViewConfigurationCallback = callback;
+    }
 
     private final ReactApplicationContext context;
 
@@ -592,6 +605,9 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                 }
                 hyperService.setActivityLaunchDelegate(new ReactLaunchDelegate(context));
                 hyperService.setRequestPermissionDelegate(new ReactRequestDelegate(activity));
+                if (webViewConfigurationCallback != null) {
+                    hyperService.setWebViewConfigurationCallback(webViewConfigurationCallback);
+                }
 
                 hyperService.process(activity, payload);
             } catch (JSONException e) {
@@ -650,6 +666,9 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
 
                         wasProcessWithActivity = true;
                         processActivityRef = new WeakReference<>(fragmentActivity);
+                        if (webViewConfigurationCallback != null) {
+                            hyperService.setWebViewConfigurationCallback(webViewConfigurationCallback);
+                        }
                         hyperService.process(fragmentActivity, payload);
                     }
 

@@ -300,6 +300,60 @@ HyperSdkReact.isInitialised().then((init: boolean) => {
 });
 ```
 
+### WebView Configuration Callback (Optional)
+
+The Minkasu SDK requires access to the bank WebView SDK. This can be enabled after whitelisting on Juspay end. Below is a reference to changes required post getting SDK whitelisted. This should be called before calling process.
+
+#### Android
+
+**Kotlin:**
+
+```kotlin
+import `in`.juspay.hypersdkreact.HyperSdkReactModule
+import `in`.juspay.hypersdk.core.JuspayWebViewConfigurationCallback
+
+
+HyperSdkReactModule.setWebViewConfigurationCallback(
+    JuspayWebViewConfigurationCallback { webView ->
+
+    }
+)
+```
+
+**Java:**
+
+```java
+import in.juspay.hypersdkreact.HyperSdkReactModule;
+
+
+HyperSdkReactModule.setWebViewConfigurationCallback(webView -> {
+
+});
+```
+
+#### iOS
+
+**Swift:**
+
+```swift
+import hyper_sdk_react
+
+
+HyperSdkReact.setJuspayWebViewConfigurationCallback { webView in
+
+}
+```
+
+**Objective-C:**
+
+```objective-c
+#import "HyperSdkReact.h"
+
+[HyperSdkReact setJuspayWebViewConfigurationCallback:^(WKWebView * _Nonnull webView) {
+
+}];
+```
+
 ### Optional: Update Base ViewController - Only for iOS
 
 This is an optional method to update the base view controller in case if any new view controller is presented over top view controller after the SDK initiation. This method should be called before making `HyperSdkReact.process()` call.

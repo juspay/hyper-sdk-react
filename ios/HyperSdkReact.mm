@@ -204,12 +204,26 @@ NSMutableSet<NSString *> *registeredComponents = [[NSMutableSet alloc] init];
 }
 
 - (void) onWebViewReady:(WKWebView *)webView {
-    //Ignored
+    JuspayWebViewConfigurationCallback callback = [HyperSdkReact juspayWebViewConfigurationCallback];
+    if (callback) {
+        callback(webView);
+    }
 }
 
 @end
 
 @implementation HyperSdkReact
+
+static JuspayWebViewConfigurationCallback _juspayWebViewConfigurationCallback = nil;
+
++ (void)setJuspayWebViewConfigurationCallback:(JuspayWebViewConfigurationCallback)callback {
+    _juspayWebViewConfigurationCallback = [callback copy];
+}
+
++ (nullable JuspayWebViewConfigurationCallback)juspayWebViewConfigurationCallback {
+    return _juspayWebViewConfigurationCallback;
+}
+
 RCT_EXPORT_MODULE()
 
 NSString *HYPER_EVENT = @"HyperEvent";
