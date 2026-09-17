@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.0.36](https://github.com/juspay/hyper-sdk-react/compare/v5.0.35...v5.0.36) (2026-09-17)
+
+
+### Features
+
+* exposing webview configuration callback ([8d4a266](https://github.com/juspay/hyper-sdk-react/commit/8d4a266071321bfd8b72d566accf81d8405cf4cd))
+
 ### [5.0.35](https://github.com/juspay/hyper-sdk-react/compare/v5.0.34...v5.0.35) (2026-08-25)
 
 
