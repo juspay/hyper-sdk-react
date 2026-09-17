@@ -12,6 +12,9 @@
 #import <HyperSDK/HyperSDK.h>
 #import <React/RCTRootView.h>
 #import <React/RCTViewManager.h>
+#import <WebKit/WebKit.h>
+
+typedef void (^JuspayWebViewConfigurationCallback)(WKWebView *webView);
 
 @interface HyperSdkReact : RCTEventEmitter <RCTBridgeModule>
 
@@ -20,6 +23,9 @@
 @property (nonatomic, strong) NSMutableDictionary *hyperServicesDict;
 @property (nonatomic, strong) NSMutableDictionary *hyperDelegatesDict;
 @property (nonatomic, strong) NSMutableSet<NSString *> *knownEventKeys;
+
++ (void)setJuspayWebViewConfigurationCallback:(JuspayWebViewConfigurationCallback)callback;
++ (nullable JuspayWebViewConfigurationCallback)juspayWebViewConfigurationCallback;
 
 @end
 
