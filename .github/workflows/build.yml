@@ -29,3 +29,6 @@ jobs:
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
+
+      - name: Lint Check
+        run: npm run lint
