@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.0.37](https://github.com/juspay/hyper-sdk-react/compare/v5.0.36...v5.0.37) (2026-09-17)
+
+
+### Bug Fixes
+
+* **ios:** make WebView configuration callback non-optional for Swift ([#196](https://github.com/juspay/hyper-sdk-react/issues/196)) ([24ff2c1](https://github.com/juspay/hyper-sdk-react/commit/24ff2c12666edc68bae58c914cbbd6d453722a92))
+
 ### [5.0.36](https://github.com/juspay/hyper-sdk-react/compare/v5.0.35...v5.0.36) (2026-09-17)
 
 
