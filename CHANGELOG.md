@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.0.38](https://github.com/juspay/hyper-sdk-react/compare/v5.0.37...v5.0.38) (2026-09-29)
+
+
+### Features
+
+* add Swift Package Manager support with auto-synced HyperSDK version ([939d9bd](https://github.com/juspay/hyper-sdk-react/commit/939d9bd71f86eb8408df880f794dd68b16bee5d4))
+
 ### [5.0.37](https://github.com/juspay/hyper-sdk-react/compare/v5.0.36...v5.0.37) (2026-09-17)
 
 
