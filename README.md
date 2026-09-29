@@ -79,11 +79,57 @@ post_install do |installer|
 end
 ```
 
-Place the `MerchantConfig.txt` file inside the folder where the Podfile is present. This file doesn't need to be added to the project. The content of the file should be as below
+Place a `MerchantConfig.json` file inside the folder where the Podfile is present. This file doesn't need to be added to the project. The content of the file should be as below
 
-```txt
-clientId = <clientId shared by Juspay Team>
+```json
+{
+  "clientConfigs": {
+    "<clientId shared by Juspay Team>": {}
+  }
+}
 ```
+
+#### iOS (Swift Package Manager)
+
+React Native 0.87+ introduced experimental SwiftPM autolinking. CocoaPods (above) remains the default, production-supported integration path — use this only if your app is already fully SwiftPM-based.
+
+Run the following command inside your react native project:
+
+```sh
+npx react-native spm
+```
+
+Overriding the base SDK version works the same way as CocoaPods — add `hyperSdkIOSVersion` to your project's `package.json` as shown above, then re-run `npm install` (this updates the SPM manifest automatically).
+
+**Installing Assets Plugin**
+
+Place a `MerchantConfig.json` file inside the folder where your `.xcodeproj` is present. The content of the file should be as below
+
+```json
+{
+  "clientConfigs": {
+    "<clientId shared by Juspay Team>": {}
+  }
+}
+```
+
+Go to **Product → Scheme → Edit Scheme…**, expand **Build**, select **Pre-actions**, add a **New Run Script Action** (set **Provide build settings from** to your app target), and paste:
+
+```sh
+PACKAGE_DIR="${BUILD_DIR%Build/*}SourcePackages/artifacts/hypersdk-ios/HyperSDK"
+XCFRAMEWORK_DIR="${PACKAGE_DIR}/HyperSDK.xcframework"
+FUSE_SCRIPT="${PACKAGE_DIR}/Fuse.rb"
+FUSE_MARKER="${XCFRAMEWORK_DIR}/.fuse_completed"
+VALIDATION_SCRIPT="${PACKAGE_DIR}/ValidateHyperSDK.rb"
+
+[ ! -f "$FUSE_MARKER" ] || [ "${ACTION}" == "clean" ] && { cd "${PROJECT_DIR}"; echo "Running Fuse.rb script..."; ruby "$FUSE_SCRIPT"; }
+
+ruby "$VALIDATION_SCRIPT" && touch "$FUSE_MARKER" || exit 1
+```
+
+This runs on every **Clean Build Folder**.
+
+See [hypersdk-ios's own integration guide](https://github.com/juspay/hypersdk-ios#11-installing-assets-plugin) for the full walkthrough with screenshots.
 
 ## Usage
 
