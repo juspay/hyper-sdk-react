@@ -67,7 +67,7 @@ puts ("Found react native minor version as #{rn_major_version}.#{rn_minor_versio
 
 folly_compiler_flags = '-DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 -DFOLLY_CFG_NO_COROUTINES=1 -Wno-comma -Wno-shorten-64-to-32'
 
-hyper_sdk_version = "2.2.2.8"
+hyper_sdk_version = package["hyperSdkIOSVersion"]
 
 begin
  package_json_path = File.expand_path(File.join(__dir__, "../../package.json"))

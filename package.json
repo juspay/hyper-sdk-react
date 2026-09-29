@@ -14,6 +14,8 @@
     "ios",
     "cpp",
     "*.podspec",
+    "Package.swift",
+    "scripts/write-hyper-sdk-version.js",
     "!lib/typescript/example",
     "!ios/build",
     "!android/build",
@@ -28,10 +30,11 @@
     "!**/__mocks__"
   ],
   "scripts": {
+    "postinstall": "node scripts/write-hyper-sdk-version.js",
     "test": "jest",
     "typecheck": "tsc --noEmit",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
-    "prepack": "bob build",
+    "prepack": "node scripts/write-hyper-sdk-version.js && bob build",
     "example": "yarn --cwd example",
     "bootstrap": "yarn example && yarn install && yarn example pods",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build"
@@ -51,6 +54,7 @@
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
+  "hyperSdkIOSVersion": "2.2.3",
   "devDependencies": {
     "@commitlint/config-conventional": "^17.0.2",
     "@evilmartians/lefthook": "^1.2.2",
