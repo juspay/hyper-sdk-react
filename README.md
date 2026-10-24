@@ -33,6 +33,12 @@ buildscript {
 - You can also provide an override for base SDK version present in plugin (the newer version among both would be considered). - Optional
 - Exclude microSDKs provided with HyperSDK for given clientId by adding excludedMicroSDKs - Optional
 
+**New Architecture:** on React Native 0.82 and above the SDK always uses the New Architecture. Below 0.82 it reads the unscoped `newArchEnabled` property of your root Gradle project (not `react.newArchEnabled`), so if your app enables the New Architecture, set it in `android/gradle.properties`:
+
+```properties
+newArchEnabled=true
+```
+
 ### iOS
 
 Run the following command inside the ios folder of your react native project:
@@ -459,8 +465,14 @@ If your view dynamically computes height. Height can be obtained by adding the f
 
 ```
 
-#### If your AppDelegate is in swift
-If your `AppDelegate` is in `swift` and you are using react native version greater than or equal to 0.78, then your AppDelegate.swift has to implement the protocol `HyperSdkReactDelegate` and return the `reactNativeFactory` property from the `getReactNativeFactory` function. This helps us to render your view(Merchant View) in our payment page.
+#### Merchant views on the New Architecture
+
+On the New Architecture, merchant views are rendered as surfaces of your app's existing React Native instance:
+
+- **Android:** through `ReactApplication.getReactHost()`, which must return the host your app runs on. Below React Native 0.82 this also requires `newArchEnabled=true` (see [Android installation](#android)).
+- **iOS (React Native 0.78+):** through your app's `RCTReactNativeFactory`. The SDK looks for it on your app delegate (`UIApplication.shared.delegate`) and finds it automatically when the delegate subclasses `RCTAppDelegate` or itself declares a stored property named `reactNativeFactory`, as the React Native template does. Otherwise (for example a `lazy`, computed or inherited Swift property, or a factory kept on another object), implement `HyperSdkReactDelegate` on the app delegate and return the factory from `getReactNativeFactory` (`- (id)getReactNativeFactory` in Objective-C). The protocol takes precedence over the automatic lookup, so implementing it is always safe. Without a factory the SDK falls back to the bridge, and merchant views render empty in bridgeless mode.
+
+Swift:
 
 ```swift
   ...

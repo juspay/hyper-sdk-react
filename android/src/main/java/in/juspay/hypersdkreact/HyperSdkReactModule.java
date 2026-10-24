@@ -399,34 +399,16 @@ public class HyperSdkReactModule extends ReactContextBaseJavaModule implements A
                     }
 
 
-                    public View createReactSurfaceView(String viewName) {
-                        try {
-                            Class<?> reactSurfaceClass = Class.forName("com.facebook.react.interfaces.fabric.ReactSurface");
-                            Object host = getReactHostOrInstanceManager();
-                            if (host == null) {
-                                return null;
-                            }
-                            Object surface = host.getClass().getMethod("createSurface", Context.class, String.class, Bundle.class).invoke(host, context, viewName, null);
-
-                            reactSurfaceClass.getMethod("start").invoke(surface);
-                            return (View) reactSurfaceClass.getMethod("getView").invoke(surface);
-
-                        } catch (Exception e) {
-                            return null;
-                        }
-                    }
-
                     private View createMerchantView(String viewName) {
 
-                        if (!useNewApprochForMerchantView) {
+                        // Bridgeless apps may not support getReactInstanceManager() (custom hosts can throw),
+                        // so the bridge is only touched on the old architecture.
+                        if (!useNewApprochForMerchantView && !newArchEnabled) {
                             if (reactInstanceManager == null) {
                                 Application app = activity.getApplication();
                                 if (app instanceof ReactApplication) {
                                     reactInstanceManager = ((ReactApplication) app).getReactNativeHost().getReactInstanceManager();
                                 }
-                            }
-                            if (newArchEnabled) {
-                                return createReactSurfaceView(viewName);
                             }
                             if (reactInstanceManager == null) {
                                 return null;
