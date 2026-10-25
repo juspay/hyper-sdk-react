@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.0.39](https://github.com/juspay/hyper-sdk-react/compare/v5.0.38...v5.0.39) (2026-10-25)
+
+
+### Bug Fixes
+
+* merchant views on the New Architecture below RN 0.82 ([#198](https://github.com/juspay/hyper-sdk-react/issues/198)) ([df13dcd](https://github.com/juspay/hyper-sdk-react/commit/df13dcd941ba141e03011817590a44b2f7fe521c))
+
 ### [5.0.38](https://github.com/juspay/hyper-sdk-react/compare/v5.0.37...v5.0.38) (2026-09-29)
 
 
