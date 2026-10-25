@@ -15,6 +15,13 @@
 #define HAS_NEW_ARCH_SUPPORT 0
 #endif
 
+// Selectors resolved at runtime on the app delegate and the factory, declared so that
+// -Wundeclared-selector stays quiet without importing the deprecated RCTAppDelegate.h
+@protocol HyperReactNativeFactoryLookup
+- (id)reactNativeFactory;
+- (id)rootViewFactory;
+@end
+
 @implementation HyperMerchantView
 + (UIView *)createReactNativeViewWithModuleName:(NSString *)moduleName {
     
@@ -24,6 +31,12 @@
         if ([appDelegate conformsToProtocol:@protocol(HyperSdkReactDelegate)]) {
             id<HyperSdkReactDelegate> reactDelegate = appDelegate;
             factory = [reactDelegate getReactNativeFactory];
+        }
+
+        // RCTAppDelegate subclasses inherit the reactNativeFactory property; its ivar lives in the
+        // superclass, so the ivar scan below cannot see it
+        if (!factory && [appDelegate respondsToSelector:@selector(reactNativeFactory)]) {
+            factory = [appDelegate performSelector:@selector(reactNativeFactory)];
         }
 
         if (!factory) {
