@@ -76,7 +76,9 @@
     "typescript": "^4.5.2"
   },
   "resolutions": {
-    "@types/react": "17.0.21"
+    "@types/react": "17.0.21",
+    "fast-xml-parser": "^5.12.0",
+    "image-size": "^2.0.3"
   },
   "peerDependencies": {
     "react": "*",
