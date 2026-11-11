@@ -5,7 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import 'react-native-gesture-handler';
 import * as React from 'react';
 import {
   StyleSheet,
@@ -29,11 +28,10 @@ import HyperSdkReact, {
 } from 'hyper-sdk-react';
 import HyperAPIUtils from './API';
 import HyperUtils from './Utils';
-import { useNavigation } from '@react-navigation/native';
 import { setOrderDetails, setActiveInstance } from './DataStore';
 import { Picker } from '@react-native-picker/picker';
 
-class ProcessScreen extends React.Component {
+class ProcessScreen extends React.Component<{ navigation: any; route: any }> {
   state = {
     pickerSelected: 'flyer',
     upiSdkPresent: false,
@@ -1230,7 +1228,4 @@ const CustomCheckBox = (props: any) => {
   );
 };
 
-export default function WithNavigate(props: any) {
-  const navigation = useNavigation();
-  return <ProcessScreen {...props} navigate={navigation} />;
-}
+export default ProcessScreen;

@@ -29,9 +29,8 @@ import HyperUtils from './Utils';
 import merchantConfig from './merchant_config.json';
 import customerConfig from './customer_config.json';
 import { Picker } from '@react-native-picker/picker';
-import { useNavigation } from '@react-navigation/native';
 
-class HomeScreen extends React.Component {
+class HomeScreen extends React.Component<{ navigation: any }> {
   state = {
     animation: new Animated.Value(0),
     pickerSelected: 'pp',
@@ -652,7 +651,4 @@ const CustomButton = (props: any) => {
   );
 };
 
-export default function WithNavigate(props: any) {
-  const navigation = useNavigation();
-  return <HomeScreen {...props} navigate={navigation} />;
-}
+export default HomeScreen;
