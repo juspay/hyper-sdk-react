@@ -11,31 +11,29 @@
     "bundle:clean": "del-cli android/app/src/main/assets ios/main.jsbundle && mkdir android/app/src/main/assets",
     "bundle:android": "react-native bundle --dev false --platform android --entry-file index.js --bundle-output ./android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/",
     "bundle:ios": "react-native bundle --dev false --platform ios --entry-file index.js --bundle-output ios/main.jsbundle --assets-dest ios",
-    "bundle": "yarn bundle:clean && yarn bundle:android && yarn bundle:ios",
-    "postinstall": "node scripts/patch-metro-image-size.js"
+    "bundle": "yarn bundle:clean && yarn bundle:android && yarn bundle:ios"
   },
   "dependencies": {
     "@react-native-community/checkbox": "^0.5.17",
-    "@react-native-picker/picker": "2.11.0",
-    "react": "19.0.0",
-    "react-native": "0.79.7",
-    "react-native-safe-area-context": "5.4.1"
+    "@react-native-picker/picker": "2.11.4",
+    "react": "19.1.4",
+    "react-native": "0.81.6",
+    "react-native-safe-area-context": "5.6.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@babel/preset-env": "^7.25.3",
     "@babel/runtime": "^7.25.0",
-    "@react-native-community/cli": "18.0.1",
-    "@react-native-community/cli-platform-android": "18.0.1",
-    "@react-native-community/cli-platform-ios": "18.0.1",
-    "@react-native/babel-preset": "0.79.7",
-    "@react-native/metro-config": "0.79.7",
+    "@react-native-community/cli": "20.0.2",
+    "@react-native-community/cli-platform-android": "20.0.2",
+    "@react-native-community/cli-platform-ios": "20.0.2",
+    "@react-native/babel-preset": "0.81.6",
+    "@react-native/metro-config": "0.81.6",
     "babel-plugin-module-resolver": "^5.0.0",
     "del-cli": "^5.0.0"
   },
   "resolutions": {
     "fast-xml-parser": "^5.12.0",
-    "glob": "^14.0.4",
-    "image-size": "^2.0.3"
+    "glob": "^14.0.4"
   }
 }
