@@ -11,7 +11,8 @@
     "bundle:clean": "del-cli android/app/src/main/assets ios/main.jsbundle && mkdir android/app/src/main/assets",
     "bundle:android": "react-native bundle --dev false --platform android --entry-file index.js --bundle-output ./android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/",
     "bundle:ios": "react-native bundle --dev false --platform ios --entry-file index.js --bundle-output ios/main.jsbundle --assets-dest ios",
-    "bundle": "yarn bundle:clean && yarn bundle:android && yarn bundle:ios"
+    "bundle": "yarn bundle:clean && yarn bundle:android && yarn bundle:ios",
+    "postinstall": "node scripts/patch-metro-image-size.js"
   },
   "dependencies": {
     "@react-native-community/checkbox": "^0.5.17",
@@ -34,6 +35,7 @@
   },
   "resolutions": {
     "fast-xml-parser": "^5.12.0",
-    "glob": "^14.0.4"
+    "glob": "^14.0.4",
+    "image-size": "^2.0.3"
   }
 }
